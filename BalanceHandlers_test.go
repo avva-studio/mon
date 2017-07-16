@@ -25,28 +25,32 @@ func Test_AccountBalances(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error reading response body. Error: %s", err)
 	}
-	balances := GOHMoney.Balances{}
+	balances := GOHMoneyDB.Balances{}
 	err = json.Unmarshal(body, &balances)
 	if err != nil {
 		t.Errorf("Error unmarshalling response body to Balances\nError: %s\nBody: %s", err.Error(), body)
 	}
 	minBalancesLength := 91
 	if len(balances) < minBalancesLength {
-		t.Errorf("Expected balances min length %d, got length %d", minBalancesLength, len(balances))
-	} else {
-		expectedAmount := float32(636.42)
-		actualAmount := balances[0].Amount
-		if actualAmount != expectedAmount {
-			t.Errorf("first balance, expected balance amount of %f but got %f", expectedAmount, actualAmount)
-		}
-		expectedDate, err := GOHMoneyDB.ParseDateString("2016-06-17")
-		if err != nil {
-			t.Fatalf("Error parsing date string for use in tests. Error: %s", err.Error())
-		}
-		actualDate := balances[0].Date
-		if !expectedDate.Equal(actualDate) {
-			t.Errorf("first balance, expected date of %s but got %s", expectedDate.Format(GOHMoneyDB.DbDateFormat), actualDate.Format(GOHMoneyDB.DbDateFormat))
-		}
+		t.Fatalf("Expected balances min length %d, got length %d", minBalancesLength, len(balances))
+	}
+	expectedId := uint(1)
+	actualId := balances[0].Id
+	if expectedId != actualId {
+		t.Errorf(`Unexpected Id.\nExpected: %d\nActual  : %d`, expectedId, actualId)
+	}
+	expectedAmount := float32(636.42)
+	actualAmount := balances[0].Amount
+	if actualAmount != expectedAmount {
+		t.Errorf("first balance, expected balance amount of %f but got %f", expectedAmount, actualAmount)
+	}
+	expectedDate, err := GOHMoneyDB.ParseDateString("2016-06-17")
+	if err != nil {
+		t.Fatalf("Error parsing date string for use in tests. Error: %s", err.Error())
+	}
+	actualDate := balances[0].Date
+	if !expectedDate.Equal(actualDate) {
+		t.Errorf("first balance, expected date of %s but got %s", expectedDate.Format(GOHMoneyDB.DbDateFormat), actualDate.Format(GOHMoneyDB.DbDateFormat))
 	}
 }
 
@@ -108,7 +112,7 @@ func Test_BalanceCreate(t *testing.T) {
 			newBalance: accountBalance{
 				AccountId:1,
 				Balance:GOHMoney.Balance{
-					Date:time.Now().AddDate(1000,1,1),
+					Date: time.Now().AddDate(1000, 1, 1),
 				},
 			},
 			expectedStatus:   http.StatusCreated,
@@ -146,10 +150,13 @@ func Test_BalanceCreate(t *testing.T) {
 		if resp.StatusCode != expectedCode {
 			t.Errorf("Expected response code %d. Got %d\nnewBalance: %s\nRequest body: %s\nReponse body: %s", expectedCode, resp.StatusCode, newBalance, data, body)
 		}
-		createdBalance := GOHMoney.Balance{}
+		createdBalance := GOHMoneyDB.Balance{}
 		err = json.Unmarshal(body, &createdBalance)
 		if (err == nil) != (testSet.expectJsonDecodeError == false) {
 			t.Errorf("Unexpected error when json decoding response body to balance\nExpect error: %t\nActual  : %s\nnewBalance: %s\nBody: %s", testSet.expectJsonDecodeError, err, testSet.newBalance, body)
+		}
+		if err == nil && createdBalance.Id == 0 {
+			t.Errorf("Unexpected Id. Expected non-zero, got %d", createdBalance.Id)
 		}
 		if !createdBalance.Date.Equal(newBalance.Date.Truncate(time.Hour * 24)) {
 			t.Errorf("Unexpected date.\nExpected: %s\nActual  : %s", newBalance.Date, createdBalance.Date)

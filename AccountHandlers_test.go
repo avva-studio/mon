@@ -317,7 +317,7 @@ func Test_AccountBalance_AccountWithBalances_DefaultDate(t *testing.T) {
 		{
 			accountId:1,
 			paramsString:``,
-			expectedAmount:1449.689941,
+			expectedAmount:1476.680054,
 			expectedStatusCode:http.StatusOK,
 		},
 		{

@@ -8,8 +8,8 @@ import (
 	"fmt"
 )
 
-// BalanceCreate handler accepts json representing a potential new Balance. The balance is decoded and attempted to be added to the backend.
-// If successful, the response contains json representing the newly created Balance object,
+// BalanceCreate handler accepts json representing a potential new GOHMoney.Balance. The Balance is decoded and attempted to be added to the backend.
+// If successful, the response contains json representing the newly created GOHMoneyDB.Balance object,
 // else, an error describing why the creation was unsuccessful.
 func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 	type accountBalance struct {
@@ -50,9 +50,9 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	if newBalance.Date.IsZero() {
+	if err := newBalance.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Balance date is zero."))
+		w.Write([]byte(err.Error()))
 		return
 	}
 	createdBalance, err := GOHMoneyDB.Account(account).InsertBalance(db, newBalance.Balance)
