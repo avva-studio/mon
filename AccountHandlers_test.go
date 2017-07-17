@@ -62,7 +62,12 @@ func Test_Accounts(t *testing.T) {
 		Id:1,
 		Account: GOHMoney.Account{
 			Name:"Current",
-			DateOpened:time.Date(2013,10,01,0,0,0,0,time.UTC),
+			TimeRange:GOHMoney.TimeRange{
+				Start:pq.NullTime{
+					Valid:true,
+					Time:time.Date(2013,10,01,0,0,0,0,time.UTC),
+				},
+			},
 		},
 	}
 
@@ -72,8 +77,16 @@ func Test_Accounts(t *testing.T) {
 		Id:7,
 		Account:GOHMoney.Account{
 			Name:"Patrick",
-			DateOpened:time.Date(2015,9,14,0,0,0,0,time.UTC),
-			DateClosed:pq.NullTime{Valid:true, Time:time.Date(2016,6,19,0,0,0,0,time.UTC)},
+			TimeRange:GOHMoney.TimeRange{
+				Start:pq.NullTime{
+					Valid:true,
+					Time:time.Date(2015,9,14,0,0,0,0,time.UTC),
+				},
+				End:pq.NullTime{
+					Valid:true,
+					Time:time.Date(2016,6,19,0,0,0,0,time.UTC),
+				},
+			},
 		},
 	}
 	checkAccount(expectedAccount, account, t)
@@ -81,19 +94,13 @@ func Test_Accounts(t *testing.T) {
 
 func checkAccount(expectedAccount GOHMoneyDB.Account, actualAccount GOHMoneyDB.Account, t *testing.T) {
 	if actualAccount.Name != expectedAccount.Name {
-		t.Errorf("Unexpected account name.\nExpected: %s\nActual  : %s", expectedAccount.Name, actualAccount.Name)
+		t.Errorf("Unexpected Account  name.\nExpected: %s\nActual  : %s", expectedAccount.Name, actualAccount.Name)
 	}
 	if actualAccount.Id != expectedAccount.Id {
-		t.Errorf("Unexpected account id.\nExpected: %d\nActual  : %d", expectedAccount.Id, actualAccount.Id)
+		t.Errorf("Unexpected Account id.\nExpected: %d\nActual  : %d", expectedAccount.Id, actualAccount.Id)
 	}
-	if !actualAccount.DateOpened.Equal(expectedAccount.DateOpened) {
-		t.Errorf("Unexpected DateOpened.\nExpected: %v\nActual  : %v", expectedAccount.DateOpened.Format(GOHMoneyDB.DbDateFormat), actualAccount.DateOpened.Format(GOHMoneyDB.DbDateFormat))
-	}
-	if actualAccount.DateClosed.Valid != expectedAccount.DateClosed.Valid {
-		t.Errorf("Unexpected DateClosed validity.\nExpected: %t\nActual  : %t", expectedAccount.DateClosed.Valid, actualAccount.DateClosed.Valid)
-	}
-	if actualAccount.DateClosed.Valid && expectedAccount.DateClosed.Valid && !actualAccount.DateClosed.Time.Equal(expectedAccount.DateClosed.Time) {
-		t.Errorf("Unexpected DateClosed.\nExpected: %v\nActual  : %v", expectedAccount.DateClosed, actualAccount.DateClosed)
+	if !actualAccount.TimeRange.Equal(expectedAccount.TimeRange) {
+		t.Errorf("Unexpected Account TimeRange.\nExpected: %v\nActual  : %v", expectedAccount.TimeRange, actualAccount.TimeRange)
 	}
 }
 
@@ -164,8 +171,16 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			newAccount:GOHMoney.Account{
 				Name:"TEST_ACCOUNT",
-				DateOpened:time.Now(),
-				DateClosed:pq.NullTime{Valid:true,Time:time.Now().AddDate(0,0,-1)},
+				TimeRange:GOHMoney.TimeRange{
+					Start:pq.NullTime{
+						Valid:true,
+						Time:time.Now(),
+					},
+					End:pq.NullTime{
+						Valid:true,
+						Time:time.Now().AddDate(0,0,-1),
+					},
+				},
 			},
 			expectedStatus:http.StatusBadRequest,
 			expectJsonDecodeError:true,
@@ -182,8 +197,15 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			newAccount:GOHMoney.Account{
 				Name:"TEST_ACCOUNT",
-				DateOpened:time.Now(),
-				DateClosed:pq.NullTime{Valid:true},
+				TimeRange:GOHMoney.TimeRange{
+					Start:pq.NullTime{
+						Valid:true,
+						Time:time.Now(),
+					},
+					End:pq.NullTime{
+						Valid:true,
+					},
+				},
 			},
 			expectedStatus:http.StatusBadRequest,
 			expectJsonDecodeError:true,
@@ -192,7 +214,12 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			newAccount:GOHMoney.Account{
 				Name:"   ",
-				DateOpened:time.Now(),
+				TimeRange:GOHMoney.TimeRange{
+					Start:pq.NullTime{
+						Valid:true,
+						Time:time.Now(),
+					},
+				},
 			},
 			expectedStatus:http.StatusBadRequest,
 			expectJsonDecodeError:true,
@@ -201,7 +228,12 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			newAccount:GOHMoney.Account{
 				Name:"TEST_ACCOUNT",
-				DateOpened:time.Now(),
+				TimeRange:GOHMoney.TimeRange{
+					Start:pq.NullTime{
+						Valid:true,
+						Time:time.Now(),
+					},
+				},
 			},
 			expectedStatus:http.StatusCreated,
 			expectJsonDecodeError:false,
@@ -210,8 +242,16 @@ func Test_AccountCreate(t *testing.T) {
 		{
 			newAccount:GOHMoney.Account{
 				Name:"TEST_ACCOUNT",
-				DateOpened:time.Now().AddDate(0, 0, -1),
-				DateClosed:pq.NullTime{Valid:true,Time:time.Now()},
+				TimeRange:GOHMoney.TimeRange{
+					Start:pq.NullTime{
+						Valid:true,
+						Time:time.Now().AddDate(0, 0, -1),
+					},
+					End:pq.NullTime{
+						Valid:true,
+						Time:time.Now(),
+					},
+				},
 			},
 			expectedStatus:http.StatusCreated,
 			expectJsonDecodeError:false,
@@ -258,28 +298,28 @@ func Test_AccountCreate(t *testing.T) {
 				t.Logf("New account: %s", newAccount)
 			}
 			expectedDateOpened := time.Date(
-				testSet.newAccount.DateOpened.Year(),
-				testSet.newAccount.DateOpened.Month(),
-				testSet.newAccount.DateOpened.Day(),
+				testSet.newAccount.TimeRange.Start.Time.Year(),
+				testSet.newAccount.TimeRange.Start.Time.Month(),
+				testSet.newAccount.TimeRange.Start.Time.Day(),
 				0,0,0,0,time.UTC,
 			)
-			if !expectedDateOpened.Equal(createdAccount.DateOpened) {
-				t.Errorf("Unexpected created account date opened\nExpected: %s\nActual  : %s", expectedDateOpened, createdAccount.DateOpened)
+			if !expectedDateOpened.Equal(createdAccount.TimeRange.Start.Time) {
+				t.Errorf("Unexpected created account date opened\nExpected: %s\nActual  : %s", expectedDateOpened, createdAccount.TimeRange.Start.Time)
 				t.Logf("New account: %s", newAccount)
 			}
 			expectedDateClosed := pq.NullTime{
-				Valid:testSet.newAccount.DateClosed.Valid,
+				Valid:testSet.newAccount.TimeRange.End.Valid,
 				Time:time.Date(
-					testSet.newAccount.DateClosed.Time.Year(),
-					testSet.newAccount.DateClosed.Time.Month(),
-					testSet.newAccount.DateClosed.Time.Day(),
+					testSet.newAccount.TimeRange.End.Time.Year(),
+					testSet.newAccount.TimeRange.End.Time.Month(),
+					testSet.newAccount.TimeRange.End.Time.Day(),
 					0,0,0,0,time.UTC,
 				),
 			}
-			if expectedDateClosed.Valid != createdAccount.DateClosed.Valid {
-				t.Errorf("Unexpected created account date closed validity\nExpected: %t\nActual  : %t", expectedDateClosed.Valid, createdAccount.DateClosed.Valid)
-			} else if expectedDateClosed.Valid && !expectedDateClosed.Time.Equal(createdAccount.DateClosed.Time){
-				t.Errorf("Unexpected created account date closed.\nExpected: %s\nActual  : %s", expectedDateClosed, createdAccount.DateClosed)
+			if expectedDateClosed.Valid != createdAccount.TimeRange.End.Valid {
+				t.Errorf("Unexpected created account date closed validity\nExpected: %t\nActual  : %t", expectedDateClosed.Valid, createdAccount.TimeRange.End.Valid)
+			} else if expectedDateClosed.Valid && !expectedDateClosed.Time.Equal(createdAccount.TimeRange.End.Time){
+				t.Errorf("Unexpected created account date closed.\nExpected: %s\nActual  : %s", expectedDateClosed, createdAccount.TimeRange.End)
 				t.Logf("New account: %s", newAccount)
 			}
 		}
@@ -403,8 +443,16 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 func Test_AccountBalance_AccountWithoutBalances(t *testing.T) {
 	newAccount := GOHMoney.Account{
 		Name:"TEST_ACCOUNT",
-		DateOpened:time.Now().AddDate(0, 0, -1),
-		DateClosed:pq.NullTime{Valid:true,Time:time.Now()},
+		TimeRange:GOHMoney.TimeRange{
+			Start:pq.NullTime{
+				Valid:true,
+				Time:time.Now().AddDate(0, 0, -1),
+			},
+			End:pq.NullTime{
+				Valid:true,
+				Time:time.Now(),
+			},
+		},
 	}
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
@@ -415,7 +463,7 @@ func Test_AccountBalance_AccountWithoutBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-	req := httptest.NewRequest("GET", Account(createdAccount).balanceEndpoint(), nil)
+	req := httptest.NewRequest("GET", Account(*createdAccount).balanceEndpoint(), nil)
 	w := httptest.NewRecorder()
 	NewRouter().ServeHTTP(w, req)
 	resp := w.Result()
