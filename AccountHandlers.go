@@ -235,7 +235,7 @@ func AccountBalance(w http.ResponseWriter, r *http.Request){
 	for key, value := range queryParams {
 		switch key {
 		case `date`:
-			date, err = GOHMoneyDB.ParseDateString(value[0])
+			date, err = parseDateString(value[0])
 			if err != nil {
 				paramErrors = append(paramErrors, err)
 			}

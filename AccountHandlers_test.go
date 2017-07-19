@@ -347,34 +347,96 @@ func getAccounts(router *mux.Router, t *testing.T) GOHMoney.Accounts {
 	return accounts
 }
 
-func Test_AccountBalance_AccountWithBalances_DefaultDate(t *testing.T) {
+func Test_AccountBalance_AccountWithBalances(t *testing.T) {
+	present := time.Now()
+	past := present.AddDate(-1, 0, 0)
+	future := present.AddDate(1, 0, 0)
+	newAccount, err := GOHMoney.NewAccount("TEST ACCOUNT", present, pq.NullTime{})
+	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
+	if err != nil {
+		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
+		return
+	}
+	createdAccount, err := GOHMoneyDB.CreateAccount(db, newAccount)
+	if err != nil {
+		t.Fatalf("Error creating account for test. Error: %s", err.Error())
+	}
+
+	pastBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:past,Amount:0})
+	if err != nil {
+		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
+	}
+	presentBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:present,Amount:1})
+	if err != nil {
+		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
+	}
+	futureBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:future,Amount:2})
+	if err != nil {
+		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
+	}
+
 	testSets := []struct{
-		accountId uint8
 		paramsString string
-		expectedAmount float32
+		expectedBalance GOHMoneyDB.Balance
 		expectedStatusCode int
 }{
 		{
-			accountId:1,
+			paramsString: `?date=`+ urlFormatDateString(past.AddDate(0,0,-1)),
+			expectedStatusCode:http.StatusNotFound,
+		},
+		{
 			paramsString:``,
-			expectedAmount:1476.680054,
+			expectedBalance:presentBalance,
 			expectedStatusCode:http.StatusOK,
 		},
 		{
-			accountId:1,
-			paramsString: `?date=2017-01-18`,
-			expectedAmount: 21.80,
+			paramsString: `?date=`+ urlFormatDateString(past),
+			expectedBalance:pastBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(past.AddDate(0,0,1)),
+			expectedBalance:pastBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(present),
+			expectedBalance:presentBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(present.AddDate(0,0,1)),
+			expectedBalance:presentBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(future),
+			expectedBalance:futureBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(future.AddDate(0,0,1)),
+			expectedBalance:futureBalance,
+			expectedStatusCode:http.StatusOK,
+		},
+		{
+			paramsString: `?date=`+ urlFormatDateString(future.AddDate(20,0,0)),
+			expectedBalance:futureBalance,
 			expectedStatusCode:http.StatusOK,
 		},
 	}
 	for _, testSet := range testSets {
-		endpoint := fmt.Sprintf(`/account/%d/balance%s`, testSet.accountId, testSet.paramsString)
+		endpoint := fmt.Sprintf(`/account/%d/balance%s`, createdAccount.Id, testSet.paramsString)
 		req := httptest.NewRequest("GET", endpoint, nil)
 		w := httptest.NewRecorder()
 		NewRouter().ServeHTTP(w, req)
 		resp := w.Result()
+		if resp.StatusCode == http.StatusNotFound && resp.StatusCode == testSet.expectedStatusCode {
+			continue
+		}
 		if resp.StatusCode != testSet.expectedStatusCode {
 			t.Errorf("Unexpected response code. Expected %d, got %d", testSet.expectedStatusCode, resp.StatusCode)
+			continue
 		}
 		var balance GOHMoneyDB.Balance
 		body, err := ioutil.ReadAll(resp.Body)
@@ -386,8 +448,11 @@ func Test_AccountBalance_AccountWithBalances_DefaultDate(t *testing.T) {
 			t.Errorf("Unable to unmarshal json to balance. Error: %s\nBody: %s", err.Error(), body)
 			continue
 		}
-		if balance.Amount != testSet.expectedAmount {
-			t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f\nParams: %s", testSet.expectedAmount, balance.Amount, testSet.paramsString)
+		if balance.Amount != testSet.expectedBalance.Amount {
+			t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f\nParams: %s", testSet.expectedBalance.Amount, balance.Amount, testSet.paramsString)
+		}
+		if !balance.Date.Equal(testSet.expectedBalance.Date ) {
+			t.Errorf("Unexpected Balance Date.\nExpected: %s\nActual  : %s\nParams: %s", testSet.expectedBalance.Date, balance.Date, testSet.paramsString)
 		}
 	}
 }

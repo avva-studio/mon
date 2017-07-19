@@ -44,13 +44,13 @@ func Test_AccountBalances(t *testing.T) {
 	if actualAmount != expectedAmount {
 		t.Errorf("first balance, expected balance amount of %f but got %f", expectedAmount, actualAmount)
 	}
-	expectedDate, err := GOHMoneyDB.ParseDateString("2016-06-17")
+	expectedDate, err := parseDateString("2016-06-17")
 	if err != nil {
 		t.Fatalf("Error parsing date string for use in tests. Error: %s", err.Error())
 	}
 	actualDate := balances[0].Date
 	if !expectedDate.Equal(actualDate) {
-		t.Errorf("first balance, expected date of %s but got %s", expectedDate.Format(GOHMoneyDB.DbDateFormat), actualDate.Format(GOHMoneyDB.DbDateFormat))
+		t.Errorf("first balance, expected date of %s but got %s", urlFormatDateString(expectedDate), urlFormatDateString(actualDate))
 	}
 }
 
