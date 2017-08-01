@@ -71,7 +71,6 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 // BalanceUpdate handler accepts json representing a potential update to a GOHMoney.Balance object along with the id of the account owner. The Balance is decoded and attempted to be updated in the backend.
 // If successful, the response contains json representing the newly updated GOHMoneyDB.Balance object and returns a 204 status.
 // else, an error describing why the update was unsuccessful.
-
 func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	balanceIdString := vars[`id`]
