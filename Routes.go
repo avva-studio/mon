@@ -64,4 +64,10 @@ var routes = Routes{
 		Pattern:"/balance/create",
 		HandlerFunc: BalanceCreate,
 	},
+	Route{
+		Name:"BalanceUpdate",
+		Method:"POST",
+		Pattern:"/balance/{id}/update",
+		HandlerFunc:BalanceUpdate,
+	},
 }

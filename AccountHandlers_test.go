@@ -351,7 +351,10 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	present := time.Now()
 	past := present.AddDate(-1, 0, 0)
 	future := present.AddDate(1, 0, 0)
-	newAccount, err := GOHMoney.NewAccount("TEST ACCOUNT", present, pq.NullTime{})
+	newAccount, accountError := GOHMoney.NewAccount("TEST ACCOUNT", past, pq.NullTime{})
+	if accountError != nil {
+		t.Fatalf("Unable to create new account object for testing. Error: %s", accountError.Error())
+	}
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
@@ -361,7 +364,6 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-
 	pastBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:past,Amount:0})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())

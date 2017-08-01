@@ -6,6 +6,8 @@ import (
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	"strconv"
 )
 
 // BalanceCreate handler accepts json representing a potential new GOHMoney.Balance. The Balance is decoded and attempted to be added to the backend.
@@ -64,4 +66,88 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 	}
 	w.WriteHeader(http.StatusCreated)
 	w.Write(balanceData)
+}
+
+// BalanceUpdate handler accepts json representing a potential update to a GOHMoney.Balance object along with the id of the account owner. The Balance is decoded and attempted to be updated in the backend.
+// If successful, the response contains json representing the newly updated GOHMoneyDB.Balance object and returns a 204 status.
+// else, an error describing why the update was unsuccessful.
+
+func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	balanceIdString := vars[`id`]
+	if len(balanceIdString) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`No id present`))
+		return
+	}
+	balanceId, err := strconv.ParseUint(balanceIdString, 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
+	if err != nil {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	defer db.Close()
+	if !GOHMoneyDB.DbIsAvailable(db) {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	type accountBalance struct {
+		AccountId uint
+		GOHMoney.Balance
+	}
+	decoder := json.NewDecoder(r.Body)
+	var newBalance accountBalance
+	if err := decoder.Decode(&newBalance); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Error decoding request data: " + err.Error()))
+		return
+	}
+	account, err := GOHMoneyDB.SelectAccountWithID(db, newBalance.AccountId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	accountBalances, err := account.Balances(db)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	var originalBalance GOHMoneyDB.Balance
+	for _, balance := range accountBalances {
+		if balance.Id == uint(balanceId) {
+			originalBalance = balance
+			break
+		}
+	}
+	if originalBalance == (GOHMoneyDB.Balance{}) {
+		err := GOHMoneyDB.InvalidAccountBalanceError{
+			AccountId:account.Id,
+			BalanceId:uint(balanceId),
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	updatedBalance, err := account.UpdateBalance(db, originalBalance, newBalance.Balance)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	jsonBytes, err := json.Marshal(updatedBalance)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+	w.Write(jsonBytes)
 }
