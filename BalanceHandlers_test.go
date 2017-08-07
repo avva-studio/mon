@@ -176,8 +176,8 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
 		return
 	}
-	account, accountErr := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
-	if accountErr != nil {
+	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
+	if err != nil {
 		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
 	}
 	createdAccount, err := GOHMoneyDB.CreateAccount(db, account)
@@ -244,8 +244,8 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
 		return
 	}
-	account, accountErr := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
-	if accountErr != nil {
+	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
+	if err != nil {
 		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
 	}
 	createdAccount, err := GOHMoneyDB.CreateAccount(db, account)
@@ -296,8 +296,8 @@ func Test_BalanceUpdate_Valid(t *testing.T){
 		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
 		return
 	}
-	account, accountErr := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
-	if accountErr != nil {
+	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
+	if err != nil {
 		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
 	}
 	createdAccount, err := GOHMoneyDB.CreateAccount(db, account)
