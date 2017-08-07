@@ -113,29 +113,19 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	accountBalances, err := account.Balances(db)
+	originalBalance, err := account.SelectBalanceWithId(db,uint(balanceId))
+	if err == GOHMoneyDB.NoBalances {
+		err = GOHMoneyDB.InvalidAccountBalanceError{
+			AccountId:account.Id,
+			BalanceId:uint(balanceId),
+		}
+	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	var originalBalance GOHMoneyDB.Balance
-	for _, balance := range accountBalances {
-		if balance.Id == uint(balanceId) {
-			originalBalance = balance
-			break
-		}
-	}
-	if originalBalance == (GOHMoneyDB.Balance{}) {
-		err := GOHMoneyDB.InvalidAccountBalanceError{
-			AccountId:account.Id,
-			BalanceId:uint(balanceId),
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	updatedBalance, err := account.UpdateBalance(db, originalBalance, newBalance.Balance)
+	updatedBalance, err := account.UpdateBalance(db, *originalBalance, newBalance.Balance)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
