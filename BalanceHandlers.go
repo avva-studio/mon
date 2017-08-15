@@ -58,6 +58,11 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 	createdBalance, err := GOHMoneyDB.Account(account).InsertBalance(db, newBalance.Balance)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
 	balanceData, err := json.Marshal(createdBalance)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
