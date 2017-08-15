@@ -256,7 +256,7 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	invalidUpdateBalance := GOHMoney.Balance{Date:account.Start.Time.AddDate(-1,0,0), Amount:200}
+	invalidUpdateBalance := GOHMoney.Balance{Date:account.Start().AddDate(-1,0,0), Amount:200}
 	type accountBalance struct {
 		AccountId uint
 		GOHMoney.Balance
@@ -308,7 +308,7 @@ func Test_BalanceUpdate_Valid(t *testing.T){
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	validUpdateBalance := GOHMoney.Balance{Date: account.Start.Time.AddDate(0, 0, 1), Amount: 200}
+	validUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(0, 0, 1), Amount: 200}
 	type accountBalance struct {
 		AccountId uint
 		GOHMoney.Balance
