@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"strconv"
 )
 
 // BalanceCreate handler accepts json representing a potential new GOHMoney.Balance. The Balance is decoded and attempted to be added to the backend.
@@ -78,19 +77,12 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
 // else, an error describing why the update was unsuccessful.
 func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	balanceIdString := vars[`id`]
-	if len(balanceIdString) < 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`No id present`))
-		return
-	}
-	balanceId, err := strconv.ParseUint(balanceIdString, 10, 64)
+	id, err := parseIdString(vars[`id`])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
 		return
 	}
-
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		ServiceUnavailableResponse(w)
@@ -118,11 +110,11 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	originalBalance, err := account.SelectBalanceWithId(db,uint(balanceId))
+	originalBalance, err := account.SelectBalanceWithId(db,uint(id))
 	if err == GOHMoneyDB.NoBalances {
 		err = GOHMoneyDB.InvalidAccountBalanceError{
 			AccountId:account.Id,
-			BalanceId:uint(balanceId),
+			BalanceId:uint(id),
 		}
 	}
 	if err != nil {

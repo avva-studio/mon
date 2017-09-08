@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"strings"
 )
 
 func TestMain(m *testing.M){
@@ -462,27 +463,25 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 	}
 }
 
-func Test_AccountBalance_AccountWithoutBalances(t *testing.T) {
-	newAccount, err := GOHMoney.NewAccount(
-		"TEST_ACCOUNT",
-		time.Now().AddDate(0, 0, -1),
-		pq.NullTime{
-			Valid:true,
-			Time:time.Now(),
-		},
-	)
+func createTestDBAccount(t *testing.T, start time.Time, end pq.NullTime) *GOHMoneyDB.Account {
+	newAccount, err := GOHMoney.NewAccount("TEST_ACCOUNT", start, end)
 	if err != nil {
 		t.Fatalf("Error creating account for testing. Error: %s", err.Error())
 	}
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		t.Fatalf("Unable to prepare DB for testing. Error: %s", err.Error())
-		return
 	}
+	defer db.Close()
 	createdAccount, err := GOHMoneyDB.CreateAccount(db, newAccount)
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
+	return createdAccount
+}
+
+func Test_AccountBalance_AccountWithoutBalances(t *testing.T) {
+	createdAccount := createTestDBAccount(t, time.Now(), pq.NullTime{})
 	req := httptest.NewRequest("GET", Account(*createdAccount).balanceEndpoint(), nil)
 	w := httptest.NewRecorder()
 	NewRouter().ServeHTTP(w, req)
@@ -494,5 +493,74 @@ func Test_AccountBalance_AccountWithoutBalances(t *testing.T) {
 	expectedStatusCode := http.StatusNotFound
 	if resp.StatusCode != expectedStatusCode {
 		t.Errorf("Unexpected response code. Expected %d, got %d\nBody: %s", expectedStatusCode, resp.StatusCode, body)
+	}
+}
+
+func TestAccountUpdate_InvalidData(t *testing.T) {
+	createdAccount := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	router := NewRouter()
+	invalidUpdateData := []byte("INVALID ACCOUNT BALANCE DATA BODY")
+	req := httptest.NewRequest("PUT", Account(*createdAccount).updateEndpoint(), bytes.NewReader(invalidUpdateData))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	resp := w.Result()
+	expectedCode := http.StatusBadRequest
+	if resp.StatusCode != expectedCode {
+		t.Errorf("Expected response code %d (%s). Got %d (%s)", expectedCode, http.StatusText(expectedCode), resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Error reading response body. Error: %s", err)
+	}
+	var updatedBalance GOHMoneyDB.Balance
+	err = json.Unmarshal(body, &updatedBalance)
+	if err == nil {
+		t.Error("Expected a json unmarshalling error but nil was returned.")
+	}
+}
+
+func ifErrorFatal(t *testing.T, err error, message string){
+	if err != nil {
+		message = strings.TrimSpace(message)
+		if len(message) > 0 {
+			message = fmt.Sprintf("%s: ", message)
+		}
+		t.Fatalf("%s%s", message, err)
+	}
+}
+
+func TestAccountUpdate_ValidData(t *testing.T) {
+	original := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	router := NewRouter()
+	updates, err := GOHMoney.NewAccount(
+		"UPDATED ACCOUNT NAME",
+		time.Now().Add(24*time.Hour).Truncate(24*time.Hour),
+		pq.NullTime{
+			Valid:true,
+			Time:time.Now().Add(72 * time.Hour).Truncate(24 * time.Hour),
+		},
+	)
+	ifErrorFatal(t, err, "Error creating new account object for testing")
+	updateBytes, err := json.Marshal(updates)
+	ifErrorFatal(t, err, "Error marshaling json for testing")
+	req := httptest.NewRequest("PUT", Account(*original).updateEndpoint(), bytes.NewReader(updateBytes))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	resp := w.Result()
+	expectedCode := http.StatusNoContent
+	if resp.StatusCode != expectedCode {
+		t.Errorf("Expected response code %d (%s). Got %d (%s)", expectedCode, http.StatusText(expectedCode), resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Error reading response body. Error: %s", err)
+	}
+	var updated GOHMoneyDB.Account
+	err = json.Unmarshal(body, &updated)
+	if err != nil {
+		t.Errorf("Error unmarshalling updated account body.\nError: %s\nBody: %s", err, body)
+	}
+	if !updated.Equal(&updates){
+		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated, updates)
 	}
 }

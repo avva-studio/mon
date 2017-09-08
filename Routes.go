@@ -57,6 +57,12 @@ var routes = Routes{
 		Pattern:     "/account/create",
 		HandlerFunc: AccountCreate,
 	},
+	Route{
+		Name:        "AccountUpdate",
+		Method:      "PUT",
+		Pattern:     "/account/{id}/update",
+		HandlerFunc: AccountUpdate,
+	},
 	// Balance Handlers
 	Route{
 		Name:"BalanceCreate",

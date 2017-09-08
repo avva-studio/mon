@@ -272,3 +272,58 @@ func AccountBalance(w http.ResponseWriter, r *http.Request){
 		panic(err)
 	}
 }
+
+// AccountUpdate handler accepts json representing a potential update to a GOHMoneyDB.Account. The Account is decoded and attempted to be updated in the backend.
+// If successful, the response contains json representing the newly updated GOHMoneyDB.Account object and returns a 204 status.
+// else, an error describing why the update was unsuccessful.
+func AccountUpdate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := parseIdString(vars[`id`])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
+		return
+	}
+	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
+	if err != nil {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	defer db.Close()
+	if !GOHMoneyDB.DbIsAvailable(db) {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var updates GOHMoney.Account
+	if err := decoder.Decode(&updates); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Error decoding request data: " + err.Error()))
+		return
+	}
+	if err := updates.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Proposed original updates are invalid: " + err.Error()))
+		return
+	}
+	original, err := GOHMoneyDB.SelectAccountWithID(db, id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	updated, err := original.Update(db, updates)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Error occured updating Account: " + err.Error()))
+		return
+	}
+	jsonBytes, err := json.Marshal(updated)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+	w.Write(jsonBytes)
+}

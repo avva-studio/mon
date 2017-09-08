@@ -272,27 +272,21 @@ func Test_BalanceUpdate_InvalidUpdateData(t *testing.T) {
 func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	router := NewRouter()
 	endpoint := func(id uint) string { return fmt.Sprintf(`/balance/%d/update`, id) }
-	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
-	if err != nil {
-		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
-	}
+	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
 	db := prepareTestDB(t)
-	createdAccount, err := GOHMoneyDB.CreateAccount(db, account)
-	if err != nil {
-		t.Fatalf("Unable to create account DB entry for testing. Error: %s", err.Error())
-	}
-	originalBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
+	defer db.Close()
+	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	invalidUpdateBalance := GOHMoney.Balance{Date:account.Start().AddDate(-1,0,0), Amount:200}
+	invalidUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(-1,0,0), Amount:200}
 	type accountBalance struct {
 		AccountId uint
 		GOHMoney.Balance
 	}
 	update := accountBalance{
-		AccountId:createdAccount.Id,
-		Balance:invalidUpdateBalance,
+		AccountId: account.Id,
+		Balance:   invalidUpdateBalance,
 	}
 	updateData, err := json.Marshal(update)
 	if err != nil {
@@ -319,17 +313,9 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 
 func Test_BalanceUpdate_Valid(t *testing.T){
 	router := NewRouter()
-	endpoint := func(id uint) string { return fmt.Sprintf(`/balance/%d/update`, id) }
+	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
 	db := prepareTestDB(t)
-	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
-	if err != nil {
-		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
-	}
-	createdAccount, err := GOHMoneyDB.CreateAccount(db, account)
-	if err != nil {
-		t.Fatalf("Unable to create account DB entry for testing. Error: %s", err.Error())
-	}
-	originalBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
+	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
@@ -339,14 +325,14 @@ func Test_BalanceUpdate_Valid(t *testing.T){
 		GOHMoney.Balance
 	}
 	update := accountBalance{
-		AccountId:createdAccount.Id,
-		Balance:validUpdateBalance,
+		AccountId: account.Id,
+		Balance:   validUpdateBalance,
 	}
 	updateData, err := json.Marshal(update)
 	if err != nil {
 		t.Fatalf("Unable to marshal json for testing. Error: %s", err.Error())
 	}
-	req := httptest.NewRequest("POST", endpoint(originalBalance.Id), bytes.NewReader(updateData))
+	req := httptest.NewRequest("POST", Balance(originalBalance).balanceUpdateEndpoint(), bytes.NewReader(updateData))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	resp := w.Result()
