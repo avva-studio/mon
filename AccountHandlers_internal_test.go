@@ -565,3 +565,12 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated, updates)
 	}
 }
+
+func TestAccountDelete(t *testing.T) {
+	original := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	router := NewRouter()
+	req := httptest.NewRequest("DELETE", Account(*original).updateEndpoint(), bytes.NewReader(updateBytes))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	resp := w.Result()
+}

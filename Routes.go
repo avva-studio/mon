@@ -63,6 +63,12 @@ var routes = Routes{
 		Pattern:     "/account/{id}/update",
 		HandlerFunc: AccountUpdate,
 	},
+	Route{
+		Name:        "AccountDelete",
+		Method:      "DELETE",
+		Pattern:     "/account/{id}/delete",
+		HandlerFunc: AccountDelete,
+	},
 	// Balance Handlers
 	Route{
 		Name:        "BalanceCreate",

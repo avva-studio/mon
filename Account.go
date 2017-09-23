@@ -17,3 +17,8 @@ func (a Account) balanceEndpoint() string {
 func (a Account) updateEndpoint() string {
 	return fmt.Sprintf(`/account/%d/update`, a.Id)
 }
+
+// Returns the endpoint location string for deleting the Account
+func (a Account) deleteEndpoint() string {
+	return fmt.Sprintf(`/account/%d/delete`, a.Id)
+}
