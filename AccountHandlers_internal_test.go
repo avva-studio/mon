@@ -1,24 +1,25 @@
 package main
 
 import (
-	"testing"
-	"net/http/httptest"
-	"io/ioutil"
-	"encoding/json"
-	"github.com/GlynOwenHanmer/GOHMoney"
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
-	"net/http"
-	"time"
-	"github.com/lib/pq"
 	"bytes"
-	"github.com/gorilla/mux"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/user"
 	"strings"
+	"testing"
+	"time"
+
+	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/gorilla/mux"
+	"github.com/lib/pq"
 )
 
-func TestMain(m *testing.M){
+func TestMain(m *testing.M) {
 	usr, err := user.Current()
 	if err != nil {
 		fmt.Printf("Unable to get current user for testing. Error: %s", err.Error())
@@ -60,11 +61,11 @@ func Test_Accounts(t *testing.T) {
 	}
 
 	account := accounts[0]
-	innerAccount, err := GOHMoney.NewAccount("Current", time.Date(2013,10,01,0,0,0,0,time.UTC), pq.NullTime{})
+	innerAccount, err := GOHMoney.NewAccount("Current", time.Date(2013, 10, 01, 0, 0, 0, 0, time.UTC), pq.NullTime{})
 	if err != nil {
 		t.Fatalf("Error creating account for testing. Error: %s", err.Error())
 	}
-	expectedAccount := GOHMoneyDB.Account{ Id:1, Account: innerAccount }
+	expectedAccount := GOHMoneyDB.Account{Id: 1, Account: innerAccount}
 	checkAccount(expectedAccount, account, t)
 	if t.Failed() {
 		t.Logf("Body: %s", body)
@@ -73,13 +74,13 @@ func Test_Accounts(t *testing.T) {
 	account = accounts[6]
 	innerAccount, err = GOHMoney.NewAccount(
 		"Patrick",
-		time.Date(2015,9,14,0,0,0,0,time.UTC),
+		time.Date(2015, 9, 14, 0, 0, 0, 0, time.UTC),
 		pq.NullTime{
-			Valid:true,
-			Time:time.Date(2016,6,19,0,0,0,0,time.UTC),
+			Valid: true,
+			Time:  time.Date(2016, 6, 19, 0, 0, 0, 0, time.UTC),
 		},
 	)
-	expectedAccount = GOHMoneyDB.Account{ Id:7,Account:innerAccount }
+	expectedAccount = GOHMoneyDB.Account{Id: 7, Account: innerAccount}
 	checkAccount(expectedAccount, account, t)
 }
 
@@ -144,71 +145,71 @@ func Test_AccountCreate(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", expectedCode, resp.StatusCode)
 	}
 
-	testSets := []struct{
-		expectedStatus int
-		name string
-		start time.Time
-		end pq.NullTime
+	testSets := []struct {
+		expectedStatus        int
+		name                  string
+		start                 time.Time
+		end                   pq.NullTime
 		expectJsonDecodeError bool
-		newAccountsCount int
-		createdAccount *GOHMoney.Account
+		newAccountsCount      int
+		createdAccount        *GOHMoney.Account
 	}{
 		{
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			name:"TEST_ACCOUNT",
-			start:time.Now(),
-			end:pq.NullTime{
-				Valid:true,
-				Time:time.Now().AddDate(0,0,-1),
+			name:  "TEST_ACCOUNT",
+			start: time.Now(),
+			end: pq.NullTime{
+				Valid: true,
+				Time:  time.Now().AddDate(0, 0, -1),
 			},
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			name: "TEST_ACCOUNT",
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			name:                  "TEST_ACCOUNT",
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			name:"TEST_ACCOUNT",
-			start:time.Now(),
-			end:pq.NullTime{Valid:true},
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			name:                  "TEST_ACCOUNT",
+			start:                 time.Now(),
+			end:                   pq.NullTime{Valid: true},
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			name:"   ",
-			start:time.Now(),
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
-			newAccountsCount:0,
+			name:                  "   ",
+			start:                 time.Now(),
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
+			newAccountsCount:      0,
 		},
 		{
-			name:"TEST_ACCOUNT",
-			start:time.Now(),
-			expectedStatus:http.StatusCreated,
-			expectJsonDecodeError:false,
-			newAccountsCount:1,
+			name:                  "TEST_ACCOUNT",
+			start:                 time.Now(),
+			expectedStatus:        http.StatusCreated,
+			expectJsonDecodeError: false,
+			newAccountsCount:      1,
 		},
 		{
-			name:"TEST_ACCOUNT",
-			start:time.Now().AddDate(0, 0, -1),
-			end:pq.NullTime{Valid:true,Time:time.Now()},
-			expectedStatus:http.StatusCreated,
-			expectJsonDecodeError:false,
-			newAccountsCount:1,
+			name:                  "TEST_ACCOUNT",
+			start:                 time.Now().AddDate(0, 0, -1),
+			end:                   pq.NullTime{Valid: true, Time: time.Now()},
+			expectedStatus:        http.StatusCreated,
+			expectJsonDecodeError: false,
+			newAccountsCount:      1,
 		},
 	}
 
@@ -257,24 +258,24 @@ func Test_AccountCreate(t *testing.T) {
 				testSet.start.Year(),
 				testSet.start.Month(),
 				testSet.start.Day(),
-				0,0,0,0,time.UTC,
+				0, 0, 0, 0, time.UTC,
 			)
 			if !expectedDateOpened.Equal(createdAccount.Start()) {
 				t.Errorf("Unexpected created account date opened\nExpected: %s\nActual  : %s", expectedDateOpened, createdAccount.Start())
 				t.Logf("New account: %s", newAccount)
 			}
 			expectedDateClosed := pq.NullTime{
-				Valid:testSet.end.Valid,
-				Time:time.Date(
+				Valid: testSet.end.Valid,
+				Time: time.Date(
 					testSet.end.Time.Year(),
 					testSet.end.Time.Month(),
 					testSet.end.Time.Day(),
-					0,0,0,0,time.UTC,
+					0, 0, 0, 0, time.UTC,
 				),
 			}
 			if expectedDateClosed.Valid != createdAccount.End().Valid {
 				t.Errorf("Unexpected created account date closed validity\nExpected: %t\nActual  : %t", expectedDateClosed.Valid, createdAccount.End().Valid)
-			} else if expectedDateClosed.Valid && !expectedDateClosed.Time.Equal(createdAccount.End().Time){
+			} else if expectedDateClosed.Valid && !expectedDateClosed.Time.Equal(createdAccount.End().Time) {
 				t.Errorf("Unexpected created account date closed.\nExpected: %s\nActual  : %s", expectedDateClosed, createdAccount.End())
 				t.Logf("New account: %s", newAccount)
 			}
@@ -320,67 +321,67 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-	pastBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:past,Amount:0})
+	pastBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: past, Amount: 0})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	presentBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:present,Amount:1})
+	presentBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: present, Amount: 1})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	futureBalance, err := createdAccount.InsertBalance(db,GOHMoney.Balance{Date:future,Amount:2})
+	futureBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: future, Amount: 2})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
 
-	testSets := []struct{
-		paramsString string
-		expectedBalance GOHMoneyDB.Balance
+	testSets := []struct {
+		paramsString       string
+		expectedBalance    GOHMoneyDB.Balance
 		expectedStatusCode int
-}{
+	}{
 		{
-			paramsString: `?date=`+ urlFormatDateString(past.AddDate(0,0,-1)),
-			expectedStatusCode:http.StatusNotFound,
+			paramsString:       `?date=` + urlFormatDateString(past.AddDate(0, 0, -1)),
+			expectedStatusCode: http.StatusNotFound,
 		},
 		{
-			paramsString:``,
-			expectedBalance:presentBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       ``,
+			expectedBalance:    presentBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(past),
-			expectedBalance:pastBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(past),
+			expectedBalance:    pastBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(past.AddDate(0,0,1)),
-			expectedBalance:pastBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(past.AddDate(0, 0, 1)),
+			expectedBalance:    pastBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(present),
-			expectedBalance:presentBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(present),
+			expectedBalance:    presentBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(present.AddDate(0,0,1)),
-			expectedBalance:presentBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(present.AddDate(0, 0, 1)),
+			expectedBalance:    presentBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(future),
-			expectedBalance:futureBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(future),
+			expectedBalance:    futureBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(future.AddDate(0,0,1)),
-			expectedBalance:futureBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(future.AddDate(0, 0, 1)),
+			expectedBalance:    futureBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			paramsString: `?date=`+ urlFormatDateString(future.AddDate(20,0,0)),
-			expectedBalance:futureBalance,
-			expectedStatusCode:http.StatusOK,
+			paramsString:       `?date=` + urlFormatDateString(future.AddDate(20, 0, 0)),
+			expectedBalance:    futureBalance,
+			expectedStatusCode: http.StatusOK,
 		},
 	}
 	for _, testSet := range testSets {
@@ -409,24 +410,24 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 		if balance.Amount != testSet.expectedBalance.Amount {
 			t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f\nParams: %s", testSet.expectedBalance.Amount, balance.Amount, testSet.paramsString)
 		}
-		if !balance.Date.Equal(testSet.expectedBalance.Date ) {
+		if !balance.Date.Equal(testSet.expectedBalance.Date) {
 			t.Errorf("Unexpected Balance Date.\nExpected: %s\nActual  : %s\nParams: %s", testSet.expectedBalance.Date, balance.Date, testSet.paramsString)
 		}
 	}
 }
 
 func Test_AccountBalance_InvalidParameter(t *testing.T) {
-	testSets := []struct{
-		accountId uint8
-		paramsString string
-		expectedAmount float32
+	testSets := []struct {
+		accountId          uint8
+		paramsString       string
+		expectedAmount     float32
 		expectedStatusCode int
 	}{
 		{
-			accountId:1,
-			paramsString: `?pidgeons=nowthen`,
-			expectedAmount: 21.80,
-			expectedStatusCode:http.StatusBadRequest,
+			accountId:          1,
+			paramsString:       `?pidgeons=nowthen`,
+			expectedAmount:     21.80,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, testSet := range testSets {
@@ -519,7 +520,7 @@ func TestAccountUpdate_InvalidData(t *testing.T) {
 	}
 }
 
-func ifErrorFatal(t *testing.T, err error, message string){
+func ifErrorFatal(t *testing.T, err error, message string) {
 	if err != nil {
 		message = strings.TrimSpace(message)
 		if len(message) > 0 {
@@ -536,8 +537,8 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 		"UPDATED ACCOUNT NAME",
 		time.Now().Add(24*time.Hour).Truncate(24*time.Hour),
 		pq.NullTime{
-			Valid:true,
-			Time:time.Now().Add(72 * time.Hour).Truncate(24 * time.Hour),
+			Valid: true,
+			Time:  time.Now().Add(72 * time.Hour).Truncate(24 * time.Hour),
 		},
 	)
 	ifErrorFatal(t, err, "Error creating new account object for testing")
@@ -560,7 +561,7 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error unmarshalling updated account body.\nError: %s\nBody: %s", err, body)
 	}
-	if !updated.Equal(&updates){
+	if !updated.Equal(&updates) {
 		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated, updates)
 	}
 }

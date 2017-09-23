@@ -15,17 +15,17 @@ type Routes []Route
 
 var routes = Routes{
 	Route{
-		Name:"Index",
-		Method:"GET",
-		Pattern:"/",
-		HandlerFunc:func(w http.ResponseWriter, r *http.Request) {w.Write([]byte(`GOHMoneyREST`))},
+		Name:        "Index",
+		Method:      "GET",
+		Pattern:     "/",
+		HandlerFunc: func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`GOHMoneyREST`)) },
 	},
 	// Account Handlers
 	Route{
-		Name:"Accounts",
-		Method:"GET",
-		Pattern:"/accounts",
-		HandlerFunc:Accounts,
+		Name:        "Accounts",
+		Method:      "GET",
+		Pattern:     "/accounts",
+		HandlerFunc: Accounts,
 	},
 	Route{
 		Name:        "AccountsOpen",
@@ -65,15 +65,15 @@ var routes = Routes{
 	},
 	// Balance Handlers
 	Route{
-		Name:"BalanceCreate",
-		Method:"POST",
-		Pattern:"/balance/create",
+		Name:        "BalanceCreate",
+		Method:      "POST",
+		Pattern:     "/balance/create",
 		HandlerFunc: BalanceCreate,
 	},
 	Route{
-		Name:"BalanceUpdate",
-		Method:"POST",
-		Pattern:"/balance/{id}/update",
-		HandlerFunc:BalanceUpdate,
+		Name:        "BalanceUpdate",
+		Method:      "POST",
+		Pattern:     "/balance/{id}/update",
+		HandlerFunc: BalanceUpdate,
 	},
 }

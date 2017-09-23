@@ -1,18 +1,19 @@
 package main
 
 import (
-	"testing"
-	"net/http/httptest"
-	"io/ioutil"
+	"bytes"
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/GlynOwenHanmer/GOHMoney"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
-	"net/http"
-	"bytes"
-	"time"
-	"fmt"
 	"github.com/lib/pq"
-	"database/sql"
 )
 
 func prepareTestDB(t *testing.T) *sql.DB {
@@ -88,82 +89,82 @@ func Test_BalanceCreate(t *testing.T) {
 	}
 
 	type accountBalance struct {
-		AccountId int `json:"account_id"`
+		AccountId        int `json:"account_id"`
 		GOHMoney.Balance `json:"balance"`
 	}
 
 	testSets := []struct {
-		newBalance     accountBalance
-		expectedStatus int
+		newBalance            accountBalance
+		expectedStatus        int
 		expectJsonDecodeError bool
 	}{
 		{
-			newBalance:     accountBalance{},
-			expectedStatus: http.StatusBadRequest,
-			expectJsonDecodeError:true,
+			newBalance:            accountBalance{},
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:-1,
+				AccountId: -1,
 			},
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
+				AccountId: int(account.Id),
 			},
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
-				Balance:GOHMoney.Balance{},
+				AccountId: int(account.Id),
+				Balance:   GOHMoney.Balance{},
 			},
-			expectedStatus:http.StatusBadRequest,
-			expectJsonDecodeError:true,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
-				Balance:GOHMoney.Balance{
-					Date: now.AddDate(-1,0,0),
+				AccountId: int(account.Id),
+				Balance: GOHMoney.Balance{
+					Date: now.AddDate(-1, 0, 0),
 				},
 			},
-			expectedStatus:   http.StatusBadRequest,
-			expectJsonDecodeError:true,
+			expectedStatus:        http.StatusBadRequest,
+			expectJsonDecodeError: true,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
-				Balance:GOHMoney.Balance{
+				AccountId: int(account.Id),
+				Balance: GOHMoney.Balance{
 					Date: now,
 				},
 			},
-			expectedStatus:   http.StatusCreated,
-			expectJsonDecodeError:false,
+			expectedStatus:        http.StatusCreated,
+			expectJsonDecodeError: false,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
-				Balance:GOHMoney.Balance{
+				AccountId: int(account.Id),
+				Balance: GOHMoney.Balance{
 					Date: now.AddDate(1000, 1, 1),
 				},
 			},
-			expectedStatus:   http.StatusCreated,
-			expectJsonDecodeError:false,
+			expectedStatus:        http.StatusCreated,
+			expectJsonDecodeError: false,
 		},
 		{
 			newBalance: accountBalance{
-				AccountId:int(account.Id),
-				Balance:GOHMoney.Balance{
-					Date:time.Now().AddDate(1000,1,1),
-					Amount:-2000,
+				AccountId: int(account.Id),
+				Balance: GOHMoney.Balance{
+					Date:   time.Now().AddDate(1000, 1, 1),
+					Amount: -2000,
 				},
 			},
-			expectedStatus:   http.StatusCreated,
-			expectJsonDecodeError:false,
+			expectedStatus:        http.StatusCreated,
+			expectJsonDecodeError: false,
 		},
 	}
 
@@ -222,7 +223,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 		AccountId uint
 		GOHMoney.Balance
 	}
-	update := accountBalance{ AccountId:createdAccount.Id }
+	update := accountBalance{AccountId: createdAccount.Id}
 	jsonBytes, err := json.Marshal(update)
 	if err != nil {
 		t.Fatalf("Unable to generate json object for testind. Error: %s", err.Error())
@@ -239,7 +240,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error reading response body. Error: %s", err)
 	}
-	expectedBody := GOHMoneyDB.InvalidAccountBalanceError{AccountId:createdAccount.Id,BalanceId:invalidBalanceId}.Error()
+	expectedBody := GOHMoneyDB.InvalidAccountBalanceError{AccountId: createdAccount.Id, BalanceId: invalidBalanceId}.Error()
 	if string(body) != expectedBody {
 		t.Errorf("Unexpected response body.\nExpected: %s\nActual  : %s", expectedBody, body)
 	}
@@ -275,11 +276,11 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
 	db := prepareTestDB(t)
 	defer db.Close()
-	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
+	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	invalidUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(-1,0,0), Amount:200}
+	invalidUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(-1, 0, 0), Amount: 200}
 	type accountBalance struct {
 		AccountId uint
 		GOHMoney.Balance
@@ -311,11 +312,11 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	}
 }
 
-func Test_BalanceUpdate_Valid(t *testing.T){
+func Test_BalanceUpdate_Valid(t *testing.T) {
 	router := NewRouter()
 	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
 	db := prepareTestDB(t)
-	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date:time.Now(), Amount:100})
+	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}

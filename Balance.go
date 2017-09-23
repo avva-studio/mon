@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"fmt"
+
+	"github.com/GlynOwenHanmer/GOHMoneyDB"
 )
 
 type Balance GOHMoneyDB.Balance
@@ -11,4 +12,3 @@ type Balance GOHMoneyDB.Balance
 func (b Balance) balanceUpdateEndpoint() string {
 	return fmt.Sprintf(`/balance/%d/update`, b.Id)
 }
-

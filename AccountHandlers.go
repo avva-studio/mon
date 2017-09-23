@@ -1,17 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/GlynOwenHanmer/GOHMoney"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
-	"strconv"
-	"time"
-	"errors"
-	"bytes"
 )
 
 // Accounts handler writes a json blob for the Accounts in the DB
@@ -128,7 +129,7 @@ func AccountCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	createdAccount, err := GOHMoneyDB.CreateAccount(db, newAccount)
-	if  err != nil {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`DB error creating new account: ` + err.Error()))
 		return
@@ -144,7 +145,7 @@ func AccountCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 //Retrieves all balances for an account.
-func AccountBalances(w http.ResponseWriter, r *http.Request){
+func AccountBalances(w http.ResponseWriter, r *http.Request) {
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		ServiceUnavailableResponse(w)
@@ -195,7 +196,7 @@ func AccountBalances(w http.ResponseWriter, r *http.Request){
 // AccountBalance responds with a json blob of a Balance representing the Balance for an Account at a given date.
 // The date should be url encoded.
 // If no date is given, today's date is used.
-func AccountBalance(w http.ResponseWriter, r *http.Request){
+func AccountBalance(w http.ResponseWriter, r *http.Request) {
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		ServiceUnavailableResponse(w)
@@ -240,7 +241,7 @@ func AccountBalance(w http.ResponseWriter, r *http.Request){
 				paramErrors = append(paramErrors, err)
 			}
 		default:
-			paramErrors = append(paramErrors, errors.New(`Invalid parameter ` + key))
+			paramErrors = append(paramErrors, errors.New(`Invalid parameter `+key))
 		}
 	}
 	if len(paramErrors) > 0 {

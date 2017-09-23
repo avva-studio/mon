@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"fmt"
+
+	"github.com/GlynOwenHanmer/GOHMoneyDB"
 )
 
 type Account GOHMoneyDB.Account

@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
 	"os"
+
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 )
 
@@ -27,6 +28,3 @@ func main() {
 	portString := fmt.Sprintf(`:%d`, port)
 	log.Fatal(http.ListenAndServe(portString, router))
 }
-
-
-

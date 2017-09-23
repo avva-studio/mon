@@ -1,20 +1,21 @@
 package main
 
 import (
-	"net/http"
-	"github.com/GlynOwenHanmer/GOHMoney"
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
 )
 
 // BalanceCreate handler accepts json representing a potential new GOHMoney.Balance. The Balance is decoded and attempted to be added to the backend.
 // If successful, the response contains json representing the newly created GOHMoneyDB.Balance object,
 // else, an error describing why the creation was unsuccessful.
-func BalanceCreate(w http.ResponseWriter, r *http.Request)  {
+func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 	type accountBalance struct {
-		AccountId uint `json:"account_id"`
+		AccountId        uint `json:"account_id"`
 		GOHMoney.Balance `json:"balance"`
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -110,11 +111,11 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	originalBalance, err := account.SelectBalanceWithId(db,uint(id))
+	originalBalance, err := account.SelectBalanceWithId(db, uint(id))
 	if err == GOHMoneyDB.NoBalances {
 		err = GOHMoneyDB.InvalidAccountBalanceError{
-			AccountId:account.Id,
-			BalanceId:uint(id),
+			AccountId: account.Id,
+			BalanceId: uint(id),
 		}
 	}
 	if err != nil {
