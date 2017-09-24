@@ -13,7 +13,6 @@ import (
 
 	"github.com/GlynOwenHanmer/GOHMoney"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
-	"github.com/lib/pq"
 )
 
 func prepareTestDB(t *testing.T) *sql.DB {
@@ -81,7 +80,7 @@ func Test_BalanceCreate(t *testing.T) {
 	}
 
 	now := time.Now()
-	a, err := GOHMoney.NewAccount("TEST_ACCOUNT", now, pq.NullTime{})
+	a, err := GOHMoney.NewAccount("TEST_ACCOUNT", now, GOHMoney.NullTime{})
 	db := prepareTestDB(t)
 	account, err := GOHMoneyDB.CreateAccount(db, a)
 	if err != nil {
@@ -210,7 +209,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 	router := NewRouter()
 	endpoint := func(id uint) string { return fmt.Sprintf(`/balance/%d/update`, id) }
 	db := prepareTestDB(t)
-	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), pq.NullTime{})
+	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), GOHMoney.NullTime{})
 	if err != nil {
 		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
 	}
@@ -273,7 +272,7 @@ func Test_BalanceUpdate_InvalidUpdateData(t *testing.T) {
 func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	router := NewRouter()
 	endpoint := func(id uint) string { return fmt.Sprintf(`/balance/%d/update`, id) }
-	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	account := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	db := prepareTestDB(t)
 	defer db.Close()
 	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
@@ -314,7 +313,7 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 
 func Test_BalanceUpdate_Valid(t *testing.T) {
 	router := NewRouter()
-	account := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	account := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	db := prepareTestDB(t)
 	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
 	if err != nil {
