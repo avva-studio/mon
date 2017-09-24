@@ -175,7 +175,8 @@ func AccountBalances(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -225,7 +226,8 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -262,7 +264,8 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -319,12 +322,49 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Error occured updating Account: " + err.Error()))
 		return
 	}
-	jsonBytes, err := json.Marshal(updated)
+	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
+	if err := json.NewEncoder(w).Encode(updated); err != nil {
+		panic(err)
+	}
+}
+
+ //AccountDelete handler deletes an account with a given id.
+ //If successful, the response contains json representing the newly updated GOHMoneyDB.Account object and returns a 204 status.
+ //else, an error describing why the update was unsuccessful.
+func AccountDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := parseIdString(vars[`id`])
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
+		return
+	}
+	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
+	if err != nil {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	defer db.Close()
+	if !GOHMoneyDB.DbIsAvailable(db) {
+		ServiceUnavailableResponse(w)
+		return
+	}
+	a, err := GOHMoneyDB.SelectAccountWithID(db, id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
+	if err := a.Delete(db); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Error deleting account: %s", err)))
+		return
+	}
+	if err := a.Validate(db); err == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Account deleted but is still valid: %s", err)))
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
-	w.Write(jsonBytes)
 }
