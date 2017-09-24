@@ -175,7 +175,8 @@ func AccountBalances(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -225,7 +226,8 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -262,7 +264,8 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -319,14 +322,11 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Error occured updating Account: " + err.Error()))
 		return
 	}
-	jsonBytes, err := json.Marshal(updated)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
 	w.WriteHeader(http.StatusNoContent)
-	w.Write(jsonBytes)
+	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
+	if err := json.NewEncoder(w).Encode(updated); err != nil {
+		panic(err)
+	}
 }
 
  //AccountDelete handler deletes an account with a given id.
@@ -361,7 +361,7 @@ func AccountDelete(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf("Error deleting account: %s", err)))
 		return
 	}
-	if err := a.Validate(db); err != nil {
+	if err := a.Validate(db); err == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("Account deleted but is still valid: %s", err)))
 		return

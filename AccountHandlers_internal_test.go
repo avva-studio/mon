@@ -566,10 +566,17 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 }
 
 func TestAccountDelete(t *testing.T) {
-	original := createTestDBAccount(t, time.Now(), pq.NullTime{})
+	original := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	router := NewRouter()
-	req := httptest.NewRequest("DELETE", Account(*original).updateEndpoint(), bytes.NewReader(updateBytes))
+	req := httptest.NewRequest("DELETE", Account(*original).deleteEndpoint(), nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	resp := w.Result()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Error reading response body. Error: %s", err)
+	}
+	if expected := http.StatusNoContent; resp.StatusCode != expected {
+		t.Errorf("Expected status code %d (%s) but got %d (%s).\nBody: %s", expected, http.StatusText(expected), resp.StatusCode, http.StatusText(resp.StatusCode), body)
+	}
 }
