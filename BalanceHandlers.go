@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoney/balance"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
 )
@@ -15,8 +15,8 @@ import (
 // else, an error describing why the creation was unsuccessful.
 func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 	type accountBalance struct {
-		AccountId        uint `json:"account_id"`
-		GOHMoney.Balance `json:"balance"`
+		AccountId       uint `json:"account_id"`
+		balance.Balance `json:"balance"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	var newBalance accountBalance
@@ -96,7 +96,7 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	type accountBalance struct {
 		AccountId uint
-		GOHMoney.Balance
+		balance.Balance
 	}
 	decoder := json.NewDecoder(r.Body)
 	var newBalance accountBalance

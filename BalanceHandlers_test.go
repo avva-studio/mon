@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoney/account"
+	"github.com/GlynOwenHanmer/GOHMoney/balance"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 )
 
@@ -80,7 +82,7 @@ func Test_BalanceCreate(t *testing.T) {
 	}
 
 	now := time.Now()
-	a, err := GOHMoney.NewAccount("TEST_ACCOUNT", now, GOHMoney.NullTime{})
+	a, err := account.New("TEST_ACCOUNT", now, GOHMoney.NullTime{})
 	db := prepareTestDB(t)
 	account, err := GOHMoneyDB.CreateAccount(db, a)
 	if err != nil {
@@ -88,8 +90,8 @@ func Test_BalanceCreate(t *testing.T) {
 	}
 
 	type accountBalance struct {
-		AccountId        int `json:"account_id"`
-		GOHMoney.Balance `json:"balance"`
+		AccountId       int `json:"account_id"`
+		balance.Balance `json:"balance"`
 	}
 
 	testSets := []struct {
@@ -119,7 +121,7 @@ func Test_BalanceCreate(t *testing.T) {
 		{
 			newBalance: accountBalance{
 				AccountId: int(account.Id),
-				Balance:   GOHMoney.Balance{},
+				Balance:   balance.Balance{},
 			},
 			expectedStatus:        http.StatusBadRequest,
 			expectJsonDecodeError: true,
@@ -127,7 +129,7 @@ func Test_BalanceCreate(t *testing.T) {
 		{
 			newBalance: accountBalance{
 				AccountId: int(account.Id),
-				Balance: GOHMoney.Balance{
+				Balance: balance.Balance{
 					Date: now.AddDate(-1, 0, 0),
 				},
 			},
@@ -137,7 +139,7 @@ func Test_BalanceCreate(t *testing.T) {
 		{
 			newBalance: accountBalance{
 				AccountId: int(account.Id),
-				Balance: GOHMoney.Balance{
+				Balance: balance.Balance{
 					Date: now,
 				},
 			},
@@ -147,7 +149,7 @@ func Test_BalanceCreate(t *testing.T) {
 		{
 			newBalance: accountBalance{
 				AccountId: int(account.Id),
-				Balance: GOHMoney.Balance{
+				Balance: balance.Balance{
 					Date: now.AddDate(1000, 1, 1),
 				},
 			},
@@ -157,7 +159,7 @@ func Test_BalanceCreate(t *testing.T) {
 		{
 			newBalance: accountBalance{
 				AccountId: int(account.Id),
-				Balance: GOHMoney.Balance{
+				Balance: balance.Balance{
 					Date:   time.Now().AddDate(1000, 1, 1),
 					Amount: -2000,
 				},
@@ -209,7 +211,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 	router := NewRouter()
 	endpoint := func(id uint) string { return fmt.Sprintf(`/balance/%d/update`, id) }
 	db := prepareTestDB(t)
-	account, err := GOHMoney.NewAccount("TEST_ACCOUNT", time.Now(), GOHMoney.NullTime{})
+	account, err := account.New("TEST_ACCOUNT", time.Now(), GOHMoney.NullTime{})
 	if err != nil {
 		t.Fatalf("Unable to create account object for testing. Error: %s", err.Error())
 	}
@@ -220,7 +222,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 	invalidBalanceId := uint(1)
 	type accountBalance struct {
 		AccountId uint
-		GOHMoney.Balance
+		balance.Balance
 	}
 	update := accountBalance{AccountId: createdAccount.Id}
 	jsonBytes, err := json.Marshal(update)
@@ -275,14 +277,14 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	account := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	db := prepareTestDB(t)
 	defer db.Close()
-	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
+	originalBalance, err := account.InsertBalance(db, balance.Balance{Date: time.Now(), Amount: 100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	invalidUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(-1, 0, 0), Amount: 200}
+	invalidUpdateBalance := balance.Balance{Date: account.Start().AddDate(-1, 0, 0), Amount: 200}
 	type accountBalance struct {
 		AccountId uint
-		GOHMoney.Balance
+		balance.Balance
 	}
 	update := accountBalance{
 		AccountId: account.Id,
@@ -313,19 +315,19 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 
 func Test_BalanceUpdate_Valid(t *testing.T) {
 	router := NewRouter()
-	account := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
+	a := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	db := prepareTestDB(t)
-	originalBalance, err := account.InsertBalance(db, GOHMoney.Balance{Date: time.Now(), Amount: 100})
+	originalBalance, err := a.InsertBalance(db, balance.Balance{Date: time.Now(), Amount: 100})
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	validUpdateBalance := GOHMoney.Balance{Date: account.Start().AddDate(0, 0, 1), Amount: 200}
+	validUpdateBalance := balance.Balance{Date: a.Start().AddDate(0, 0, 1), Amount: 200}
 	type accountBalance struct {
 		AccountId uint
-		GOHMoney.Balance
+		balance.Balance
 	}
 	update := accountBalance{
-		AccountId: account.Id,
+		AccountId: a.Id,
 		Balance:   validUpdateBalance,
 	}
 	updateData, err := json.Marshal(update)

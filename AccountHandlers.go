@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoney/account"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
 )
@@ -114,7 +114,7 @@ func AccountId(w http.ResponseWriter, r *http.Request) {
 // else, the response will contain an error message describing why the creation was not successful.
 func AccountCreate(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var newAccount GOHMoney.Account
+	var newAccount account.Account
 	err := decoder.Decode(&newAccount)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -300,7 +300,7 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
-	var updates GOHMoney.Account
+	var updates account.Account
 	if err := decoder.Decode(&updates); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Error decoding request data: " + err.Error()))
@@ -330,9 +330,9 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
- //AccountDelete handler deletes an account with a given id.
- //If successful, the response contains json representing the newly updated GOHMoneyDB.Account object and returns a 204 status.
- //else, an error describing why the update was unsuccessful.
+//AccountDelete handler deletes an account with a given id.
+//If successful, the response contains json representing the newly updated GOHMoneyDB.Account object and returns a 204 status.
+//else, an error describing why the update was unsuccessful.
 func AccountDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := parseIdString(vars[`id`])

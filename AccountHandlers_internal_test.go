@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/GlynOwenHanmer/GOHMoney"
+	"github.com/GlynOwenHanmer/GOHMoney/account"
+	"github.com/GlynOwenHanmer/GOHMoney/balance"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
 )
@@ -59,19 +61,19 @@ func Test_Accounts(t *testing.T) {
 		t.Fatalf("Expected accounts min length %d, got length %d", minAccountsLength, len(accounts))
 	}
 
-	account := accounts[0]
-	innerAccount, err := GOHMoney.NewAccount("Current", time.Date(2013, 10, 01, 0, 0, 0, 0, time.UTC), GOHMoney.NullTime{})
+	a := accounts[0]
+	innerAccount, err := account.New("Current", time.Date(2013, 10, 01, 0, 0, 0, 0, time.UTC), GOHMoney.NullTime{})
 	if err != nil {
-		t.Fatalf("Error creating account for testing. Error: %s", err.Error())
+		t.Fatalf("Error creating a for testing. Error: %s", err.Error())
 	}
 	expectedAccount := GOHMoneyDB.Account{Id: 1, Account: innerAccount}
-	checkAccount(expectedAccount, account, t)
+	checkAccount(expectedAccount, a, t)
 	if t.Failed() {
 		t.Logf("Body: %s", body)
 	}
 
-	account = accounts[6]
-	innerAccount, err = GOHMoney.NewAccount(
+	a = accounts[6]
+	innerAccount, err = account.New(
 		"Patrick",
 		time.Date(2015, 9, 14, 0, 0, 0, 0, time.UTC),
 		GOHMoney.NullTime{
@@ -80,7 +82,7 @@ func Test_Accounts(t *testing.T) {
 		},
 	)
 	expectedAccount = GOHMoneyDB.Account{Id: 7, Account: innerAccount}
-	checkAccount(expectedAccount, account, t)
+	checkAccount(expectedAccount, a, t)
 }
 
 func checkAccount(expectedAccount GOHMoneyDB.Account, actualAccount GOHMoneyDB.Account, t *testing.T) {
@@ -111,22 +113,22 @@ func Test_AccountId(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error reading response body. Error: %s", err)
 	}
-	account := GOHMoneyDB.Account{}
-	err = json.Unmarshal(body, &account)
+	a := GOHMoneyDB.Account{}
+	err = json.Unmarshal(body, &a)
 	if err != nil {
 		t.Errorf("Error unmarshalling response body to Account\nError: %s\nBody: %s", err.Error(), body)
 	}
 	expectedAccount := GOHMoneyDB.Account{
 		Id: 1,
-		Account: GOHMoney.Account{
+		Account: account.Account{
 			Name: "Current",
 		},
 	}
-	if account.Name != expectedAccount.Name {
-		t.Errorf("Unexpected account name.\nExpected: %s\nActual  : %s", expectedAccount.Name, account.Name)
+	if a.Name != expectedAccount.Name {
+		t.Errorf("Unexpected a name.\nExpected: %s\nActual  : %s", expectedAccount.Name, a.Name)
 	}
-	if account.Id != expectedAccount.Id {
-		t.Errorf("Unexpected account id.\nExpected: %d\nActual  : %d", expectedAccount.Id, account.Id)
+	if a.Id != expectedAccount.Id {
+		t.Errorf("Unexpected a id.\nExpected: %d\nActual  : %d", expectedAccount.Id, a.Id)
 	}
 }
 
@@ -151,7 +153,7 @@ func Test_AccountCreate(t *testing.T) {
 		end                   GOHMoney.NullTime
 		expectJsonDecodeError bool
 		newAccountsCount      int
-		createdAccount        *GOHMoney.Account
+		createdAccount        *account.Account
 	}{
 		{
 			expectedStatus:        http.StatusBadRequest,
@@ -214,7 +216,7 @@ func Test_AccountCreate(t *testing.T) {
 
 	for _, testSet := range testSets {
 		originalAccounts := getAccounts(router, t)
-		newAccount, _ := GOHMoney.NewAccount(testSet.name, testSet.start, testSet.end)
+		newAccount, _ := account.New(testSet.name, testSet.start, testSet.end)
 		//if err != nil {
 		//	t.Fatalf("Error creating account for testing. Error: %s", err.Error())
 		//}
@@ -282,7 +284,7 @@ func Test_AccountCreate(t *testing.T) {
 	}
 }
 
-func getAccounts(router *mux.Router, t *testing.T) GOHMoney.Accounts {
+func getAccounts(router *mux.Router, t *testing.T) account.Accounts {
 	req := httptest.NewRequest("GET", "/accounts", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -295,7 +297,7 @@ func getAccounts(router *mux.Router, t *testing.T) GOHMoney.Accounts {
 	if err != nil {
 		t.Errorf("Error reading response body. Error: %s", err)
 	}
-	accounts := GOHMoney.Accounts{}
+	accounts := account.Accounts{}
 	err = json.Unmarshal(body, &accounts)
 	if err != nil {
 		t.Errorf("Error unmarshalling response body to Account\nError: %s\nBody: %s", err.Error(), body)
@@ -307,7 +309,7 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	present := time.Now()
 	past := present.AddDate(-1, 0, 0)
 	future := present.AddDate(1, 0, 0)
-	newAccount, err := GOHMoney.NewAccount("TEST ACCOUNT", past, GOHMoney.NullTime{})
+	newAccount, err := account.New("TEST ACCOUNT", past, GOHMoney.NullTime{})
 	if err != nil {
 		t.Fatalf("Unable to create new account object for testing. Error: %s", err.Error())
 	}
@@ -320,15 +322,15 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-	pastBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: past, Amount: 0})
+	pastBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: past, Amount: 0})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	presentBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: present, Amount: 1})
+	presentBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: present, Amount: 1})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	futureBalance, err := createdAccount.InsertBalance(db, GOHMoney.Balance{Date: future, Amount: 2})
+	futureBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: future, Amount: 2})
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
@@ -464,7 +466,7 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 }
 
 func createTestDBAccount(t *testing.T, start time.Time, end GOHMoney.NullTime) *GOHMoneyDB.Account {
-	newAccount, err := GOHMoney.NewAccount("TEST_ACCOUNT", start, end)
+	newAccount, err := account.New("TEST_ACCOUNT", start, end)
 	if err != nil {
 		t.Fatalf("Error creating account for testing. Error: %s", err.Error())
 	}
@@ -532,7 +534,7 @@ func ifErrorFatal(t *testing.T, err error, message string) {
 func TestAccountUpdate_ValidData(t *testing.T) {
 	original := createTestDBAccount(t, time.Now(), GOHMoney.NullTime{})
 	router := NewRouter()
-	updates, err := GOHMoney.NewAccount(
+	updates, err := account.New(
 		"UPDATED ACCOUNT NAME",
 		time.Now().Add(24*time.Hour).Truncate(24*time.Hour),
 		GOHMoney.NullTime{
@@ -560,7 +562,7 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error unmarshalling updated account body.\nError: %s\nBody: %s", err, body)
 	}
-	if !updated.Equal(&updates) {
+	if !updated.Equal(updates) {
 		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated, updates)
 	}
 }
