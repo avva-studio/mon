@@ -288,6 +288,7 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
 		return
 	}
+	log.Printf("Parsed account id: %d", id)
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		ServiceUnavailableResponse(w)
@@ -322,7 +323,7 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Error occured updating Account: " + err.Error()))
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
 	if err := json.NewEncoder(w).Encode(updated); err != nil {
 		panic(err)

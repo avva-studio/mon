@@ -547,7 +547,7 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	resp := w.Result()
-	expectedCode := http.StatusNoContent
+	expectedCode := http.StatusOK
 	if resp.StatusCode != expectedCode {
 		t.Errorf("Expected response code %d (%s). Got %d (%s)", expectedCode, http.StatusText(expectedCode), resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
