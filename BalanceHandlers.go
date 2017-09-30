@@ -15,7 +15,7 @@ import (
 // else, an error describing why the creation was unsuccessful.
 func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 	type accountBalance struct {
-		AccountId       uint `json:"account_id"`
+		AccountID       uint `json:"account_id"`
 		balance.Balance `json:"balance"`
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -27,7 +27,7 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	if newBalance.AccountId < 1 {
+	if newBalance.AccountID < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`Account ID must be a positive integer`))
 		return
@@ -42,9 +42,9 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 		ServiceUnavailableResponse(w)
 		return
 	}
-	account, err := GOHMoneyDB.SelectAccountWithID(db, newBalance.AccountId)
+	account, err := GOHMoneyDB.SelectAccountWithID(db, newBalance.AccountID)
 	if err != nil {
-		if _, ok := err.(GOHMoneyDB.NoAccountWithIdError); ok {
+		if _, ok := err.(GOHMoneyDB.NoAccountWithIDError); ok {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -78,7 +78,7 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 // else, an error describing why the update was unsuccessful.
 func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := parseIdString(vars[`id`])
+	id, err := parseIDString(vars[`id`])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
@@ -95,7 +95,7 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	type accountBalance struct {
-		AccountId uint
+		AccountID uint
 		balance.Balance
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -105,17 +105,17 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Error decoding request data: " + err.Error()))
 		return
 	}
-	account, err := GOHMoneyDB.SelectAccountWithID(db, newBalance.AccountId)
+	account, err := GOHMoneyDB.SelectAccountWithID(db, newBalance.AccountID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	originalBalance, err := account.SelectBalanceWithId(db, uint(id))
+	originalBalance, err := account.SelectBalanceWithID(db, uint(id))
 	if err == GOHMoneyDB.NoBalances {
 		err = GOHMoneyDB.InvalidAccountBalanceError{
-			AccountId: account.Id,
-			BalanceId: uint(id),
+			AccountID: account.ID,
+			BalanceID: uint(id),
 		}
 	}
 	if err != nil {

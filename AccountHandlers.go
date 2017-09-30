@@ -65,10 +65,10 @@ func AccountsOpen(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AccountId handler writes a json blob for the Account in the DB with the id matching the id given in the request.
+// AccountID handler writes a json blob for the Account in the DB with the id matching the id given in the request.
 // If there are any errors parsing an account ID from the request, the response code will bea 400
 // If no account exists with the id, the response code will be a 404
-func AccountId(w http.ResponseWriter, r *http.Request) {
+func AccountID(w http.ResponseWriter, r *http.Request) {
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
 		ServiceUnavailableResponse(w)
@@ -80,21 +80,21 @@ func AccountId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	accountIdString := vars[`id`]
-	if len(accountIdString) < 1 {
+	accountIDString := vars[`id`]
+	if len(accountIDString) < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`No id present`))
 		return
 	}
-	accountId, err := strconv.ParseUint(accountIdString, 10, 64)
+	accountID, err := strconv.ParseUint(accountIDString, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountId))
+	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountID))
 	if err != nil {
-		if _, ok := err.(GOHMoneyDB.NoAccountWithIdError); ok {
+		if _, ok := err.(GOHMoneyDB.NoAccountWithIDError); ok {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
@@ -134,17 +134,17 @@ func AccountCreate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`DB error creating new account: ` + err.Error()))
 		return
 	}
-	createdAccountJson, err := json.Marshal(createdAccount)
+	createdAccountJSON, err := json.Marshal(createdAccount)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`Sorry, there has been an error creating the new account.`))
 		log.Println(`Error creating json from created account. New account: %s. Created account: %s`, newAccount, createdAccount)
 	}
 	w.WriteHeader(http.StatusCreated)
-	w.Write(createdAccountJson)
+	w.Write(createdAccountJSON)
 }
 
-//Retrieves all balances for an account.
+// AccountBalances retrieves all balances for an account.
 func AccountBalances(w http.ResponseWriter, r *http.Request) {
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
@@ -157,21 +157,21 @@ func AccountBalances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	accountIdString := vars[`id`]
-	if len(accountIdString) < 1 {
+	accountIDString := vars[`id`]
+	if len(accountIDString) < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`No id present`))
 		return
 	}
-	accountId, err := strconv.ParseUint(accountIdString, 10, 64)
+	accountID, err := strconv.ParseUint(accountIDString, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		message := fmt.Sprintf(`Error parsing account id into uint. Error: %s`, err.Error())
 		w.Write([]byte(message))
 		return
 	}
-	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountId))
-	if _, isNoAccountError := err.(GOHMoneyDB.NoAccountWithIdError); isNoAccountError {
+	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountID))
+	if _, isNoAccountError := err.(GOHMoneyDB.NoAccountWithIDError); isNoAccountError {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
@@ -209,20 +209,20 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	accountIdString := vars[`id`]
-	if len(accountIdString) < 1 {
+	accountIDString := vars[`id`]
+	if len(accountIDString) < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`No id present`))
 		return
 	}
-	accountId, err := strconv.ParseUint(accountIdString, 10, 64)
+	accountID, err := strconv.ParseUint(accountIDString, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountId))
-	if _, isNoAccountError := err.(GOHMoneyDB.NoAccountWithIdError); isNoAccountError {
+	account, err := GOHMoneyDB.SelectAccountWithID(db, uint(accountID))
+	if _, isNoAccountError := err.(GOHMoneyDB.NoAccountWithIDError); isNoAccountError {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(err.Error()))
 		return
@@ -282,7 +282,7 @@ func AccountBalance(w http.ResponseWriter, r *http.Request) {
 // else, an error describing why the update was unsuccessful.
 func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := parseIdString(vars[`id`])
+	id, err := parseIDString(vars[`id`])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))
@@ -335,7 +335,7 @@ func AccountUpdate(w http.ResponseWriter, r *http.Request) {
 //else, an error describing why the update was unsuccessful.
 func AccountDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := parseIdString(vars[`id`])
+	id, err := parseIDString(vars[`id`])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Error parsing id: %s", err.Error())))

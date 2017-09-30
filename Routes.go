@@ -4,79 +4,77 @@ import (
 	"net/http"
 )
 
-type Route struct {
+type route struct {
 	Name        string
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
 
-type Routes []Route
-
-var routes = Routes{
-	Route{
+var routes = []route{
+	{
 		Name:        "Index",
 		Method:      "GET",
 		Pattern:     "/",
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`GOHMoneyREST`)) },
 	},
 	// Account Handlers
-	Route{
+	{
 		Name:        "Accounts",
 		Method:      "GET",
 		Pattern:     "/accounts",
 		HandlerFunc: Accounts,
 	},
-	Route{
+	{
 		Name:        "AccountsOpen",
 		Method:      "GET",
 		Pattern:     "/accounts/open",
 		HandlerFunc: AccountsOpen,
 	},
-	Route{
-		Name:        "AccountId",
+	{
+		Name:        "AccountID",
 		Method:      "GET",
 		Pattern:     "/account/{id}",
-		HandlerFunc: AccountId,
+		HandlerFunc: AccountID,
 	},
-	Route{
+	{
 		Name:        "AccountBalances",
 		Method:      "GET",
 		Pattern:     "/account/{id}/balances",
 		HandlerFunc: AccountBalances,
 	},
-	Route{
+	{
 		Name:        "AccountBalance",
 		Method:      "GET",
 		Pattern:     "/account/{id}/balance",
 		HandlerFunc: AccountBalance,
 	},
-	Route{
+	{
 		Name:        "AccountCreate",
 		Method:      "POST",
 		Pattern:     "/account/create",
 		HandlerFunc: AccountCreate,
 	},
-	Route{
+	{
 		Name:        "AccountUpdate",
 		Method:      "PUT",
 		Pattern:     "/account/{id}/update",
 		HandlerFunc: AccountUpdate,
 	},
-	Route{
+	{
 		Name:        "AccountDelete",
 		Method:      "DELETE",
 		Pattern:     "/account/{id}/delete",
 		HandlerFunc: AccountDelete,
 	},
 	// Balance Handlers
-	Route{
+	{
 		Name:        "BalanceCreate",
 		Method:      "POST",
 		Pattern:     "/balance/create",
 		HandlerFunc: BalanceCreate,
 	},
-	Route{
+	{
 		Name:        "BalanceUpdate",
 		Method:      "POST",
 		Pattern:     "/balance/{id}/update",
