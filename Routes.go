@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"log"
 )
 
 type route struct {
@@ -16,7 +17,12 @@ var routes = []route{
 		Name:        "Index",
 		Method:      "GET",
 		Pattern:     "/",
-		HandlerFunc: func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`GOHMoneyREST`)) },
+		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
+			_, err := w.Write([]byte(`GOHMoneyREST`))
+			if err != nil {
+				log.Printf("Error writing response: %s", err)
+			}
+		},
 	},
 	// Account Handlers
 	{

@@ -8,28 +8,32 @@ import (
 	"github.com/GlynOwenHanmer/GOHMoney/balance"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	"github.com/gorilla/mux"
+	"log"
 )
+
 
 // BalanceCreate handler accepts json representing a potential new GOHMoney.Balance. The Balance is decoded and attempted to be added to the backend.
 // If successful, the response contains json representing the newly created GOHMoneyDB.Balance object,
 // else, an error describing why the creation was unsuccessful.
 func BalanceCreate(w http.ResponseWriter, r *http.Request) {
-	type accountBalance struct {
-		AccountID       uint `json:"account_id"`
-		balance.Balance `json:"balance"`
-	}
-	decoder := json.NewDecoder(r.Body)
-	var newBalance accountBalance
+		decoder := json.NewDecoder(r.Body)
+	var newBalance accountBalanceJSONHelper
 	err := decoder.Decode(&newBalance)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error decoding new account: " + err.Error()))
+		_, werr := w.Write([]byte("Error decoding new account: " + err.Error()))
+		if werr != nil {
+			log.Printf("Error writing to bytes: %s", werr)
+		}
 		return
 	}
 	defer r.Body.Close()
 	if newBalance.AccountID < 1 {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`Account ID must be a positive integer`))
+		_, werr := w.Write([]byte(`Account ID must be a positive integer`))
+		if werr != nil {
+			log.Printf("Error writing to bytes: %s", werr)
+		}
 		return
 	}
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
@@ -52,7 +56,7 @@ func BalanceCreate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	if err := newBalance.Validate(); err != nil {
+	if err := newBalance.Balance.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -94,12 +98,8 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 		ServiceUnavailableResponse(w)
 		return
 	}
-	type accountBalance struct {
-		AccountID uint
-		balance.Balance
-	}
 	decoder := json.NewDecoder(r.Body)
-	var newBalance accountBalance
+	var newBalance accountBalanceJSONHelper
 	if err := decoder.Decode(&newBalance); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Error decoding request data: " + err.Error()))
@@ -137,4 +137,10 @@ func BalanceUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 	w.Write(jsonBytes)
+}
+
+// accountBalanceJSONHelper is an internal type used to marshal and unmarshal json for methods.
+type accountBalanceJSONHelper struct {
+	AccountID uint
+	Balance balance.Balance
 }

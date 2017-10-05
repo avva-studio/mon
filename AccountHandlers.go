@@ -138,7 +138,7 @@ func AccountCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`Sorry, there has been an error creating the new account.`))
-		log.Println(`Error creating json from created account. New account: %s. Created account: %s`, newAccount, createdAccount)
+		log.Printf(`Error creating json from created account. New account: %s. Created account: %s`, newAccount, createdAccount)
 	}
 	w.WriteHeader(http.StatusCreated)
 	w.Write(createdAccountJSON)

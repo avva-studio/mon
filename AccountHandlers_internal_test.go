@@ -18,6 +18,7 @@ import (
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	gohtime "github.com/GlynOwenHanmer/go-time"
 	"github.com/gorilla/mux"
+	"github.com/GlynOwenHanmer/GOHMoney/money"
 )
 
 func TestMain(m *testing.M) {
@@ -304,6 +305,11 @@ func getAccounts(router *mux.Router, t *testing.T) account.Accounts {
 	return accounts
 }
 
+func newBalanceIgnoreError(d time.Time, a int64) balance.Balance {
+	b, _ := balance.New(d, money.New(a))
+	return b
+}
+
 func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	present := time.Now()
 	past := present.AddDate(-1, 0, 0)
@@ -321,15 +327,15 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-	pastBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: past, Amount: 0})
+	pastBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(past, 0))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	presentBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: present, Amount: 1})
+	presentBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(present,1))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	futureBalance, err := createdAccount.InsertBalance(db, balance.Balance{Date: future, Amount: 2})
+	futureBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(future, 2))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
@@ -397,21 +403,21 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 			t.Errorf("Unexpected response code. Expected %d, got %d", testSet.expectedStatusCode, resp.StatusCode)
 			continue
 		}
-		var balance GOHMoneyDB.Balance
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf(`Error reading body from response. Error: %s`, err.Error())
 		}
+		var balance GOHMoneyDB.Balance
 		err = json.Unmarshal(body, &balance)
 		if err != nil {
 			t.Errorf("Unable to unmarshal json to balance. Error: %s\nBody: %s", err.Error(), body)
 			continue
 		}
-		if balance.Amount != testSet.expectedBalance.Amount {
-			t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f\nParams: %s", testSet.expectedBalance.Amount, balance.Amount, testSet.paramsString)
+		if equal, _ := balance.Money().Equal(testSet.expectedBalance.Money()); !equal {
+			t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f\nParams: %s", testSet.expectedBalance.Money(), balance.Money(), testSet.paramsString)
 		}
-		if !balance.Date.Equal(testSet.expectedBalance.Date) {
-			t.Errorf("Unexpected Balance Date.\nExpected: %s\nActual  : %s\nParams: %s", testSet.expectedBalance.Date, balance.Date, testSet.paramsString)
+		if !balance.Date().Equal(testSet.expectedBalance.Date()) {
+			t.Errorf("Unexpected Balance Date.\nExpected: %s\nActual  : %s\nParams: %s", testSet.expectedBalance.Date(), balance.Date(), testSet.paramsString)
 		}
 	}
 }
@@ -426,7 +432,7 @@ func Test_AccountBalance_InvalidParameter(t *testing.T) {
 		{
 			accountID:          1,
 			paramsString:       `?pidgeons=nowthen`,
-			expectedAmount:     21.80,
+			expectedAmount: 21.80,
 			expectedStatusCode: http.StatusBadRequest,
 		},
 	}
@@ -444,7 +450,7 @@ func Test_AccountBalance_InvalidParameter(t *testing.T) {
 
 func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 	accountID := 1
-	expectedAmount := float32(21.80)
+	expectedAmount := int64(2179)
 	dateString := `2017-01-18`
 	endpoint := fmt.Sprintf(`/account/%d/balance?date=%s`, accountID, dateString)
 	req := httptest.NewRequest("GET", endpoint, nil)
@@ -459,8 +465,9 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshal json to balance. Error: %s", err.Error())
 	}
-	if balance.Amount != expectedAmount {
-		t.Errorf("Unexpected balance amount.\nExpected: %f\nActual  : %f", expectedAmount, balance.Amount)
+	expected := money.New(expectedAmount)
+	if equal, _ := balance.Money().Equal(expected); !equal {
+		t.Errorf("Unexpected balance amount.\nExpected: %+v\nActual  : %+v", expected, balance.Money())
 	}
 }
 

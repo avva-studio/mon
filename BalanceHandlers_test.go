@@ -15,6 +15,7 @@ import (
 	"github.com/GlynOwenHanmer/GOHMoney/balance"
 	"github.com/GlynOwenHanmer/GOHMoneyDB"
 	gohtime "github.com/GlynOwenHanmer/go-time"
+	"github.com/GlynOwenHanmer/GOHMoney/money"
 )
 
 func prepareTestDB(t *testing.T) *sql.DB {
@@ -53,19 +54,25 @@ func Test_AccountBalances(t *testing.T) {
 	if expectedID != actualID {
 		t.Errorf(`Unexpected Id.\nExpected: %d\nActual  : %d`, expectedID, actualID)
 	}
-	expectedAmount := float32(636.42)
-	actualAmount := balances[0].Amount
-	if actualAmount != expectedAmount {
-		t.Errorf("first balance, expected balance amount of %f but got %f", expectedAmount, actualAmount)
+	actualAmount := balances[0].Money()
+	expectedMoney := int64(63641)
+	if equal, _ := actualAmount.Equal(money.New(expectedMoney)); !equal {
+		t.Errorf("first balance, expected balance amount of %v but got %v", expectedMoney, actualAmount)
 	}
 	expectedDate, err := parseDateString("2016-06-17")
 	if err != nil {
 		t.Fatalf("Error parsing date string for use in tests. Error: %s", err.Error())
 	}
-	actualDate := balances[0].Date
+	actualDate := balances[0].Date()
 	if !expectedDate.Equal(actualDate) {
 		t.Errorf("first balance, expected date of %s but got %s", urlFormatDateString(expectedDate), urlFormatDateString(actualDate))
 	}
+}
+
+// accountBalanceTestJSONHelper is an internal type used to marshal and unmarshal json for methods.
+type accountBalanceTestJSONHelper struct {
+	AccountID int
+	Balance balance.Balance
 }
 
 func Test_BalanceCreate(t *testing.T) {
@@ -89,37 +96,32 @@ func Test_BalanceCreate(t *testing.T) {
 		t.Fatalf("Error creating new Account for testing. Error: %s", err.Error())
 	}
 
-	type accountBalance struct {
-		AccountID       int `json:"account_id"`
-		balance.Balance `json:"balance"`
-	}
-
 	testSets := []struct {
-		newBalance            accountBalance
+		newBalance            accountBalanceTestJSONHelper
 		expectedStatus        int
 		expectJSONDecodeError bool
 	}{
 		{
-			newBalance:            accountBalance{},
+			newBalance:            accountBalanceTestJSONHelper{},
 			expectedStatus:        http.StatusBadRequest,
 			expectJSONDecodeError: true,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: -1,
 			},
 			expectedStatus:        http.StatusBadRequest,
 			expectJSONDecodeError: true,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
 			},
 			expectedStatus:        http.StatusBadRequest,
 			expectJSONDecodeError: true,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
 				Balance:   balance.Balance{},
 			},
@@ -127,42 +129,33 @@ func Test_BalanceCreate(t *testing.T) {
 			expectJSONDecodeError: true,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
-				Balance: balance.Balance{
-					Date: now.AddDate(-1, 0, 0),
-				},
+				Balance: newBalanceIgnoreError(now.AddDate(-1, 0, 0), 0),
 			},
 			expectedStatus:        http.StatusBadRequest,
 			expectJSONDecodeError: true,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
-				Balance: balance.Balance{
-					Date: now,
-				},
+				Balance: newBalanceIgnoreError(now, 0),
 			},
 			expectedStatus:        http.StatusCreated,
 			expectJSONDecodeError: false,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
-				Balance: balance.Balance{
-					Date: now.AddDate(1000, 1, 1),
-				},
+				Balance: newBalanceIgnoreError(now.AddDate(1000, 1, 1), 0),
 			},
 			expectedStatus:        http.StatusCreated,
 			expectJSONDecodeError: false,
 		},
 		{
-			newBalance: accountBalance{
+			newBalance: accountBalanceTestJSONHelper{
 				AccountID: int(account.ID),
-				Balance: balance.Balance{
-					Date:   time.Now().AddDate(1000, 1, 1),
-					Amount: -2000,
-				},
+				Balance: newBalanceIgnoreError(now.AddDate(1000, 1, 1), -2000),
 			},
 			expectedStatus:        http.StatusCreated,
 			expectJSONDecodeError: false,
@@ -198,11 +191,11 @@ func Test_BalanceCreate(t *testing.T) {
 		if createdBalance.ID == 0 {
 			t.Errorf("Unexpected Id. Expected non-zero, got %d", createdBalance.ID)
 		}
-		if !createdBalance.Date.Equal(newBalance.Date.Truncate(time.Hour * 24)) {
-			t.Errorf("Unexpected date.\nExpected: %s\nActual  : %s", newBalance.Date, createdBalance.Date)
+		if !createdBalance.Date().Equal(newBalance.Balance.Date().Truncate(time.Hour * 24)) {
+			t.Errorf("Unexpected date.\nExpected: %s\nActual  : %s", newBalance.Balance.Date(), createdBalance.Date())
 		}
-		if newBalance.Amount != createdBalance.Amount {
-			t.Errorf("Unexpected amount.\nExpected: %f\nActual  : %f", newBalance.Amount, createdBalance.Amount)
+		if equal, _ := newBalance.Balance.Money().Equal(createdBalance.Money()); !equal {
+			t.Errorf("Unexpected amount.\nExpected: %f\nActual  : %f", newBalance.AccountID, createdBalance.Money())
 		}
 	}
 }
@@ -220,11 +213,8 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 		t.Fatalf("Unable to create account DB entry for testing. Error: %s", err.Error())
 	}
 	invalidBalanceID := uint(1)
-	type accountBalance struct {
-		AccountID uint
-		balance.Balance
-	}
-	update := accountBalance{AccountID: createdAccount.ID}
+
+	update := accountBalanceTestJSONHelper{AccountID: int(createdAccount.ID), Balance:newBalanceIgnoreError(time.Now(), 123)}
 	jsonBytes, err := json.Marshal(update)
 	if err != nil {
 		t.Fatalf("Unable to generate json object for testind. Error: %s", err.Error())
@@ -243,7 +233,7 @@ func Test_BalanceUpdate_ValidBalanceId_InvalidAccount(t *testing.T) {
 	}
 	expectedBody := GOHMoneyDB.InvalidAccountBalanceError{AccountID: createdAccount.ID, BalanceID: invalidBalanceID}.Error()
 	if string(body) != expectedBody {
-		t.Errorf("Unexpected response body.\nExpected: %s\nActual  : %s", expectedBody, body)
+		t.Errorf("Unexpected response body.\nExpected: %s\nActual  : %s.\nRequst body: %s", expectedBody, body, jsonBytes)
 	}
 }
 
@@ -277,17 +267,13 @@ func Test_BalanceUpdate_InvalidUpdateBalance(t *testing.T) {
 	account := createTestDBAccount(t, time.Now(), gohtime.NullTime{})
 	db := prepareTestDB(t)
 	defer db.Close()
-	originalBalance, err := account.InsertBalance(db, balance.Balance{Date: time.Now(), Amount: 100})
+	originalBalance, err := account.InsertBalance(db, newBalanceIgnoreError(time.Now(), 100))
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	invalidUpdateBalance := balance.Balance{Date: account.Start().AddDate(-1, 0, 0), Amount: 200}
-	type accountBalance struct {
-		AccountID uint
-		balance.Balance
-	}
-	update := accountBalance{
-		AccountID: account.ID,
+	invalidUpdateBalance := newBalanceIgnoreError(account.Start().AddDate(-1, 0, 0), 200)
+	update := accountBalanceTestJSONHelper{
+		AccountID: int(account.ID),
 		Balance:   invalidUpdateBalance,
 	}
 	updateData, err := json.Marshal(update)
@@ -317,17 +303,13 @@ func Test_BalanceUpdate_Valid(t *testing.T) {
 	router := NewRouter()
 	a := createTestDBAccount(t, time.Now(), gohtime.NullTime{})
 	db := prepareTestDB(t)
-	originalBalance, err := a.InsertBalance(db, balance.Balance{Date: time.Now(), Amount: 100})
+	originalBalance, err := a.InsertBalance(db, newBalanceIgnoreError(time.Now(), 100))
 	if err != nil {
 		t.Fatalf("Unable to insert balance into DB for testing. Error: %s", err.Error())
 	}
-	validUpdateBalance := balance.Balance{Date: a.Start().AddDate(0, 0, 1), Amount: 200}
-	type accountBalance struct {
-		AccountID uint
-		balance.Balance
-	}
-	update := accountBalance{
-		AccountID: a.ID,
+	validUpdateBalance := newBalanceIgnoreError(a.Start().AddDate(0, 0, 1), 200)
+	update := accountBalanceTestJSONHelper{
+		AccountID: int(a.ID),
 		Balance:   validUpdateBalance,
 	}
 	updateData, err := json.Marshal(update)
@@ -354,11 +336,11 @@ func Test_BalanceUpdate_Valid(t *testing.T) {
 	if updatedBalance.ID != originalBalance.ID {
 		t.Errorf("Balance Id changed during update.\n\tOriginal: %d\n\tFinal   : %d", originalBalance.ID, updatedBalance.ID)
 	}
-	expectedDate := validUpdateBalance.Date.Truncate(24 * time.Hour)
-	if !updatedBalance.Balance.Date.Equal(expectedDate) {
+	expectedDate := validUpdateBalance.Date().Truncate(24 * time.Hour)
+	if !updatedBalance.Balance.Date().Equal(expectedDate) {
 		t.Errorf("Unexpected updated balance Date.\n\tExpected: %s\n\tActual  : %s", validUpdateBalance, updatedBalance.Balance)
 	}
-	if updatedBalance.Amount != validUpdateBalance.Amount {
-		t.Errorf("Unexpected updated balance Amount.\n\tExpected: %s\n\tActual  : %s", validUpdateBalance.Amount, updatedBalance.Amount)
+	if equal, _ := updatedBalance.Money().Equal(validUpdateBalance.Money()); !equal {
+		t.Errorf("Unexpected updated balance Amount.\n\tExpected: %s\n\tActual  : %s", validUpdateBalance.Money(), updatedBalance.Money())
 	}
 }
