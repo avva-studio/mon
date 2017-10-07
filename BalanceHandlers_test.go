@@ -56,7 +56,7 @@ func Test_AccountBalances(t *testing.T) {
 	}
 	actualAmount := balances[0].Money()
 	expectedMoney := int64(63641)
-	if equal, _ := actualAmount.Equal(money.New(expectedMoney)); !equal {
+	if equal, _ := actualAmount.Equal(money.GBP(expectedMoney)); !equal {
 		t.Errorf("first balance, expected balance amount of %v but got %v", expectedMoney, actualAmount)
 	}
 	expectedDate, err := parseDateString("2016-06-17")

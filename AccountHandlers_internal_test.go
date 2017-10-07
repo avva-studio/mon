@@ -306,7 +306,7 @@ func getAccounts(router *mux.Router, t *testing.T) account.Accounts {
 }
 
 func newBalanceIgnoreError(d time.Time, a int64) balance.Balance {
-	b, _ := balance.New(d, money.New(a))
+	b, _ := balance.New(d, money.GBP(a))
 	return b
 }
 
@@ -465,7 +465,7 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshal json to balance. Error: %s", err.Error())
 	}
-	expected := money.New(expectedAmount)
+	expected := money.GBP(expectedAmount)
 	if equal, _ := balance.Money().Equal(expected); !equal {
 		t.Errorf("Unexpected balance amount.\nExpected: %+v\nActual  : %+v", expected, balance.Money())
 	}
