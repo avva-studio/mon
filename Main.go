@@ -12,10 +12,6 @@ import (
 var connectionString string
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("No database connection file location given. Please provide the location of the connection string file as the first argument to the application.")
-		return
-	}
 	router := NewRouter()
 	port := 8080
 	fmt.Printf("Starting GOHMoneyREST on port %d\n", port)
@@ -24,6 +20,10 @@ func main() {
 }
 
 func init() {
+	if len(os.Args) < 2 {
+		fmt.Println("No database connection file location given. Please provide the location of the connection string file as the first argument to the application.")
+		return
+	}
 	var err error
 	connectionString, err = GOHMoneyDB.LoadDBConnectionString(os.Args[1])
 	if err != nil {
