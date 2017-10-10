@@ -19,11 +19,16 @@ import (
 func Accounts(w http.ResponseWriter, r *http.Request) {
 	db, err := GOHMoneyDB.OpenDBConnection(connectionString)
 	if err != nil {
+		log.Printf("Error opening database connection: %s", err)
 		ServiceUnavailableResponse(w)
 		return
 	}
 	defer db.Close()
+	if err := db.Ping(); err != nil {
+		log.Printf("Database is not available: %s", err)
+	}
 	if !GOHMoneyDB.DbIsAvailable(db) {
+		log.Printf("Database is not available.")
 		ServiceUnavailableResponse(w)
 		return
 	}
