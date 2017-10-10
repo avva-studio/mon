@@ -31,9 +31,10 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Current user has no home directory to load connection string from.")
 		return
 	}
-	connectionString, err = GOHMoneyDB.LoadDBConnectionString(usr.HomeDir + `/.gohmoneydbtestconnectionstring`)
+	connectionString, err = GOHMoneyDB.LoadDBConnectionString(usr.HomeDir + `/.gohmoney/.gohmoneydbtestconnectionstring`)
 	if err != nil {
 		fmt.Printf("Unable to open DB connection string for testing. Error: %s", err.Error())
+		os.Exit(-1)
 		return
 	}
 	os.Exit(m.Run())
