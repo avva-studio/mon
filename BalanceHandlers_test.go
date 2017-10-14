@@ -28,7 +28,7 @@ func prepareTestDB(t *testing.T) *sql.DB {
 }
 
 func Test_AccountBalances(t *testing.T) {
-	req := httptest.NewRequest("GET", "/account/1/balances", nil)
+	req := httptest.NewRequest("GET", Account(GOHMoneyDB.Account{ID:1}).balancesEndpoint(), nil)
 	w := httptest.NewRecorder()
 	NewRouter().ServeHTTP(w, req)
 	resp := w.Result()
@@ -66,6 +66,31 @@ func Test_AccountBalances(t *testing.T) {
 	actualDate := balances[0].Date()
 	if !expectedDate.Equal(actualDate) {
 		t.Errorf("first balance, expected date of %s but got %s", urlFormatDateString(expectedDate), urlFormatDateString(actualDate))
+	}
+}
+
+func Test_AccountBalances_NoBalances(t *testing.T) {
+	a := createTestDBAccount(t, time.Now(), gohtime.NullTime{})
+	req := httptest.NewRequest("GET", Account(*a).balancesEndpoint(), nil)
+	w := httptest.NewRecorder()
+	NewRouter().ServeHTTP(w, req)
+	resp := w.Result()
+	expectedCode := http.StatusOK
+	if resp.StatusCode != expectedCode {
+		t.Errorf("Expected response code %d. Got %d\n", expectedCode, resp.StatusCode)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Error reading response body. Error: %s", err)
+	}
+	balances := GOHMoneyDB.Balances{}
+	err = json.Unmarshal(body, &balances)
+	if err != nil {
+		t.Errorf("Error unmarshalling response body to Balances\nError: %s\nBody: %s", err.Error(), body)
+	}
+	balancesLength := 0
+	if len(balances) != balancesLength {
+		t.Fatalf("Expected balances length %d, got length %d", balancesLength, len(balances))
 	}
 }
 

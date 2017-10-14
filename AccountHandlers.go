@@ -187,7 +187,9 @@ func AccountBalances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	balances, err := account.Balances(db)
-	if err != nil {
+	switch {
+	case err == GOHMoneyDB.NoBalances:
+	case err != nil:
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -195,7 +197,7 @@ func AccountBalances(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(balances); err != nil {
-		panic(err)
+		log.Printf("Error encoding json: %s", err)
 	}
 }
 

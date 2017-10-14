@@ -14,6 +14,11 @@ func (a Account) balanceEndpoint() string {
 	return fmt.Sprintf(`/account/%d/balance`, a.ID)
 }
 
+// Returns the endpoint location string for getting the balances of an Account
+func (a Account) balancesEndpoint() string {
+	return fmt.Sprintf("/account/%d/balances", a.ID)
+}
+
 // Returns the endpoint location string for updating an Account
 func (a Account) updateEndpoint() string {
 	return fmt.Sprintf(`/account/%d/update`, a.ID)
@@ -23,3 +28,4 @@ func (a Account) updateEndpoint() string {
 func (a Account) deleteEndpoint() string {
 	return fmt.Sprintf(`/account/%d/delete`, a.ID)
 }
+
