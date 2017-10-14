@@ -5,11 +5,13 @@ PKG = "github.com/Pocketbrain/offer-api"
 
 LDFLAGS = "-w -X main.Version=$(VERSION)"
 
+NAME = gohmoney-rest
+
 OS ?= linux
 ARCH ?= amd64
 
 build:
-	@CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/main -a -ldflags $(LDFLAGS)
+	@CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(NAME) -a -ldflags $(LDFLAGS)
 
 test:
 	go list ./... |grep -v vendor | xargs go test -v

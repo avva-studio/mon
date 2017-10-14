@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY ./bin/main /
+COPY ./bin/gohmoney-rest /
 
-CMD ["/main", "/.gohmoney/.gohmoneydbconnectionstring"]
+CMD ["/gohmoney-rest", "/.gohmoney/.gohmoneydbconnectionstring"]
