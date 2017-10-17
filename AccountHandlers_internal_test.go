@@ -569,8 +569,8 @@ func TestAccountUpdate_ValidData(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error unmarshalling updated account body.\nError: %s\nBody: %s", err, body)
 	}
-	if !updated.Equal(updates) {
-		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated, updates)
+	if !updated.Account.Equal(updates) {
+		t.Errorf("Returned account does not represent updates applied.\n\tReturned: %s\n\tApplied: %s", updated.Account, updates)
 	}
 }
 
