@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/glynternet/GOHMoneyDB"
 )
 
 // Balance is a wrapper around a DB Balance and adds methods for Balance endpoints.

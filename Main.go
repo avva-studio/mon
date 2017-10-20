@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/glynternet/GOHMoneyDB"
 )
 
 var connectionString string

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/glynternet/GOHMoneyDB"
 )
 
 // Account is a wrapper around a DB Account to add methods for certain endpoints.

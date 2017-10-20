@@ -13,12 +13,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GlynOwenHanmer/GOHMoney/account"
-	"github.com/GlynOwenHanmer/GOHMoney/balance"
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
-	gohtime "github.com/GlynOwenHanmer/go-time"
+	"github.com/glynternet/GOHMoney/account"
+	"github.com/glynternet/GOHMoney/balance"
+	"github.com/glynternet/GOHMoneyDB"
+	gohtime "github.com/glynternet/go-time"
 	"github.com/gorilla/mux"
-	"github.com/GlynOwenHanmer/GOHMoney/money"
+	"github.com/glynternet/GOHMoney/money"
+	"github.com/glynternet/GOHMoney/common"
 )
 
 func TestMain(m *testing.M) {
@@ -306,8 +307,15 @@ func getAccounts(router *mux.Router, t *testing.T) account.Accounts {
 	return accounts
 }
 
-func newBalanceIgnoreError(d time.Time, a int64) balance.Balance {
-	b, _ := balance.New(d, money.GBP(a))
+func newMoneyIgnoreError(t *testing.T, a int64, c string) money.Money {
+	m, err := money.New(a, c)
+	common.FatalIfError(t, err, "Creating Money")
+	return *m
+}
+
+func newBalanceIgnoreError(t *testing.T, d time.Time, a int64, c string) balance.Balance {
+	b, err := balance.New(d, newMoneyIgnoreError(t, a, c))
+	common.FatalIfError(t, err, "Creating Balance")
 	return b
 }
 
@@ -328,15 +336,15 @@ func Test_AccountBalance_AccountWithBalances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating account for test. Error: %s", err.Error())
 	}
-	pastBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(past, 0))
+	pastBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(t, past, 0, "GBP"))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	presentBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(present,1))
+	presentBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(t, present,1, "GBP"))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
-	futureBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(future, 2))
+	futureBalance, err := createdAccount.InsertBalance(db, newBalanceIgnoreError(t, future, 2, "GBP"))
 	if err != nil {
 		t.Fatalf("Error adding balance to account for test. Error: %s", err.Error())
 	}
@@ -466,8 +474,9 @@ func Test_AccountBalance_AccountWithBalances_SetDate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshal json to balance. Error: %s", err.Error())
 	}
-	expected := money.GBP(expectedAmount)
-	if equal, _ := balance.Money().Equal(expected); !equal {
+	expected, err := money.New(expectedAmount, "GBP")
+	common.FatalIfError(t, err, "Creating Money")
+	if equal, _ := balance.Money().Equal(*expected); !equal {
 		t.Errorf("Unexpected balance amount.\nExpected: %+v\nActual  : %+v", expected, balance.Money())
 	}
 }

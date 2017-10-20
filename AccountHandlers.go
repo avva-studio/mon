@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/GlynOwenHanmer/GOHMoney/account"
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/glynternet/GOHMoney/account"
+	"github.com/glynternet/GOHMoneyDB"
 	"github.com/gorilla/mux"
 )
 

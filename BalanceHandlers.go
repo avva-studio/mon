@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/GlynOwenHanmer/GOHMoney/balance"
-	"github.com/GlynOwenHanmer/GOHMoneyDB"
+	"github.com/glynternet/GOHMoney/balance"
+	"github.com/glynternet/GOHMoneyDB"
 	"github.com/gorilla/mux"
 	"log"
 )

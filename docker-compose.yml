@@ -1,7 +1,7 @@
 version: '2'
 services:
   gohmoneyrestapi:
-    container_name: restcontainer
+    container_name: gohmoney-rest
     build: .
     ports:
       - "8080:8080"
