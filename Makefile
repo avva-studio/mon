@@ -1,10 +1,5 @@
 VERSION ?= $(shell git describe --tags --always)
-
-IMAGE = "pocketmedia/offer-api"
-PKG = "github.com/Pocketbrain/offer-api"
-
 LDFLAGS = "-w -X main.Version=$(VERSION)"
-
 NAME = gohmoney-rest
 
 OS ?= linux
@@ -17,11 +12,15 @@ test:
 	go list ./... |grep -v vendor | xargs go test -v
 
 docker-compose:
+	@$(MAKE) docker-compose-build
+	@$(MAKE) docker-compose-up
+
+docker-compose-build:
 	@$(MAKE) build
-	@VERSION=$(VERSION) docker-compose -f docker-compose.yml up --build
+	@VERSION=$(VERSION) docker-compose -f docker-compose.yml build
+
+docker-compose-up:
+	@VERSION=$(VERSION) docker-compose -f docker-compose.yml up -d
 
 coverage:
 	go test -coverprofile=coverage.out && go tool cover -func=coverage.out && go tool cover -html=coverage.out
-
-# serve-local:
-	# go run main.go serve -H 127.0.0.1 -p 8083
