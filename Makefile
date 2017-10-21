@@ -18,7 +18,7 @@ test:
 
 docker-compose:
 	@$(MAKE) build
-	docker-compose -f docker-compose.yml up --build
+	@VERSION=$(VERSION) docker-compose -f docker-compose.yml up --build
 
 coverage:
 	go test -coverprofile=coverage.out && go tool cover -func=coverage.out && go tool cover -html=coverage.out
