@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/glynternet/GOHMoneyDB"
+	"github.com/glynternet/go-accounting-storage"
 )
 
 // Account is a wrapper around a DB Account to add methods for certain endpoints.
-type Account GOHMoneyDB.Account
+type Account storage.Account
 
 // Returns the endpoint location string for the balance of the Account
 func (a Account) balanceEndpoint() string {

@@ -9,7 +9,7 @@ build:
 	@CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(NAME) -a -ldflags $(LDFLAGS)
 
 test:
-	go list ./... |grep -v vendor | xargs go test -v
+	go test -v ./...
 
 docker-compose:
 	@$(MAKE) docker-compose-build
