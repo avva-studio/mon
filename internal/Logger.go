@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 )
 
 // Logger returns a simple Logger that wraps a http.handler and logs any incoming request
-func Logger(inner http.Handler, name string) http.Handler {
+func Logger(inner appHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -17,7 +17,7 @@ func Logger(inner http.Handler, name string) http.Handler {
 			"%s\t%s\t%s\t%s",
 			r.Method,
 			r.RequestURI,
-			name,
+			inner.name,
 			time.Since(start),
 		)
 	})

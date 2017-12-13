@@ -1,7 +1,8 @@
-package main
+package internal
 
 import (
 	"fmt"
+
 	"github.com/glynternet/go-accounting-storage"
 )
 
@@ -10,21 +11,24 @@ type Account storage.Account
 
 // Returns the endpoint location string for the balance of the Account
 func (a Account) balanceEndpoint() string {
-	return fmt.Sprintf(`/account/%d/balance`, a.ID)
+	return a.generateEndpoint(`balance`)
 }
 
 // Returns the endpoint location string for getting the balances of an Account
 func (a Account) balancesEndpoint() string {
-	return fmt.Sprintf("/account/%d/balances", a.ID)
+	return a.generateEndpoint(`balances`)
 }
 
 // Returns the endpoint location string for updating an Account
 func (a Account) updateEndpoint() string {
-	return fmt.Sprintf(`/account/%d/update`, a.ID)
+	return a.generateEndpoint(`update`)
 }
 
 // Returns the endpoint location string for deleting the Account
 func (a Account) deleteEndpoint() string {
-	return fmt.Sprintf(`/account/%d/delete`, a.ID)
+	return a.generateEndpoint(`delete`)
 }
 
+func (a Account) generateEndpoint(endpoint string) string {
+	return fmt.Sprintf(`/account/%d/%s`, a.ID, endpoint)
+}
