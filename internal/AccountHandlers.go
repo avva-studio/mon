@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Accounts(w http.ResponseWriter, r *http.Request) (int, error) {
+func Accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	store, err := NewStorage()
 	if err != nil {
 		return http.StatusServiceUnavailable, err

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/glynternet/money-rest/cmd"
+	"github.com/glynternet/accounting-rest/cmd"
 )
 
 func main() {

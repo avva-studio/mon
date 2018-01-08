@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/glynternet/accounting-rest/internal"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
-	"github.com/glynternet/money-rest/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
