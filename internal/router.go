@@ -1,13 +1,6 @@
 package internal
 
-import (
-	"github.com/glynternet/go-accounting-storage"
-	"github.com/gorilla/mux"
-)
-
-var NewStorage StorageFunc
-
-type StorageFunc func() (storage.Storage, error)
+import "github.com/gorilla/mux"
 
 // NewRouter creates a new Router and initialises it will all of the global routes
 func NewRouter() *mux.Router {
