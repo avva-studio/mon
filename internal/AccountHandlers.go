@@ -2,23 +2,24 @@ package internal
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/glynternet/go-accounting-storage"
+	"github.com/pkg/errors"
 )
 
 func Accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	store, err := NewStorage()
 	if err != nil {
-		return http.StatusServiceUnavailable, err
+		return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
 	}
-	as, err := store.SelectAccounts()
+	var as *storage.Accounts
+	as, err = store.SelectAccounts()
 	if err != nil {
-		return http.StatusServiceUnavailable, err
+		return http.StatusServiceUnavailable, errors.Wrap(err, "selecting account from client")
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
-	if err := json.NewEncoder(w).Encode(as); err != nil {
-		log.Printf("error encoding json: %v", err)
-	}
-	return http.StatusOK, nil
+	err = json.NewEncoder(w).Encode(as)
+	return http.StatusOK, errors.Wrap(err, "error encoding json")
 }
