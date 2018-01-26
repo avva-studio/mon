@@ -5,17 +5,17 @@ import "net/http"
 const EndpointAccounts = "/accounts"
 
 type route struct {
-	Pattern    string
-	AppHandler appHandler
+	pattern    string
+	appHandler appHandler
 }
 
 var routes = []route{
 	{
-		Pattern: EndpointAccounts,
-		AppHandler: appHandler{
+		pattern: EndpointAccounts,
+		appHandler: appHandler{
 			method:  http.MethodGet,
-			name:    "Accounts",
-			handler: Accounts,
+			name:    "accounts",
+			handler: accounts,
 		},
 	},
 }

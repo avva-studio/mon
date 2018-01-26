@@ -25,6 +25,7 @@ func (ah appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 			// We can have cases as granular as we like, if we wanted to
 			// return custom errors for specific status codes.
+			// TODO: if http.StatusInternalServerError is received, we should return bad request and log the error maybe?
 		case http.StatusInternalServerError:
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		default:

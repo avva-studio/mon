@@ -13,11 +13,11 @@ type StorageFunc func() (storage.Storage, error)
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		handler := Logger(route.AppHandler)
+		handler := logger(route.appHandler)
 		router.
-			Methods(route.AppHandler.method).
-			Path(route.Pattern).
-			Name(route.AppHandler.name).
+			Methods(route.appHandler.method).
+			Path(route.pattern).
+			Name(route.appHandler.name).
 			Handler(handler)
 	}
 	return router

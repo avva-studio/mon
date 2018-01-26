@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
+func accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	store, err := NewStorage()
 	if err != nil {
 		return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
