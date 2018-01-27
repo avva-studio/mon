@@ -4,6 +4,7 @@ import (
 	"github.com/glynternet/go-accounting-storage"
 	aaccount "github.com/glynternet/go-accounting/account"
 	abalance "github.com/glynternet/go-accounting/balance"
+	"github.com/pkg/errors"
 )
 
 type mockStorage struct {
@@ -34,3 +35,15 @@ func (s mockStorage) SelectAccountBalances(storage.Account) (*storage.Balances, 
 func (s mockStorage) storageFunc() (storage.Storage, error) {
 	return s, nil
 }
+
+func newMockStorageFunc(s storage.Storage, err bool) StorageFunc {
+	var rErr error
+	if err {
+		rErr = mockStorageFuncError
+	}
+	return func() (storage.Storage, error) {
+		return s, rErr
+	}
+}
+
+var mockStorageFuncError = errors.New("mockStorageFunc error")

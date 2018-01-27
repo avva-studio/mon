@@ -9,6 +9,9 @@ import (
 )
 
 func accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
+	if w == nil {
+		return http.StatusInternalServerError, errors.New("nil ResponseWriter")
+	}
 	store, err := NewStorage()
 	if err != nil {
 		return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
@@ -16,7 +19,7 @@ func accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	var as *storage.Accounts
 	as, err = store.SelectAccounts()
 	if err != nil {
-		return http.StatusServiceUnavailable, errors.Wrap(err, "selecting account from client")
+		return http.StatusServiceUnavailable, errors.Wrap(err, "selecting accounts from client")
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)

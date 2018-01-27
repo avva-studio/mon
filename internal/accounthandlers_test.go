@@ -1,15 +1,60 @@
 package internal
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/glynternet/go-accounting-storage"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_accounts(t *testing.T) {
-	NewStorage = mockStorage{}.storageFunc
-	code, err := accounts(nil, nil)
-	t.Fatal("implement this")
-	assert.Nil(t, code)
-	assert.Nil(t, err)
+	t.Run("nil response writer", func(t *testing.T) {
+		code, err := accounts(nil, nil)
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, code)
+	})
+
+	t.Run("NewStorage error", func(t *testing.T) {
+		NewStorage = newMockStorageFunc(nil, true)
+		rec := httptest.NewRecorder()
+		code, err := accounts(rec, nil)
+		assert.Error(t, err)
+		assert.Equal(t, mockStorageFuncError, errors.Cause(err))
+		assert.Equal(t, http.StatusServiceUnavailable, code)
+	})
+
+	for _, test := range []struct {
+		name string
+		code int
+		as   *storage.Accounts
+		err  error
+	}{
+		{
+			name: "error",
+			code: http.StatusServiceUnavailable,
+			err:  errors.New("selecting accounts"),
+		},
+		{
+			name: "success",
+			code: http.StatusOK,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			NewStorage = mockStorage{err: test.err}.storageFunc
+			rec := httptest.NewRecorder()
+			code, err := accounts(rec, nil)
+			if test.err != nil {
+				assert.Equal(t, test.err, errors.Cause(err))
+			} else {
+				assert.NoError(t, err)
+				ct := rec.HeaderMap[`Content-Type`]
+				assert.Len(t, ct, 1)
+				assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			}
+			assert.Equal(t, test.code, code)
+		})
+	}
 }
