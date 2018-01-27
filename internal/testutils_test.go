@@ -32,11 +32,7 @@ func (s mockStorage) SelectAccountBalances(storage.Account) (*storage.Balances, 
 	return s.Balances, s.err
 }
 
-func (s mockStorage) storageFunc() (storage.Storage, error) {
-	return s, nil
-}
-
-func newMockStorageFunc(s storage.Storage, err bool) StorageFunc {
+func (s mockStorage) newStorageFunc(err bool) StorageFunc {
 	var rErr error
 	if err {
 		rErr = mockStorageFuncError

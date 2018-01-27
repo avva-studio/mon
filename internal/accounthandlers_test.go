@@ -18,7 +18,7 @@ func Test_accounts(t *testing.T) {
 	})
 
 	t.Run("NewStorage error", func(t *testing.T) {
-		NewStorage = newMockStorageFunc(nil, true)
+		NewStorage = mockStorage{}.newStorageFunc(true)
 		rec := httptest.NewRecorder()
 		code, err := accounts(rec, nil)
 		assert.Error(t, err)
@@ -43,18 +43,21 @@ func Test_accounts(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			NewStorage = mockStorage{err: test.err}.storageFunc
+			NewStorage = mockStorage{Accounts: test.as, err: test.err}.newStorageFunc(false)
 			rec := httptest.NewRecorder()
 			code, err := accounts(rec, nil)
+			assert.Equal(t, test.code, code)
+
 			if test.err != nil {
 				assert.Equal(t, test.err, errors.Cause(err))
-			} else {
-				assert.NoError(t, err)
-				ct := rec.HeaderMap[`Content-Type`]
-				assert.Len(t, ct, 1)
-				assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+				return
 			}
-			assert.Equal(t, test.code, code)
+
+			assert.NoError(t, err)
+			ct := rec.HeaderMap[`Content-Type`]
+			assert.Len(t, ct, 1)
+			assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			assert.NoError(t, err)
 		})
 	}
 }

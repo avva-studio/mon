@@ -23,6 +23,8 @@ func accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
-	err = json.NewEncoder(w).Encode(as)
-	return http.StatusOK, errors.Wrap(err, "error encoding json")
+	return http.StatusOK, errors.Wrap(
+		json.NewEncoder(w).Encode(as),
+		"error encoding accounts json",
+	)
 }
