@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"net/http"
@@ -13,15 +13,16 @@ import (
 
 func Test_accounts(t *testing.T) {
 	t.Run("nil response writer", func(t *testing.T) {
-		code, err := accounts(nil, nil)
+		code, err := (&server{}).accounts(nil, nil)
 		assert.Error(t, err)
 		assert.Equal(t, http.StatusInternalServerError, code)
 	})
 
-	t.Run("NewStorage error", func(t *testing.T) {
-		NewStorage = newStorageFunc(nil, true)
+	t.Run("StorageFunc error", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		code, err := accounts(rec, nil)
+		code, err := (&server{
+			StorageFunc: newStorageFunc(nil, true),
+		}).accounts(rec, nil)
 		assert.Error(t, err)
 		assert.Equal(t, testStorageFuncError, errors.Cause(err))
 		assert.Equal(t, http.StatusServiceUnavailable, code)
@@ -44,12 +45,14 @@ func Test_accounts(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			NewStorage = newStorageFunc(
-				&storagetest.Storage{Accounts: test.as, Err: test.err},
-				false,
-			)
 			rec := httptest.NewRecorder()
-			code, err := accounts(rec, nil)
+
+			code, err := (&server{
+				StorageFunc: newStorageFunc(
+					&storagetest.Storage{Accounts: test.as, Err: test.err},
+					false,
+				),
+			}).accounts(rec, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {

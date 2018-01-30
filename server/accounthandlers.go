@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"encoding/json"
@@ -8,11 +8,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
+func (s *server) accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	if w == nil {
 		return http.StatusInternalServerError, errors.New("nil ResponseWriter")
 	}
-	store, err := NewStorage()
+	store, err := s.NewStorage()
 	if err != nil {
 		return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
 	}
