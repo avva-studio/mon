@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 )
@@ -23,9 +22,9 @@ func (c client) Close() error {
 	return errors.New("not implemented")
 }
 
-func (c client) InsertBalance(a account.Account, b balance.Balance) (*storage.Balance, error) {
+func (c client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
 	return nil, errors.New("not implemented")
 }
-func (c client) SelectAccountBalances(account.Account) (*storage.Balances, error) {
+func (c client) SelectAccountBalances(storage.Account) (*storage.Balances, error) {
 	return nil, errors.New("not implemented")
 }

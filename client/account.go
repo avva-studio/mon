@@ -32,7 +32,7 @@ func (c client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	as := new(storage.Accounts)
 	err = json.Unmarshal(bod, as)
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshalling repsonse")
+		return nil, errors.Wrap(err, "unmarshalling response")
 	}
 	return as, err
 }
