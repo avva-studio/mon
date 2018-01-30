@@ -3,9 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/glynternet/accounting-rest/internal"
+	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
 	"github.com/spf13/cobra"
@@ -47,26 +46,12 @@ var RootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("error creating storage func: %v", err)
 		}
-		internal.NewStorage = storageFn
-		logDBState()
-		router := internal.NewRouter()
-		log.Printf("Starting %s on port %s\n", appName, port)
-		log.Fatal(http.ListenAndServe(":"+port, router))
+		s, err := server.New(storageFn)
+		if err != nil {
+			log.Fatalf("error creating new server")
+		}
+		log.Fatal(s.ListenAndServe(":" + port))
 	},
-}
-
-func logDBState() {
-	store, err := internal.NewStorage()
-	if err != nil {
-		log.Printf("error creating new storage: %v", err)
-	}
-	defer store.Close()
-	msg := "Storage is "
-	if !store.Available() {
-		msg += "not "
-	}
-	log.Print(msg + "available.")
-	return
 }
 
 func init() {
@@ -83,7 +68,7 @@ func initConfig() {
 	}
 }
 
-func newStorageFunc(host, user, dbname, sslmode string) (internal.StorageFunc, error) {
+func newStorageFunc(host, user, dbname, sslmode string) (server.StorageFunc, error) {
 	cs, err := postgres2.NewConnectionString(host, user, dbname, sslmode)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create connection string: %v", err)
