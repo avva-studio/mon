@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
 	"github.com/pkg/errors"
@@ -21,10 +22,10 @@ func Test_accounts(t *testing.T) {
 	t.Run("StorageFunc error", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		code, err := (&server{
-			StorageFunc: newStorageFunc(nil, true),
+			NewStorage: testutils.NewMockStorageFunc(nil, true),
 		}).accounts(rec, nil)
 		assert.Error(t, err)
-		assert.Equal(t, testStorageFuncError, errors.Cause(err))
+		assert.Equal(t, testutils.MockStorageFuncError, errors.Cause(err))
 		assert.Equal(t, http.StatusServiceUnavailable, code)
 	})
 
@@ -48,8 +49,8 @@ func Test_accounts(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			code, err := (&server{
-				StorageFunc: newStorageFunc(
-					&storagetest.Storage{Accounts: test.as, Err: test.err},
+				NewStorage: testutils.NewMockStorageFunc(
+					&accountingtest.Storage{Accounts: test.as, Err: test.err},
 					false,
 				),
 			}).accounts(rec, nil)
