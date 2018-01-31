@@ -12,11 +12,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (c client) SelectAccounts() (*storage.Accounts, error) {
+func (c Client) SelectAccounts() (*storage.Accounts, error) {
 	return c.getAccountsFromEndpoint(server.EndpointAccounts)
 }
 
-func (c client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
+func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	res, err := c.getFromEndpoint(server.EndpointAccounts)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting from endpoint")
@@ -28,7 +28,12 @@ func (c client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "reading response body")
 	}
-	defer res.Body.Close()
+	defer func() {
+		cErr := res.Body.Close()
+		if err == nil {
+			err = cErr
+		}
+	}()
 	as := new(storage.Accounts)
 	err = json.Unmarshal(bod, as)
 	if err != nil {
@@ -37,10 +42,10 @@ func (c client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	return as, err
 }
 
-func (c client) SelectAccount(u uint) (*storage.Account, error) {
+func (c Client) SelectAccount(u uint) (*storage.Account, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (c client) InsertAccount(a account.Account) (*storage.Account, error) {
+func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
 	return nil, errors.New("not implemented")
 }

@@ -6,13 +6,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAccountsFromEndpoint(t *testing.T) {
 	t.Run("get error", func(t *testing.T) {
-		c := client("bloopybloop")
+		c := Client("bloopybloop")
 		as, err := c.getAccountsFromEndpoint("")
 		assert.Error(t, err)
 		assert.Nil(t, as)
@@ -21,7 +23,7 @@ func TestGetAccountsFromEndpoint(t *testing.T) {
 	t.Run("unexpected status", func(t *testing.T) {
 		srv := newJSONTestServer(nil, http.StatusTeapot)
 		defer srv.Close()
-		c := client(srv.URL)
+		c := Client(srv.URL)
 		as, err := c.getAccountsFromEndpoint("")
 		assert.Error(t, err)
 		assert.Nil(t, as)
@@ -33,7 +35,7 @@ func TestGetAccountsFromEndpoint(t *testing.T) {
 			http.StatusOK,
 		)
 		defer srv.Close()
-		c := client(srv.URL)
+		c := Client(srv.URL)
 		as, err := c.getAccountsFromEndpoint("")
 		if assert.Error(t, err) {
 			assert.IsType(t, &json.UnmarshalTypeError{}, errors.Cause(err))
@@ -48,11 +50,14 @@ func newJSONTestServer(encode interface{}, code int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bs, err := json.Marshal(encode)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("error marshalling to json: %v", err))
 		}
 		w.WriteHeader(code)
 		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
-		w.Write(bs)
+		_, err = w.Write(bs)
+		if err != nil {
+			panic(fmt.Sprintf("error writing to ResponseWriter: %v", err))
+		}
 		return
 	}))
 }

@@ -37,7 +37,7 @@ func TestPlay(t *testing.T) {
 		t.Fatal(srv.ListenAndServe(addr))
 	}()
 
-	outAccounts, err := client("http://localhost" + addr).SelectAccounts()
+	outAccounts, err := Client("http://localhost" + addr).SelectAccounts()
 	assert.NoError(t, err)
 	assert.NotNil(t, outAccounts)
 	assert.Equal(t, inAccounts, outAccounts)
