@@ -8,6 +8,7 @@ import (
 	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-money/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,12 +34,18 @@ func TestPlay(t *testing.T) {
 
 	addr := ":23456"
 	time.Sleep(time.Millisecond * 500)
+	srvErr := make(chan error)
 	go func() {
-		t.Fatal(srv.ListenAndServe(addr))
+		srvErr <- srv.ListenAndServe(addr)
 	}()
 
-	outAccounts, err := Client("http://localhost" + addr).SelectAccounts()
-	assert.NoError(t, err)
-	assert.NotNil(t, outAccounts)
-	assert.Equal(t, inAccounts, outAccounts)
+	go func() {
+		outAccounts, err := Client("http://localhost" + addr).SelectAccounts()
+		assert.NoError(t, err)
+		assert.NotNil(t, outAccounts)
+		assert.Equal(t, inAccounts, outAccounts)
+		close(srvErr)
+	}()
+
+	common.FatalIfError(t, <-srvErr, "serving")
 }
