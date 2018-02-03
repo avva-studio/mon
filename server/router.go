@@ -12,11 +12,11 @@ func (s *server) newRouter() (*mux.Router, error) {
 	}
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range s.routes() {
-		handler := logger(route.appHandler)
+		handler := logger(route.appHandler, route.name)
 		router.
-			Methods(route.appHandler.method).
+			Methods(route.method).
 			Path(route.pattern).
-			Name(route.appHandler.name).
+			Name(route.name).
 			Handler(handler)
 	}
 	return router, nil

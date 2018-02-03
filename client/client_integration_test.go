@@ -12,7 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPlay(t *testing.T) {
+const addr = ":23456"
+
+func TestSelectAccounts(t *testing.T) {
 	inAccounts := &storage.Accounts{
 		{
 			Account: accountingtest.NewAccount(
@@ -32,15 +34,15 @@ func TestPlay(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
 
-	addr := ":23456"
-	time.Sleep(time.Millisecond * 500)
 	srvErr := make(chan error)
 	go func() {
 		srvErr <- srv.ListenAndServe(addr)
 	}()
 
+	time.Sleep(time.Millisecond * 10)
+
 	go func() {
-		outAccounts, err := Client("http://localhost" + addr).SelectAccounts()
+		outAccounts, err := newTestClient().SelectAccounts()
 		assert.NoError(t, err)
 		assert.NotNil(t, outAccounts)
 		assert.Equal(t, inAccounts, outAccounts)
@@ -48,4 +50,8 @@ func TestPlay(t *testing.T) {
 	}()
 
 	common.FatalIfError(t, <-srvErr, "serving")
+}
+
+func newTestClient() Client {
+	return Client("http://localhost" + addr)
 }

@@ -5,17 +5,13 @@ import (
 	"net/http"
 )
 
-type appHandler struct {
-	name    string
-	method  string
-	handler func(http.ResponseWriter, *http.Request) (int, error)
-}
+type appHandler func(http.ResponseWriter, *http.Request) (int, error)
 
 // ServeHTTP makes our appHandler function satisfy the http.HandlerFunc interface
 // If we are returning an error from our appHandler, we should not have already
 // written to our ResponseWriter
 func (ah appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if status, err := ah.handler(w, r); err != nil {
+	if status, err := ah(w, r); err != nil {
 		log.Printf(
 			"error serving on appHandler %v. Error: %v - Status: %d (%s) - Request: %+v",
 			ah, err, status, http.StatusText(status), r,

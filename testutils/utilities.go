@@ -8,11 +8,11 @@ import (
 func NewMockStorageFunc(s storage.Storage, err bool) func() (storage.Storage, error) {
 	var rErr error
 	if err {
-		rErr = MockStorageFuncError
+		rErr = ErrMockStorageFunc
 	}
 	return func() (storage.Storage, error) {
 		return s, rErr
 	}
 }
 
-var MockStorageFuncError = errors.New("StorageFunc error")
+var ErrMockStorageFunc = errors.New("StorageFunc error")
