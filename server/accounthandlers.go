@@ -31,7 +31,7 @@ func (s *server) accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	)
 }
 
-func (s *server) muxAccountIDHandlerfunc(w http.ResponseWriter, r *http.Request) (int, error) {
+func (s *server) muxAccountIDHandlerFunc(w http.ResponseWriter, r *http.Request) (int, error) {
 	vars := mux.Vars(r)
 	if vars == nil {
 		return http.StatusBadRequest, errors.New("no context variables")

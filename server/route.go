@@ -31,7 +31,7 @@ func (s *server) routes() []route {
 		{
 			name:       "account",
 			pattern:    patternAccount,
-			appHandler: s.muxAccountIDHandlerfunc,
+			appHandler: s.muxAccountIDHandlerFunc,
 			method:     http.MethodGet,
 		},
 	}

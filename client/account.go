@@ -29,6 +29,10 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	return as, err
 }
 
+func (c Client) SelectAccount(u uint) (*storage.Account, error) {
+	return c.getAccountFromEndpoint(fmt.Sprintf(server.EndpointFmtAccount, u))
+}
+
 func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 	bod, err := c.getBodyFromEndpoint(e)
 	if err != nil {
@@ -58,10 +62,6 @@ func (c Client) getBodyFromEndpoint(s string) ([]byte, error) {
 		}
 	}()
 	return bod, errors.Wrap(err, "reading response body")
-}
-
-func (c Client) SelectAccount(u uint) (*storage.Account, error) {
-	return c.getAccountFromEndpoint(fmt.Sprintf(server.EndpointFmtAccount, u))
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
