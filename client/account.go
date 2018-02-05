@@ -17,23 +17,10 @@ func (c Client) SelectAccounts() (*storage.Accounts, error) {
 }
 
 func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
-	res, err := c.getFromEndpoint(server.EndpointAccounts)
+	bod, err := c.getBodyFromEndpoint(e)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting from endpoint")
+		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned code %d (%s)", res.StatusCode, res.Status)
-	}
-	bod, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "reading response body")
-	}
-	defer func() {
-		cErr := res.Body.Close()
-		if err == nil {
-			err = cErr
-		}
-	}()
 	as := new(storage.Accounts)
 	err = json.Unmarshal(bod, as)
 	if err != nil {
@@ -42,8 +29,39 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	return as, err
 }
 
+func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
+	bod, err := c.getBodyFromEndpoint(e)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting body from endpoint")
+	}
+	a := new(storage.Account)
+	err = json.Unmarshal(bod, a)
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshalling response")
+	}
+	return a, err
+}
+
+func (c Client) getBodyFromEndpoint(s string) ([]byte, error) {
+	res, err := c.getFromEndpoint(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting from endpoint")
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("server returned unexpected code %d (%s)", res.StatusCode, res.Status)
+	}
+	bod, err := ioutil.ReadAll(res.Body)
+	defer func() {
+		cErr := res.Body.Close()
+		if err == nil {
+			err = cErr
+		}
+	}()
+	return bod, errors.Wrap(err, "reading response body")
+}
+
 func (c Client) SelectAccount(u uint) (*storage.Account, error) {
-	return nil, errors.New("not implemented")
+	return c.getAccountFromEndpoint(fmt.Sprintf(server.EndpointFmtAccount, u))
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
