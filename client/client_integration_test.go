@@ -91,7 +91,7 @@ func TestClient_SelectAccount(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		selected, err := newTestClient(testPort).SelectAccount(51) // id doesn't matter when mocking
+		selected, err := newTestClient(testPort).SelectAccount(734) // id doesn't matter when mocking
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Account, selected)
