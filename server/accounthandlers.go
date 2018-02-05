@@ -45,15 +45,25 @@ func (s *server) accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 //return s.accountHandlerWithID(id)(w, r)
 //}
 
-func (s *server) accountHandlerWithID(id uint64) appHandler {
+func (s *server) accountHandlerWithID(id uint) appHandler {
 	return func(w http.ResponseWriter, r *http.Request) (int, error) {
 		if w == nil {
 			return http.StatusInternalServerError, errors.New("nil ResponseWriter")
 		}
-		_, err := s.NewStorage()
+		store, err := s.NewStorage()
 		if err != nil {
 			return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
 		}
-		return 0, errors.New("not implemented")
+		var a *storage.Account
+		a, err = store.SelectAccount(id)
+		if err != nil {
+			return http.StatusNotFound, errors.Wrap(err, "selecting account from storage")
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
+		return http.StatusOK, errors.Wrap(
+			json.NewEncoder(w).Encode(a),
+			"error encoding accounts json",
+		)
 	}
 }

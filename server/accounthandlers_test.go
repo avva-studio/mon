@@ -48,19 +48,20 @@ func Test_accounts(t *testing.T) {
 
 			assert.NoError(t, err)
 			ct := rec.HeaderMap[`Content-Type`]
-			assert.Len(t, ct, 1)
-			assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			if assert.Len(t, ct, 1) {
+				assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			}
 			assert.NoError(t, err)
 		})
 	}
 }
 
 func Test_accountHandlerWithID(t *testing.T) {
-	c := func(s *server, w http.ResponseWriter, r *http.Request) (int, error) {
+	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, error) {
 		return s.accountHandlerWithID(1)(w, r)
 	}
-	nilResponseWriterTest(t, c)
-	storageFuncErrorTest(t, c)
+	nilResponseWriterTest(t, serveFn)
+	storageFuncErrorTest(t, serveFn)
 
 	for _, test := range []struct {
 		name string
@@ -69,23 +70,24 @@ func Test_accountHandlerWithID(t *testing.T) {
 	}{
 		{
 			name: "error",
-			code: http.StatusServiceUnavailable,
+			code: http.StatusNotFound,
 			err:  errors.New("selecting accounts"),
 		},
-		//{
-		//	name: "success",
-		//	code: http.StatusOK,
-		//},
+		{
+			name: "success",
+			code: http.StatusOK,
+		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
 
-			code, err := (&server{
+			srv := &server{
 				NewStorage: testutils.NewMockStorageFunc(
 					&accountingtest.Storage{Err: test.err},
 					false,
 				),
-			}).accountHandlerWithID(1)(rec, nil)
+			}
+			code, err := serveFn(srv, rec, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
@@ -95,8 +97,9 @@ func Test_accountHandlerWithID(t *testing.T) {
 
 			assert.NoError(t, err)
 			ct := rec.HeaderMap[`Content-Type`]
-			assert.Len(t, ct, 1)
-			assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			if assert.Len(t, ct, 1) {
+				assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
+			}
 			assert.NoError(t, err)
 		})
 	}
