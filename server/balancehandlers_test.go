@@ -26,7 +26,7 @@ func Test_balances(t *testing.T) {
 		account    *storage.Account
 		accountErr error
 		//balance    storage.Balance
-		balanceErr error
+		balancesErr error
 	}{
 		{
 			name:       "SelectAccount error",
@@ -45,7 +45,7 @@ func Test_balances(t *testing.T) {
 					time.Now().Truncate(time.Nanosecond),
 				),
 			},
-			balanceErr: errors.New("balance error"),
+			balancesErr: errors.New("balances error"),
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -54,8 +54,9 @@ func Test_balances(t *testing.T) {
 			srv := &server{
 				NewStorage: testutils.NewMockStorageFunc(
 					&accountingtest.Storage{
-						Account:    test.account,
-						AccountErr: test.accountErr,
+						Account:     test.account,
+						AccountErr:  test.accountErr,
+						BalancesErr: test.balancesErr,
 					},
 					false,
 				),
@@ -65,7 +66,9 @@ func Test_balances(t *testing.T) {
 
 			if test.accountErr != nil {
 				assert.Equal(t, test.accountErr, errors.Cause(err))
-				return
+			}
+			if test.balancesErr != nil {
+				assert.Equal(t, test.balancesErr, errors.Cause(err))
 			}
 		})
 	}
