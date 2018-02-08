@@ -83,7 +83,7 @@ func Test_account(t *testing.T) {
 
 			srv := &server{
 				NewStorage: testutils.NewMockStorageFunc(
-					&accountingtest.Storage{Err: test.err},
+					&accountingtest.Storage{AccountErr: test.err},
 					false,
 				),
 			}
