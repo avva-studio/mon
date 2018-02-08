@@ -56,9 +56,9 @@ func Test_accounts(t *testing.T) {
 	}
 }
 
-func Test_accountHandlerWithID(t *testing.T) {
+func Test_account(t *testing.T) {
 	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, error) {
-		return s.accountHandlerWithID(1)(w, r)
+		return s.account(1)(w, r)
 	}
 	nilResponseWriterTest(t, serveFn)
 	storageFuncErrorTest(t, serveFn)

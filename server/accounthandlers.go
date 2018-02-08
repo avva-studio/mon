@@ -46,10 +46,10 @@ func (s *server) muxAccountIDHandlerFunc(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return http.StatusBadRequest, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.accountHandlerWithID(uint(id))(w, r)
+	return s.account(uint(id))(w, r)
 }
 
-func (s *server) accountHandlerWithID(id uint) appHandler {
+func (s *server) account(id uint) appHandler {
 	return func(w http.ResponseWriter, r *http.Request) (int, error) {
 		if w == nil {
 			return http.StatusInternalServerError, errors.New("nil ResponseWriter")
