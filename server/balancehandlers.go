@@ -1,8 +1,12 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/glynternet/go-accounting-storage"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
 
@@ -19,10 +23,33 @@ func (s *server) balances(accountId uint) appHandler {
 		if err != nil {
 			return http.StatusBadRequest, errors.Wrapf(err, "selecting account with id %d", accountId)
 		}
-		_, err = store.SelectAccountBalances(*a)
+		var bs *storage.Balances
+		bs, err = store.SelectAccountBalances(*a)
 		if err != nil {
 			return http.StatusBadRequest, errors.Wrapf(err, "selecting balances for account %+v", *a)
 		}
-		return 0, errors.New("not implemented")
+		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
+		return http.StatusOK, errors.Wrap(
+			json.NewEncoder(w).Encode(bs),
+			"error encoding balances json",
+		)
 	}
+}
+
+func (s *server) muxAccountBalancesHandlerFunc(w http.ResponseWriter, r *http.Request) (int, error) {
+	vars := mux.Vars(r)
+	if vars == nil {
+		return http.StatusBadRequest, errors.New("no context variables")
+	}
+
+	key := "id"
+	idString, ok := vars[key]
+	if !ok {
+		return http.StatusBadRequest, errors.New("no account_id context variable")
+	}
+	id, err := strconv.ParseUint(idString, 10, 64)
+	if err != nil {
+		return http.StatusBadRequest, errors.Wrapf(err, "parsing %s to uint", key)
+	}
+	return s.balances(uint(id))(w, r)
 }

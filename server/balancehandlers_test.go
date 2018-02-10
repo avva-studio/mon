@@ -47,6 +47,19 @@ func Test_balances(t *testing.T) {
 			},
 			balancesErr: errors.New("balances error"),
 		},
+		{
+			name: "all ok",
+			code: http.StatusOK,
+			account: &storage.Account{
+				ID: 51,
+				Account: accountingtest.NewAccount(
+					t,
+					"test",
+					accountingtest.NewCurrencyCode(t, "EUR"),
+					time.Now().Truncate(time.Nanosecond),
+				),
+			},
+		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()

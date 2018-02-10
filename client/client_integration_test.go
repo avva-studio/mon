@@ -101,6 +101,44 @@ func TestClient_SelectAccount(t *testing.T) {
 	common.FatalIfError(t, <-srvErr, "serving")
 }
 
+func TestClient_SelectAccountBalances(t *testing.T) {
+	testPort := port + 2
+	s := &accountingtest.Storage{
+		Account: &storage.Account{
+			ID: 51,
+			Account: accountingtest.NewAccount(
+				t,
+				"test",
+				accountingtest.NewCurrencyCode(t, "EUR"),
+				time.Now().Truncate(time.Nanosecond),
+			),
+		},
+		Balances: &storage.Balances{
+			storage.Balance{ID: 123},
+		},
+	}
+	srv, err := server.New(testutils.NewMockStorageFunc(s, false))
+	assert.NoError(t, err)
+	assert.NotNil(t, srv)
+
+	srvErr := make(chan error)
+	go func() {
+		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+	}()
+
+	time.Sleep(time.Millisecond * 10)
+
+	go func() {
+		selected, err := newTestClient(testPort).SelectAccountBalances(*s.Account) // id doesn't matter when mocking
+		assert.NoError(t, err)
+		assert.NotNil(t, selected)
+		assert.Equal(t, s.Balances, selected)
+		close(srvErr)
+	}()
+
+	common.FatalIfError(t, <-srvErr, "serving")
+}
+
 func newTestClient(port int) Client {
 	return Client(fmt.Sprintf("http://localhost:%d", port))
 }

@@ -3,8 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
@@ -22,11 +20,12 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
 	as := new(storage.Accounts)
-	err = json.Unmarshal(bod, as)
+	err = errors.Wrap(json.Unmarshal(bod, as), "unmarshalling response")
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshalling response")
+		as = nil
 	}
 	return as, err
+
 }
 
 func (c Client) SelectAccount(u uint) (*storage.Account, error) {
@@ -39,29 +38,11 @@ func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
 	a := new(storage.Account)
-	err = json.Unmarshal(bod, a)
+	err = errors.Wrap(json.Unmarshal(bod, a), "unmarshalling response")
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshalling response")
+		a = nil
 	}
 	return a, err
-}
-
-func (c Client) getBodyFromEndpoint(s string) ([]byte, error) {
-	res, err := c.getFromEndpoint(s)
-	if err != nil {
-		return nil, errors.Wrap(err, "getting from endpoint")
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned unexpected code %d (%s)", res.StatusCode, res.Status)
-	}
-	bod, err := ioutil.ReadAll(res.Body)
-	defer func() {
-		cErr := res.Body.Close()
-		if err == nil {
-			err = cErr
-		}
-	}()
-	return bod, errors.Wrap(err, "reading response body")
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {

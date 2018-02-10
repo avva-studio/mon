@@ -23,7 +23,6 @@ func (s *server) accounts(w http.ResponseWriter, _ *http.Request) (int, error) {
 	if err != nil {
 		return http.StatusServiceUnavailable, errors.Wrap(err, "selecting accounts from client")
 	}
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
 	return http.StatusOK, errors.Wrap(
 		json.NewEncoder(w).Encode(as),
@@ -63,7 +62,6 @@ func (s *server) account(id uint) appHandler {
 		if err != nil {
 			return http.StatusNotFound, errors.Wrap(err, "selecting account from storage")
 		}
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
 		return http.StatusOK, errors.Wrap(
 			json.NewEncoder(w).Encode(a),
