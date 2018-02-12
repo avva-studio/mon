@@ -1,10 +1,10 @@
 package client
 
 import (
-	"net/http"
-
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/balance"
@@ -16,6 +16,10 @@ type Client string
 
 func (c Client) getFromEndpoint(endpoint string) (*http.Response, error) {
 	return http.Get(string(c) + endpoint)
+}
+
+func (c Client) postToEndpoint(endpoint string, contentType string, body io.Reader) (*http.Response, error) {
+	return http.Post(string(c)+endpoint, contentType, body)
 }
 
 func (c Client) Available() bool {

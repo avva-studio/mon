@@ -25,7 +25,6 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 		as = nil
 	}
 	return as, err
-
 }
 
 func (c Client) SelectAccount(u uint) (*storage.Account, error) {
