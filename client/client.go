@@ -6,6 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"encoding/json"
+
+	"bytes"
+
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
@@ -34,11 +38,15 @@ func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Ba
 	return nil, errors.New("not implemented")
 }
 
-func (c Client) getBodyFromEndpoint(s string) ([]byte, error) {
-	res, err := c.getFromEndpoint(s)
+func (c Client) getBodyFromEndpoint(e string) ([]byte, error) {
+	res, err := c.getFromEndpoint(e)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting from endpoint")
 	}
+	return getResponseBody(res)
+}
+
+func getResponseBody(res *http.Response) ([]byte, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned unexpected code %d (%s)", res.StatusCode, res.Status)
 	}
@@ -50,4 +58,13 @@ func (c Client) getBodyFromEndpoint(s string) ([]byte, error) {
 		}
 	}()
 	return bod, errors.Wrap(err, "reading response body")
+}
+
+func (c Client) postAsJSONToEndpoint(e string, thing interface{}) (*http.Response, error) {
+	bs, err := json.Marshal(thing)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshalling json")
+	}
+	res, err := c.postToEndpoint(e, `application/json; charset=UTF-8`, bytes.NewReader(bs))
+	return res, errors.Wrap(err, "posting to endpoint")
 }

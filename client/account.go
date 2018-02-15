@@ -45,5 +45,18 @@ func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
-	return nil, errors.New("not implemented")
+	_, err := c.postAccountToEndpoint(server.EndpointAccountInsert, a)
+	if err != nil {
+		return nil, errors.Wrapf(err, "posting account to endpoint %f", server.EndpointAccountInsert)
+	}
+	return nil, nil
+}
+
+func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, error) {
+	res, err := c.postAsJSONToEndpoint(e, a)
+	if err != nil {
+		return nil, errors.Wrap(err, "posting as JSON")
+	}
+	bod, err := getResponseBody(res)
+	return bod, errors.Wrap(err, "getting response body")
 }

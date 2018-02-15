@@ -8,9 +8,10 @@ const (
 )
 
 const (
-	EndpointAccount    = "/account"
-	EndpointFmtAccount = EndpointAccount + "/%d"
-	patternAccount     = EndpointAccount + "/{id}"
+	EndpointAccount       = "/account"
+	EndpointFmtAccount    = EndpointAccount + "/%d"
+	patternAccount        = EndpointAccount + "/{id}"
+	EndpointAccountInsert = EndpointAccount + "/insert"
 )
 
 const (

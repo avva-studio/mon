@@ -30,6 +30,5 @@ func TestGetBalancesFromEndpoint(t *testing.T) {
 			assert.IsType(t, &json.UnmarshalTypeError{}, errors.Cause(err))
 		}
 		assert.Nil(t, bs)
-		srv.Close()
 	})
 }
