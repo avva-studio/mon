@@ -13,8 +13,6 @@ import (
 	"github.com/glynternet/go-accounting-storagetest"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/onsi/gomega/format"
-	"path/filepath"
 )
 
 func TestGetAccountsFromEndpoint(t *testing.T) {
@@ -73,12 +71,11 @@ func TestPostAccountToEndpoint(t *testing.T) {
 		}
 		assert.Nil(t, bod)
 	})
-	t.Run("getResponseBody err", func(t *testing.T) {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Response) {
-			need to try to make a body that you can't get the response from))'
-			maybe an empty body will do that or something? we'll see'
-		}))
-	})
+	//t.Run("readResponseBody err", func(t *testing.T) {
+	//	_ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//		 TODO: make a readResponseBody error test
+	//}))
+	//})
 }
 
 func TestClient_InsertAccount(t *testing.T) {
@@ -93,6 +90,20 @@ func TestClient_InsertAccount(t *testing.T) {
 			assert.Contains(t, err.Error(), "posting account to endpoint")
 		}
 		assert.Nil(t, storageA)
+	})
+
+	t.Run("unmarshallable response", func(t *testing.T) {
+		srv := newJSONTestServer(
+			struct{ NonAccount string }{NonAccount: "bloop"},
+			http.StatusOK,
+		)
+		defer srv.Close()
+		c := Client(srv.URL)
+		as, err := c.InsertAccount(nil)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "json unmarshalling response")
+		}
+		assert.Nil(t, as)
 	})
 }
 

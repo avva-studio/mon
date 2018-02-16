@@ -36,20 +36,15 @@ func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
-	a := new(storage.Account)
-	err = errors.Wrap(json.Unmarshal(bod, a), "unmarshalling response")
-	if err != nil {
-		a = nil
-	}
-	return a, err
+	return unmarshalJSONToAccount(bod)
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
-	_, err := c.postAccountToEndpoint(server.EndpointAccountInsert, a)
+	bs, err := c.postAccountToEndpoint(server.EndpointAccountInsert, a)
 	if err != nil {
 		return nil, errors.Wrapf(err, "posting account to endpoint %f", server.EndpointAccountInsert)
 	}
-	return nil, nil
+	return unmarshalJSONToAccount(bs)
 }
 
 func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, error) {
@@ -57,6 +52,15 @@ func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, erro
 	if err != nil {
 		return nil, errors.Wrap(err, "posting as JSON")
 	}
-	bod, err := getResponseBody(res)
+	bod, err := readResponseBody(res)
 	return bod, errors.Wrap(err, "getting response body")
+}
+
+func unmarshalJSONToAccount(bs []byte) (*storage.Account, error) {
+	a := new(storage.Account)
+	err := errors.Wrap(json.Unmarshal(bs, a), "json unmarshalling response")
+	if err != nil {
+		a = nil
+	}
+	return a, err
 }
