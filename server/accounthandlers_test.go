@@ -5,15 +5,18 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"strings"
+
 	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-money/common"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_accounts(t *testing.T) {
-	nilResponseWriterTest(t, (*server).accounts)
-	storageFuncErrorTest(t, (*server).accounts)
+func Test_handlerSelectAccounts(t *testing.T) {
+	nilResponseWriterTest(t, (*server).handlerSelectAccounts)
+	storageFuncErrorTest(t, (*server).handlerSelectAccounts)
 
 	for _, test := range []struct {
 		name string
@@ -23,7 +26,7 @@ func Test_accounts(t *testing.T) {
 		{
 			name: "error",
 			code: http.StatusServiceUnavailable,
-			err:  errors.New("selecting accounts"),
+			err:  errors.New("selecting handlerSelectAccounts"),
 		},
 		{
 			name: "success",
@@ -38,7 +41,7 @@ func Test_accounts(t *testing.T) {
 					&accountingtest.Storage{Err: test.err},
 					false,
 				),
-			}).accounts(rec, nil)
+			}).handlerSelectAccounts(rec, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
@@ -56,9 +59,9 @@ func Test_accounts(t *testing.T) {
 	}
 }
 
-func Test_account(t *testing.T) {
+func Test_handlerSelectAccount(t *testing.T) {
 	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, error) {
-		return s.account(1)(w, r)
+		return s.handlerSelectAccount(1)(w, r)
 	}
 	nilResponseWriterTest(t, serveFn)
 	storageFuncErrorTest(t, serveFn)
@@ -71,7 +74,7 @@ func Test_account(t *testing.T) {
 		{
 			name: "error",
 			code: http.StatusNotFound,
-			err:  errors.New("selecting accounts"),
+			err:  errors.New("selecting handlerSelectAccounts"),
 		},
 		{
 			name: "success",
@@ -101,6 +104,52 @@ func Test_account(t *testing.T) {
 				assert.Equal(t, `application/json; charset=UTF-8`, ct[0])
 			}
 			assert.NoError(t, err)
+		})
+	}
+}
+
+func Test_handlerInsertAccount(t *testing.T) {
+	serveFn := (*server).handlerInsertAccount
+	nilResponseWriterTest(t, serveFn)
+	storageFuncErrorTest(t, serveFn)
+
+	for _, test := range []struct {
+		name        string
+		body        string
+		code        int
+		errContains string
+	}{
+		{
+			name:        "unable to unmarshal into account",
+			body:        `wassssuuuuuuup?`,
+			code:        http.StatusBadRequest,
+			errContains: "unmarshalling body to account",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r, err := http.NewRequest("any", "any", strings.NewReader(test.body))
+			common.FatalIfError(t, err, "creating new request")
+
+			var storageErr error
+			if test.errContains != "" {
+				storageErr = errors.New("")
+			}
+
+			srv := &server{
+				NewStorage: testutils.NewMockStorageFunc(
+					&accountingtest.Storage{AccountErr: storageErr},
+					false,
+				),
+			}
+
+			code, err := serveFn(srv, w, r)
+			assert.Equal(t, test.code, code)
+			if test.err {
+				assert.Contains(t, err.Error())
+			} else {
+
+			}
 		})
 	}
 }

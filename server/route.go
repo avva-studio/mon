@@ -29,22 +29,28 @@ type route struct {
 func (s *server) routes() []route {
 	return []route{
 		{
-			name:       "accounts",
+			name:       "handlerSelectAccounts",
 			pattern:    patternAccounts,
-			appHandler: s.accounts,
+			appHandler: s.handlerSelectAccounts,
 			method:     http.MethodGet,
 		},
 		{
-			name:       "account",
+			name:       "handlerSelectAccount",
 			pattern:    patternAccount,
 			appHandler: s.muxAccountIDHandlerFunc,
 			method:     http.MethodGet,
 		},
 		{
-			name:       "accountbalances",
+			name:       "accountBalances",
 			pattern:    patternAccountBalances,
 			appHandler: s.muxAccountBalancesHandlerFunc,
 			method:     http.MethodGet,
+		},
+		{
+			name:       "insertAccount",
+			pattern:    EndpointAccountInsert,
+			appHandler: s.handlerInsertAccount,
+			method:     http.MethodPost,
 		},
 	}
 }

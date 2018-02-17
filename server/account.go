@@ -6,7 +6,7 @@ import (
 	"github.com/glynternet/go-accounting-storage"
 )
 
-// account is a wrapper around a DB account to add methods for certain endpoints.
+// handlerSelectAccount is a wrapper around a DB handlerSelectAccount to add methods for certain endpoints.
 type account storage.Account
 
 // Returns the endpoint location string for the balance of the account
