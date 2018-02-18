@@ -10,13 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-type appJSONHandler func(http.ResponseWriter, *http.Request) (int, interface{}, error)
+type appJSONHandler func(*http.Request) (int, interface{}, error)
 
 // ServeHTTP makes our appJSONHandler function satisfy the http.HandlerFunc interface
 // If we are returning an error from our appJSONHandler, we should not have already
 // written to our ResponseWriter
 func (ah appJSONHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	status, bod, err := ah(w, r)
+	status, bod, err := ah(r)
 
 	// handle errors
 	if err != nil {

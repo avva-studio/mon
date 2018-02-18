@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/glynternet/accounting-rest/testutils"
@@ -13,7 +12,6 @@ import (
 )
 
 func Test_handlerSelectAccounts(t *testing.T) {
-	nilResponseWriterTest(t, (*server).handlerSelectAccounts)
 	storageFuncErrorTest(t, (*server).handlerSelectAccounts)
 
 	for _, test := range []struct {
@@ -32,14 +30,12 @@ func Test_handlerSelectAccounts(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			// TODO: Lots of handlers don't even require a response writer so we should remove this and force the design through the appHandlers not having a ResponseWriter. Or something like that?
-			rec := httptest.NewRecorder()
 			code, as, err := (&server{
 				NewStorage: testutils.NewMockStorageFunc(
 					&accountingtest.Storage{Err: test.err},
 					false,
 				),
-			}).handlerSelectAccounts(rec, nil)
+			}).handlerSelectAccounts(nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
@@ -54,10 +50,9 @@ func Test_handlerSelectAccounts(t *testing.T) {
 }
 
 func Test_handlerSelectAccount(t *testing.T) {
-	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
-		return s.handlerSelectAccount(1)(w, r)
+	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
+		return s.handlerSelectAccount(1)(r)
 	}
-	nilResponseWriterTest(t, serveFn)
 	storageFuncErrorTest(t, serveFn)
 
 	for _, test := range []struct {
@@ -76,15 +71,13 @@ func Test_handlerSelectAccount(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			rec := httptest.NewRecorder()
-
 			srv := &server{
 				NewStorage: testutils.NewMockStorageFunc(
 					&accountingtest.Storage{AccountErr: test.err},
 					false,
 				),
 			}
-			code, a, err := serveFn(srv, rec, nil)
+			code, a, err := serveFn(srv, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
@@ -145,22 +138,12 @@ func Test_handlerSelectAccount(t *testing.T) {
 //	}
 //}
 
-func nilResponseWriterTest(t *testing.T, serveFunc func(*server, http.ResponseWriter, *http.Request) (int, interface{}, error)) {
-	t.Run("nil response writer", func(t *testing.T) {
-		code, _, err := serveFunc(&server{}, nil, nil)
-		assert.Error(t, err)
-		assert.Equal(t, http.StatusInternalServerError, code)
-	})
-}
-
-func storageFuncErrorTest(t *testing.T, serveFunc func(*server, http.ResponseWriter, *http.Request) (int, interface{}, error)) {
+func storageFuncErrorTest(t *testing.T, serveFunc func(*server, *http.Request) (int, interface{}, error)) {
 	t.Run("StorageFunc error", func(t *testing.T) {
-		rec := httptest.NewRecorder()
 		code, _, err := serveFunc(
 			&server{
 				NewStorage: testutils.NewMockStorageFunc(nil, true),
 			},
-			rec,
 			nil,
 		)
 		assert.Error(t, err)

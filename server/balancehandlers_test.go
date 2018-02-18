@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -14,10 +13,9 @@ import (
 )
 
 func Test_balances(t *testing.T) {
-	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
-		return s.balances(1)(w, r)
+	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
+		return s.balances(1)(r)
 	}
-	nilResponseWriterTest(t, serveFn)
 	storageFuncErrorTest(t, serveFn)
 
 	for _, test := range []struct {
@@ -61,8 +59,6 @@ func Test_balances(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			rec := httptest.NewRecorder()
-
 			srv := &server{
 				NewStorage: testutils.NewMockStorageFunc(
 					&accountingtest.Storage{
@@ -73,7 +69,7 @@ func Test_balances(t *testing.T) {
 					false,
 				),
 			}
-			code, bs, err := serveFn(srv, rec, nil)
+			code, bs, err := serveFn(srv, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.accountErr != nil {

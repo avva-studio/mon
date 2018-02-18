@@ -10,10 +10,7 @@ import (
 )
 
 func (s *server) balances(accountId uint) appJSONHandler {
-	return func(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
-		if w == nil {
-			return http.StatusInternalServerError, nil, errors.New("nil ResponseWriter")
-		}
+	return func(r *http.Request) (int, interface{}, error) {
 		store, err := s.NewStorage()
 		if err != nil {
 			return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
@@ -31,7 +28,7 @@ func (s *server) balances(accountId uint) appJSONHandler {
 	}
 }
 
-func (s *server) muxAccountBalancesHandlerFunc(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
+func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{}, error) {
 	vars := mux.Vars(r)
 	if vars == nil {
 		return http.StatusBadRequest, nil, errors.New("no context variables")
@@ -46,5 +43,5 @@ func (s *server) muxAccountBalancesHandlerFunc(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.balances(uint(id))(w, r)
+	return s.balances(uint(id))(r)
 }

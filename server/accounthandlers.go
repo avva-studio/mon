@@ -9,10 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *server) handlerSelectAccounts(w http.ResponseWriter, _ *http.Request) (int, interface{}, error) {
-	if w == nil {
-		return http.StatusInternalServerError, nil, errors.New("nil ResponseWriter")
-	}
+func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
 	store, err := s.NewStorage()
 	if err != nil {
 		return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
@@ -25,7 +22,7 @@ func (s *server) handlerSelectAccounts(w http.ResponseWriter, _ *http.Request) (
 	return http.StatusOK, as, nil
 }
 
-func (s *server) muxAccountIDHandlerFunc(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
+func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, error) {
 	vars := mux.Vars(r)
 	if vars == nil {
 		return http.StatusBadRequest, nil, errors.New("no context variables")
@@ -40,14 +37,11 @@ func (s *server) muxAccountIDHandlerFunc(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.handlerSelectAccount(uint(id))(w, r)
+	return s.handlerSelectAccount(uint(id))(r)
 }
 
 func (s *server) handlerSelectAccount(id uint) appJSONHandler {
-	return func(w http.ResponseWriter, _ *http.Request) (int, interface{}, error) {
-		if w == nil {
-			return http.StatusInternalServerError, nil, errors.New("nil ResponseWriter")
-		}
+	return func(_ *http.Request) (int, interface{}, error) {
 		store, err := s.NewStorage()
 		if err != nil {
 			return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
