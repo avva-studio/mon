@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *server) balances(accountId uint) appHandler {
+func (s *server) balances(accountId uint) appJSONHandler {
 	return func(w http.ResponseWriter, r *http.Request) (int, error) {
 		if w == nil {
 			return http.StatusInternalServerError, errors.New("nil ResponseWriter")

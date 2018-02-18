@@ -23,7 +23,7 @@ type route struct {
 	name       string
 	method     string
 	pattern    string
-	appHandler appHandler
+	appHandler appJSONHandler
 }
 
 func (s *server) routes() []route {
