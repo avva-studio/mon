@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -11,45 +10,41 @@ import (
 )
 
 func (s *server) balances(accountId uint) appJSONHandler {
-	return func(w http.ResponseWriter, r *http.Request) (int, error) {
+	return func(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
 		if w == nil {
-			return http.StatusInternalServerError, errors.New("nil ResponseWriter")
+			return http.StatusInternalServerError, nil, errors.New("nil ResponseWriter")
 		}
 		store, err := s.NewStorage()
 		if err != nil {
-			return http.StatusServiceUnavailable, errors.Wrap(err, "creating new storage")
+			return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
 		}
 		a, err := store.SelectAccount(accountId)
 		if err != nil {
-			return http.StatusBadRequest, errors.Wrapf(err, "selecting account with id %d", accountId)
+			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountId)
 		}
 		var bs *storage.Balances
 		bs, err = store.SelectAccountBalances(*a)
 		if err != nil {
-			return http.StatusBadRequest, errors.Wrapf(err, "selecting balances for account %+v", *a)
+			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting balances for account %+v", *a)
 		}
-		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
-		return http.StatusOK, errors.Wrap(
-			json.NewEncoder(w).Encode(bs),
-			"error encoding balances json",
-		)
+		return http.StatusOK, bs, nil
 	}
 }
 
-func (s *server) muxAccountBalancesHandlerFunc(w http.ResponseWriter, r *http.Request) (int, error) {
+func (s *server) muxAccountBalancesHandlerFunc(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
 	vars := mux.Vars(r)
 	if vars == nil {
-		return http.StatusBadRequest, errors.New("no context variables")
+		return http.StatusBadRequest, nil, errors.New("no context variables")
 	}
 
 	key := "id"
 	idString, ok := vars[key]
 	if !ok {
-		return http.StatusBadRequest, errors.New("no account_id context variable")
+		return http.StatusBadRequest, nil, errors.New("no account_id context variable")
 	}
 	id, err := strconv.ParseUint(idString, 10, 64)
 	if err != nil {
-		return http.StatusBadRequest, errors.Wrapf(err, "parsing %s to uint", key)
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
 	return s.balances(uint(id))(w, r)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func Test_balances(t *testing.T) {
-	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, error) {
+	serveFn := func(s *server, w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
 		return s.balances(1)(w, r)
 	}
 	nilResponseWriterTest(t, serveFn)
@@ -25,7 +25,6 @@ func Test_balances(t *testing.T) {
 		code       int
 		account    *storage.Account
 		accountErr error
-		//balance    storage.Balance
 		balancesErr error
 	}{
 		{
@@ -74,15 +73,18 @@ func Test_balances(t *testing.T) {
 					false,
 				),
 			}
-			code, err := serveFn(srv, rec, nil)
+			code, bs, err := serveFn(srv, rec, nil)
 			assert.Equal(t, test.code, code)
 
 			if test.accountErr != nil {
 				assert.Equal(t, test.accountErr, errors.Cause(err))
+				return
 			}
 			if test.balancesErr != nil {
 				assert.Equal(t, test.balancesErr, errors.Cause(err))
+				return
 			}
+			assert.IsType(t, new(storage.Balances), bs)
 		})
 	}
 }
