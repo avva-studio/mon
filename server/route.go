@@ -3,18 +3,17 @@ package server
 import "net/http"
 
 const (
+	// Accounts
 	EndpointAccounts = "/accounts"
 	patternAccounts  = EndpointAccounts
-)
 
-const (
+	// Account
 	EndpointAccount       = "/account"
 	EndpointFmtAccount    = EndpointAccount + "/%d"
 	patternAccount        = EndpointAccount + "/{id}"
 	EndpointAccountInsert = EndpointAccount + "/insert"
-)
 
-const (
+	// Account Balances
 	EndpointFmtAccountBalances = EndpointAccount + "/%d/balances"
 	patternAccountBalances     = EndpointAccount + "/{id}/balances"
 )

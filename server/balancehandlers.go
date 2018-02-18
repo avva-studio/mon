@@ -10,7 +10,7 @@ import (
 )
 
 func (s *server) balances(accountID uint) appJSONHandler {
-	return func(r *http.Request) (int, interface{}, error) {
+	return func(_ *http.Request) (int, interface{}, error) {
 		a, err := s.storage.SelectAccount(accountID)
 		if err != nil {
 			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountID)
@@ -39,5 +39,5 @@ func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.balances(uint(id))(r)
+	return s.balances(uint(id))(nil) // Request is not needed for balances handler
 }

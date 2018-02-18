@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+
+// TODO: redesign these so that they don't need to take a request? There could be multiple handler types either take a request or don't take a request
 func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
 	as, err := s.storage.SelectAccounts()
 	if err != nil {
@@ -31,7 +33,7 @@ func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, err
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.handlerSelectAccount(uint(id))(r)
+	return s.handlerSelectAccount(uint(id))(nil) // Request is not needed for select account handler
 }
 
 func (s *server) handlerSelectAccount(id uint) appJSONHandler {
