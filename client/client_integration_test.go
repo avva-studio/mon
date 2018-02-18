@@ -171,9 +171,10 @@ func TestClient_InsertAccount2(t *testing.T) {
 	go func() {
 		inserted, err := newTestClient(testPort).InsertAccount(account.Account)
 		assert.NoError(t, err)
-		assert.NotNil(t, inserted)
-		assert.Equal(t, account.ID, inserted.ID)
-		assert.Equal(t, account.Account, inserted.Account)
+		if assert.NotNil(t, inserted) {
+			assert.Equal(t, account.ID, inserted.ID)
+			assert.Equal(t, account.Account, inserted.Account)
+		}
 		close(srvErr)
 	}()
 

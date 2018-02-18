@@ -46,11 +46,11 @@ func (s *server) routes() []route {
 			appHandler: s.muxAccountBalancesHandlerFunc,
 			method:     http.MethodGet,
 		},
-		{
-			name:       "insertAccount",
-			pattern:    EndpointAccountInsert,
-			appHandler: s.handlerInsertAccount,
-			method:     http.MethodPost,
-		},
+		//{
+		//	name:       "insertAccount",
+		//	pattern:    EndpointAccountInsert,
+		//	appHandler: s.handlerInsertAccount,
+		//	method:     http.MethodPost,
+		//},
 	}
 }
