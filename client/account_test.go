@@ -119,6 +119,5 @@ func newJSONTestServer(encode interface{}, code int) *httptest.Server {
 		if err != nil {
 			panic(fmt.Sprintf("error writing to ResponseWriter: %v", err))
 		}
-		return
 	}))
 }

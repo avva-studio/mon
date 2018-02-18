@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
 	"io"
 
 	"github.com/pkg/errors"
@@ -13,8 +12,8 @@ import (
 type appJSONHandler func(*http.Request) (int, interface{}, error)
 
 // ServeHTTP makes our appJSONHandler function satisfy the http.HandlerFunc interface
-// If we are returning an error from our appJSONHandler, we should not have already
-// written to our ResponseWriter
+// We won't have written to our ResponseWriter within the appJSONHandler, so we
+// marshal our appJSONHandler's interface{} return value into some bytes as JSON
 func (ah appJSONHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	status, bod, err := ah(r)
 

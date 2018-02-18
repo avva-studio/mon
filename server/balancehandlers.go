@@ -9,11 +9,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *server) balances(accountId uint) appJSONHandler {
+func (s *server) balances(accountID uint) appJSONHandler {
 	return func(r *http.Request) (int, interface{}, error) {
-		a, err := s.storage.SelectAccount(accountId)
+		a, err := s.storage.SelectAccount(accountID)
 		if err != nil {
-			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountId)
+			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountID)
 		}
 		var bs *storage.Balances
 		bs, err = s.storage.SelectAccountBalances(*a)
