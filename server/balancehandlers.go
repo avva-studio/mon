@@ -11,16 +11,12 @@ import (
 
 func (s *server) balances(accountId uint) appJSONHandler {
 	return func(r *http.Request) (int, interface{}, error) {
-		store, err := s.NewStorage()
-		if err != nil {
-			return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
-		}
-		a, err := store.SelectAccount(accountId)
+		a, err := s.storage.SelectAccount(accountId)
 		if err != nil {
 			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountId)
 		}
 		var bs *storage.Balances
-		bs, err = store.SelectAccountBalances(*a)
+		bs, err = s.storage.SelectAccountBalances(*a)
 		if err != nil {
 			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting balances for account %+v", *a)
 		}

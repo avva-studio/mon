@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storagetest"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,6 @@ import (
 )
 
 func Test_handlerSelectAccounts(t *testing.T) {
-	storageFuncErrorTest(t, (*server).handlerSelectAccounts)
 
 	for _, test := range []struct {
 		name string
@@ -31,10 +29,7 @@ func Test_handlerSelectAccounts(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			code, as, err := (&server{
-				NewStorage: testutils.NewMockStorageFunc(
-					&accountingtest.Storage{Err: test.err},
-					false,
-				),
+				storage: &accountingtest.Storage{Err: test.err},
 			}).handlerSelectAccounts(nil)
 			assert.Equal(t, test.code, code)
 
@@ -53,7 +48,6 @@ func Test_handlerSelectAccount(t *testing.T) {
 	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
 		return s.handlerSelectAccount(1)(r)
 	}
-	storageFuncErrorTest(t, serveFn)
 
 	for _, test := range []struct {
 		name string
@@ -72,10 +66,7 @@ func Test_handlerSelectAccount(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			srv := &server{
-				NewStorage: testutils.NewMockStorageFunc(
-					&accountingtest.Storage{AccountErr: test.err},
-					false,
-				),
+					storage: &accountingtest.Storage{AccountErr: test.err},
 			}
 			code, a, err := serveFn(srv, nil)
 			assert.Equal(t, test.code, code)
@@ -137,17 +128,3 @@ func Test_handlerSelectAccount(t *testing.T) {
 //		})
 //	}
 //}
-
-func storageFuncErrorTest(t *testing.T, serveFunc func(*server, *http.Request) (int, interface{}, error)) {
-	t.Run("StorageFunc error", func(t *testing.T) {
-		code, _, err := serveFunc(
-			&server{
-				NewStorage: testutils.NewMockStorageFunc(nil, true),
-			},
-			nil,
-		)
-		assert.Error(t, err)
-		assert.Equal(t, testutils.ErrMockStorageFunc, errors.Cause(err))
-		assert.Equal(t, http.StatusServiceUnavailable, code)
-	})
-}

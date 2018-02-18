@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/glynternet/accounting-rest/server"
-	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
 	"github.com/glynternet/go-money/common"
@@ -42,7 +41,7 @@ func TestClient_SelectAccounts(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(testutils.NewMockStorageFunc(s, false))
+	srv, err := server.New(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
 
@@ -79,7 +78,7 @@ func TestClient_SelectAccount(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(testutils.NewMockStorageFunc(s, false))
+	srv, err := server.New(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
 
@@ -117,7 +116,7 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 			storage.Balance{ID: 123},
 		},
 	}
-	srv, err := server.New(testutils.NewMockStorageFunc(s, false))
+	srv, err := server.New(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
 

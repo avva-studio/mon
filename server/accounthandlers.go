@@ -4,18 +4,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/glynternet/go-accounting-storage"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
 
 func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
-	store, err := s.NewStorage()
-	if err != nil {
-		return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
-	}
-	var as *storage.Accounts
-	as, err = store.SelectAccounts()
+	as, err := s.storage.SelectAccounts()
 	if err != nil {
 		return http.StatusServiceUnavailable, nil, errors.Wrap(err, "selecting handlerSelectAccounts from client")
 	}
@@ -42,12 +36,7 @@ func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, err
 
 func (s *server) handlerSelectAccount(id uint) appJSONHandler {
 	return func(_ *http.Request) (int, interface{}, error) {
-		store, err := s.NewStorage()
-		if err != nil {
-			return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
-		}
-		var a *storage.Account
-		a, err = store.SelectAccount(id)
+		a, err := s.storage.SelectAccount(id)
 		if err != nil {
 			return http.StatusNotFound, nil, errors.Wrap(err, "selecting handlerSelectAccount from storage")
 		}

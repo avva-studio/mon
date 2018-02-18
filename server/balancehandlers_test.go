@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/testutils"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
 	"github.com/pkg/errors"
@@ -16,7 +15,6 @@ func Test_balances(t *testing.T) {
 	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
 		return s.balances(1)(r)
 	}
-	storageFuncErrorTest(t, serveFn)
 
 	for _, test := range []struct {
 		name       string
@@ -60,14 +58,11 @@ func Test_balances(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			srv := &server{
-				NewStorage: testutils.NewMockStorageFunc(
-					&accountingtest.Storage{
+				storage:&accountingtest.Storage{
 						Account:     test.account,
 						AccountErr:  test.accountErr,
 						BalancesErr: test.balancesErr,
 					},
-					false,
-				),
 			}
 			code, bs, err := serveFn(srv, nil)
 			assert.Equal(t, test.code, code)

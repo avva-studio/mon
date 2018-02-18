@@ -42,11 +42,11 @@ var RootCmd = &cobra.Command{
 		log.Printf("%s %s", keyDBName, dbname)
 		sslmode = viper.GetString(keySSLMode)
 		log.Printf("%s %s", keySSLMode, sslmode)
-		storageFn, err := newStorageFunc(host, user, dbname, sslmode)
+		store, err := newStorage(host, user, dbname, sslmode)
 		if err != nil {
-			log.Fatalf("error creating storage func: %v", err)
+			log.Fatalf("error creating storage: %v", err)
 		}
-		s, err := server.New(storageFn)
+		s, err := server.New(store)
 		if err != nil {
 			log.Fatalf("error creating new server")
 		}
@@ -68,12 +68,10 @@ func initConfig() {
 	}
 }
 
-func newStorageFunc(host, user, dbname, sslmode string) (server.StorageFunc, error) {
+func newStorage(host, user, dbname, sslmode string) (storage.Storage, error) {
 	cs, err := postgres2.NewConnectionString(host, user, dbname, sslmode)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create connection string: %v", err)
 	}
-	return func() (storage.Storage, error) {
-		return postgres2.New(cs)
-	}, nil
+	return postgres2.New(cs)
 }
