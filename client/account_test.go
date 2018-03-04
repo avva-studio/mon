@@ -68,11 +68,17 @@ func TestPostAccountToEndpoint(t *testing.T) {
 		}
 		assert.Nil(t, bod)
 	})
-	//t.Run("processRequestForBody err", func(t *testing.T) {
-	//	_ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	//		 TODO: make a processRequestForBody error test
-	//}))
-	//})
+
+	t.Run("processRequestForBody err", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+		}))
+		bod, err := Client(srv.URL).postAccountToEndpoint("", nil)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "server returned unexpected code ")
+		}
+		assert.Empty(t, bod)
+	})
 }
 
 //func TestClient_InsertAccount(t *testing.T) {
