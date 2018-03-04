@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -27,4 +28,16 @@ func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
 	}
 	return s.balances(uint(id))
+}
+
+func (s *server) insertBalance(accountID uint, b balance.Balance) (int, interface{}, error) {
+	a, err := s.storage.SelectAccount(accountID)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrap(err, "selecting account")
+	}
+	inserted, err := s.storage.InsertBalance(*a, b)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrap(err, "inserting balance")
+	}
+	return http.StatusOK, inserted, nil
 }
