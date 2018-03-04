@@ -45,5 +45,9 @@ func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
 }
 
 func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, error) {
-	return nil, nil, nil
+	inserted, err := s.storage.InsertAccount(a)
+	if err != nil {
+		return http.StatusBadRequest, nil, err
+	}
+	return http.StatusOK, inserted, nil
 }
