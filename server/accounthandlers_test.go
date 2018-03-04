@@ -13,72 +13,64 @@ import (
 )
 
 func Test_handlerSelectAccounts(t *testing.T) {
-	for _, test := range []struct {
-		name string
-		code int
-		err  error
-	}{
-		{
-			name: "error",
-			code: http.StatusServiceUnavailable,
-			err:  errors.New("selecting handlerSelectAccounts"),
-		},
-		{
-			name: "success",
-			code: http.StatusOK,
-		},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			server := &server{
-				storage: &accountingtest.Storage{Err: test.err},
-			}
-			code, as, err := server.handlerSelectAccounts(nil)
-			assert.Equal(t, test.code, code)
+	t.Run("error", func(t *testing.T) {
+		expected := errors.New("selecting Accounts")
+		server := &server{
+			storage: &accountingtest.Storage{Err: expected},
+		}
+		code, as, err := server.handlerSelectAccounts(nil)
+		assert.Equal(t, http.StatusServiceUnavailable, code)
+		assert.Equal(t, expected, errors.Cause(err))
+		assert.Nil(t, as)
+	})
 
-			if test.err != nil {
-				assert.Equal(t, test.err, errors.Cause(err))
-				return
-			}
-			assert.NoError(t, err)
-			_, ok := as.(*storage.Accounts)
-			assert.True(t, ok)
-		})
-	}
+	t.Run("success", func(t *testing.T) {
+		expected := &storage.Accounts{
+			storage.Account{ID: 8767},
+		}
+		server := &server{
+			storage: &accountingtest.Storage{
+				Accounts: expected,
+			},
+		}
+		code, as, err := server.handlerSelectAccounts(nil)
+		assert.Equal(t, http.StatusOK, code)
+		assert.NoError(t, err)
+		storeAs := as.(*storage.Accounts)
+		assert.Equal(t, expected, storeAs)
+	})
 }
 
 func Test_handlerSelectAccount(t *testing.T) {
-	for _, test := range []struct {
-		name string
-		code int
-		err  error
-	}{
-		{
-			name: "error",
-			code: http.StatusNotFound,
-			err:  errors.New("selecting Account"),
-		},
-		{
-			name: "success",
-			code: http.StatusOK,
-		},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			server := &server{
-				storage: &accountingtest.Storage{AccountErr: test.err},
-			}
-			code, a, err := server.handlerSelectAccount(1)
-			assert.Equal(t, test.code, code)
+	t.Run("error", func(t *testing.T) {
+		expected := errors.New("selecting Account")
+		server := &server{
+			storage: &accountingtest.Storage{AccountErr: expected},
+		}
+		code, a, err := server.handlerSelectAccount(1)
+		assert.Equal(t, http.StatusNotFound, code)
+		assert.Equal(t, expected, errors.Cause(err))
+		assert.Nil(t, a)
+	})
 
-			if test.err != nil {
-				assert.Equal(t, test.err, errors.Cause(err))
-				return
-			}
-
-			assert.NoError(t, err)
-			_, ok := a.(*storage.Account)
-			assert.True(t, ok)
-		})
-	}
+	t.Run("success", func(t *testing.T) {
+		expected := &storage.Account{
+			ID: 456789,
+			Account: accountingtest.NewAccount(t,
+				"success account",
+				accountingtest.NewCurrencyCode(t, "EUR"),
+				time.Date(1000, 0, 0, 0, 0, 0, 0, time.UTC),
+			),
+		}
+		server := &server{
+			storage: &accountingtest.Storage{Account: expected},
+		}
+		code, a, err := server.handlerSelectAccount(1)
+		assert.Equal(t, http.StatusOK, code)
+		assert.NoError(t, err)
+		storeA := a.(*storage.Account)
+		assert.Equal(t, expected, storeA)
+	})
 }
 
 func Test_handlerInsertAccount(t *testing.T) {
@@ -110,5 +102,4 @@ func Test_handlerInsertAccount(t *testing.T) {
 		assert.NotNil(t, inserted)
 		assert.Equal(t, expected, inserted)
 	})
-
 }
