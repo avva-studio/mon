@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/gorilla/mux"
@@ -23,19 +22,9 @@ func (s *server) balances(accountID uint) (int, interface{}, error) {
 }
 
 func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{}, error) {
-	vars := mux.Vars(r)
-	if vars == nil {
-		return http.StatusBadRequest, nil, errors.New("no context variables")
-	}
-
-	key := "id"
-	idString, ok := vars[key]
-	if !ok {
-		return http.StatusBadRequest, nil, errors.New("no account_id context variable")
-	}
-	id, err := strconv.ParseUint(idString, 10, 64)
+	id, err := extractID(mux.Vars(r))
 	if err != nil {
-		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
 	}
 	return s.balances(uint(id))
 }
