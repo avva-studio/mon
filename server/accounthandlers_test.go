@@ -28,9 +28,10 @@ func Test_handlerSelectAccounts(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			code, as, err := (&server{
+			server := &server{
 				storage: &accountingtest.Storage{Err: test.err},
-			}).handlerSelectAccounts(nil)
+			}
+			code, as, err := server.handlerSelectAccounts(nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
@@ -45,10 +46,6 @@ func Test_handlerSelectAccounts(t *testing.T) {
 }
 
 func Test_handlerSelectAccount(t *testing.T) {
-	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
-		return s.handlerSelectAccount(1)(r)
-	}
-
 	for _, test := range []struct {
 		name string
 		code int
@@ -65,10 +62,11 @@ func Test_handlerSelectAccount(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			srv := &server{
+			server := &server{
 					storage: &accountingtest.Storage{AccountErr: test.err},
 			}
-			code, a, err := serveFn(srv, nil)
+			// request is not used in handlerSelectAccount
+			code, a, err := server.handlerSelectAccount(1)(nil)
 			assert.Equal(t, test.code, code)
 
 			if test.err != nil {
