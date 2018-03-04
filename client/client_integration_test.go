@@ -1,10 +1,9 @@
 package client
 
 import (
+	"fmt"
 	"testing"
 	"time"
-
-	"fmt"
 
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
@@ -26,7 +25,7 @@ func TestClient_SelectAccounts(t *testing.T) {
 					t,
 					"test-0",
 					accountingtest.NewCurrencyCode(t, "EUR"),
-					time.Now().Truncate(time.Nanosecond),
+					time.Now().UTC().Truncate(time.Nanosecond),
 				),
 			},
 			{
@@ -35,7 +34,8 @@ func TestClient_SelectAccounts(t *testing.T) {
 					t,
 					"test-1",
 					accountingtest.NewCurrencyCode(t, "GBP"),
-					time.Now().Add(time.Hour*123).Truncate(time.Nanosecond),
+					// TODO: Revert this test to not have the UTC() and test when the timezone of the machine running is not UTC.
+					time.Now().UTC().Add(time.Hour*123).Truncate(time.Nanosecond),
 				),
 			},
 		},
@@ -73,7 +73,7 @@ func TestClient_SelectAccount(t *testing.T) {
 				t,
 				"test",
 				accountingtest.NewCurrencyCode(t, "EUR"),
-				time.Now().Truncate(time.Nanosecond),
+				time.Now().UTC().Truncate(time.Nanosecond),
 			),
 		},
 	}
