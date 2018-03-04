@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/glynternet/go-accounting/account"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
-
 
 // TODO: redesign these so that they don't need to take a request? There could be multiple handler types either take a request or don't take a request
 func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
@@ -33,90 +33,17 @@ func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, err
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.handlerSelectAccount(uint(id))(nil) // Request is not needed for select account handler
+	return s.handlerSelectAccount(uint(id))
 }
 
-func (s *server) handlerSelectAccount(id uint) appJSONHandler {
-	return func(_ *http.Request) (int, interface{}, error) {
-		a, err := s.storage.SelectAccount(id)
-		if err != nil {
-			return http.StatusNotFound, nil, errors.Wrap(err, "selecting handlerSelectAccount from storage")
-		}
-		return http.StatusOK, a, nil
+func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
+	a, err := s.storage.SelectAccount(id)
+	if err != nil {
+		return http.StatusNotFound, nil, errors.Wrap(err, "selecting handlerSelectAccount from storage")
 	}
+	return http.StatusOK, a, nil
 }
 
-///// THIS NEEDS SPLITTING UP AND ISN'T GOING SO WELL AT THE MOMENT
-///// I THINK IT WOULD BE BEST TO SPLIT UP INTO SOMETHING THAT TAKES IN A REQUEST
-///// AND PARSES IT INTO AN ACCOUNT, THEN WE CAN JUST HAVE A HANDLER THAT TAKES
-///// AN ACCOUNT AND WRITES TO A RESPONSE WRITER???
-
-//func (s *server) handlerInsertAccout2(w http.ResponseWriter, r *http.Request) {
-//	a, err := parseAccount(r)
-//	sa, err := insertAccount(a)
-//
-//}
-
-//func insertAccountStorageRequestHandlerfunc(store storage.Storage, r *http.Request) (interface{}, int, error) {
-//	inner, err := readAccount(r.Body)
-//	if err != nil {
-//		return nil, http.StatusBadRequest, errors.Wrap(err, "reading account from body")
-//	}
-//	a, err := store.InsertAccount(*inner)
-//	if err != nil {
-//		return nil, http.StatusBadRequest, errors.Wrap(err, "inserting account to storage")
-//	}
-//	return a, http.StatusOK, nil
-//}
-//
-//func (s *server) newHandlerInsertAccountAppHandler() appJSONHandler {
-//	store, err := s.NewStorage()
-//	if err != nil {
-//		return nil
-//	}
-//	return func(w http.ResponseWriter, r *http.Request) (int, error) {
-//		insertAccountStorageRequestHandlerfunc(store, r)
-//	}
-//}
-//
-//func (s *server) handlerInsertAccount(w http.ResponseWriter, r *http.Request) (int, interface{}, error) {
-//
-//	if w == nil {
-//		return http.StatusInternalServerError, nil, errors.New("nil ResponseWriter")
-//	}
-//
-//	store, err := s.NewStorage()
-//	if err != nil {
-//		return http.StatusServiceUnavailable, nil, errors.Wrap(err, "creating new storage")
-//	}
-//
-//	encode, code, err := func(store storage.Storage, r *http.Request) (interface{}, int, error) {
-//		inner, err := readAccount(r.Body)
-//		if err != nil {
-//			return nil, http.StatusBadRequest, errors.Wrap(err, "reading account from body")
-//		}
-//		a, err := store.InsertAccount(*inner)
-//		if err != nil {
-//			return nil, http.StatusBadRequest, errors.Wrap(err, "inserting account to storage")
-//		}
-//		return a, http.StatusOK, nil
-//	}(store, r)
-//
-//	if err != nil {
-//		return code, errors.Wrap(err, "handling insert account request")
-//	}
-//
-//	return http.StatusOK, encode, nil
-//}
-//
-//func readAccount(r io.Reader) (*account2.Account, error) {
-//	bod, err := ioutil.ReadAll(r)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "reading all body")
-//	}
-//	inner := new(account2.Account)
-//	return inner, errors.Wrap(
-//		json.Unmarshal(bod, inner),
-//		"unmarshalling body to account",
-//	)
-//}
+func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, error) {
+	return nil, nil, nil
+}
