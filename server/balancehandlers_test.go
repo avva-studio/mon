@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
@@ -12,66 +11,44 @@ import (
 )
 
 func Test_balances(t *testing.T) {
-	for _, test := range []struct {
-		name        string
-		code        int
-		account     *storage.Account
-		accountErr  error
-		balancesErr error
-	}{
-		{
-			name:       "SelectAccount error",
-			code:       http.StatusBadRequest,
-			accountErr: errors.New("account error"),
-		},
-		{
-			name: "SelectBalance error",
-			code: http.StatusBadRequest,
-			account: &storage.Account{
-				ID: 51,
-				Account: accountingtest.NewAccount(
-					t,
-					"test",
-					accountingtest.NewCurrencyCode(t, "EUR"),
-					time.Now().Truncate(time.Nanosecond),
-				),
+	t.Run("SelectAccount error", func(t *testing.T) {
+		expected := errors.New("account error")
+		srv := &server{
+			storage: &accountingtest.Storage{
+				AccountErr: expected,
 			},
-			balancesErr: errors.New("balances error"),
-		},
-		{
-			name: "all ok",
-			code: http.StatusOK,
-			account: &storage.Account{
-				ID: 51,
-				Account: accountingtest.NewAccount(
-					t,
-					"test",
-					accountingtest.NewCurrencyCode(t, "EUR"),
-					time.Now().Truncate(time.Nanosecond),
-				),
-			},
-		},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			srv := &server{
-				storage: &accountingtest.Storage{
-					Account:     test.account,
-					AccountErr:  test.accountErr,
-					BalancesErr: test.balancesErr,
-				},
-			}
-			code, bs, err := srv.balances(1)
-			assert.Equal(t, test.code, code)
+		}
+		code, bs, err := srv.balances(1) // any ID can be used because of the stub
+		assert.Equal(t, http.StatusBadRequest, code)
+		assert.Equal(t, expected, errors.Cause(err))
+		assert.Nil(t, bs)
+	})
 
-			if test.accountErr != nil {
-				assert.Equal(t, test.accountErr, errors.Cause(err))
-				return
-			}
-			if test.balancesErr != nil {
-				assert.Equal(t, test.balancesErr, errors.Cause(err))
-				return
-			}
-			assert.IsType(t, new(storage.Balances), bs)
-		})
-	}
+	t.Run("SelectBalance error", func(t *testing.T) {
+		account := &storage.Account{ID: 51}
+		expected := errors.New("balances error")
+		srv := &server{
+			storage: &accountingtest.Storage{
+				Account:     account,
+				BalancesErr: expected,
+			},
+		}
+		code, bs, err := srv.balances(1) // any ID can be used because of the stub
+		assert.Equal(t, http.StatusBadRequest, code)
+		assert.Equal(t, expected, errors.Cause(err))
+		assert.Nil(t, bs)
+	})
+
+	t.Run("all ok", func(t *testing.T) {
+		account := &storage.Account{ID: 51}
+		srv := &server{
+			storage: &accountingtest.Storage{
+				Account: account,
+			},
+		}
+		code, bs, err := srv.balances(1) // any ID can be used because of the stub
+		assert.Equal(t, http.StatusOK, code)
+		assert.NoError(t, err)
+		assert.IsType(t, new(storage.Balances), bs)
+	})
 }
