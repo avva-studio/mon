@@ -9,19 +9,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *server) balances(accountID uint) appJSONHandler {
-	return func(_ *http.Request) (int, interface{}, error) {
-		a, err := s.storage.SelectAccount(accountID)
-		if err != nil {
-			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountID)
-		}
-		var bs *storage.Balances
-		bs, err = s.storage.SelectAccountBalances(*a)
-		if err != nil {
-			return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting balances for account %+v", *a)
-		}
-		return http.StatusOK, bs, nil
+func (s *server) balances(accountID uint) (int, interface{}, error) {
+	a, err := s.storage.SelectAccount(accountID)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountID)
 	}
+	var bs *storage.Balances
+	bs, err = s.storage.SelectAccountBalances(*a)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting balances for account %+v", *a)
+	}
+	return http.StatusOK, bs, nil
 }
 
 func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{}, error) {
@@ -39,5 +37,5 @@ func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
 	}
-	return s.balances(uint(id))(nil) // Request is not needed for balances handler
+	return s.balances(uint(id))
 }

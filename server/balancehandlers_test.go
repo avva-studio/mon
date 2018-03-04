@@ -12,15 +12,11 @@ import (
 )
 
 func Test_balances(t *testing.T) {
-	serveFn := func(s *server, r *http.Request) (int, interface{}, error) {
-		return s.balances(1)(r)
-	}
-
 	for _, test := range []struct {
-		name       string
-		code       int
-		account    *storage.Account
-		accountErr error
+		name        string
+		code        int
+		account     *storage.Account
+		accountErr  error
 		balancesErr error
 	}{
 		{
@@ -58,13 +54,13 @@ func Test_balances(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			srv := &server{
-				storage:&accountingtest.Storage{
-						Account:     test.account,
-						AccountErr:  test.accountErr,
-						BalancesErr: test.balancesErr,
-					},
+				storage: &accountingtest.Storage{
+					Account:     test.account,
+					AccountErr:  test.accountErr,
+					BalancesErr: test.balancesErr,
+				},
 			}
-			code, bs, err := serveFn(srv, nil)
+			code, bs, err := srv.balances(1)
 			assert.Equal(t, test.code, code)
 
 			if test.accountErr != nil {

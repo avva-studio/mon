@@ -7,6 +7,7 @@ import (
 
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 )
 
@@ -25,4 +26,8 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 		bs = nil
 	}
 	return bs, err
+}
+
+func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
+	return nil, errors.New("not implemented")
 }

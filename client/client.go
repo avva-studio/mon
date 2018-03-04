@@ -10,8 +10,6 @@ import (
 
 	"bytes"
 
-	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 )
 
@@ -31,11 +29,7 @@ func (c Client) Available() bool {
 }
 
 func (c Client) Close() error {
-	return errors.New("not implemented")
-}
-
-func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
-	return nil, errors.New("not implemented")
+	return nil
 }
 
 func (c Client) getBodyFromEndpoint(e string) ([]byte, error) {
