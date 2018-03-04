@@ -25,7 +25,7 @@ func Test_balances(t *testing.T) {
 	})
 
 	t.Run("SelectBalance error", func(t *testing.T) {
-		account := &storage.Account{ID: 51}
+		account := &storage.Account{}
 		expected := errors.New("balances error")
 		srv := &server{
 			storage: &accountingtest.Storage{
@@ -40,7 +40,7 @@ func Test_balances(t *testing.T) {
 	})
 
 	t.Run("all ok", func(t *testing.T) {
-		account := &storage.Account{ID: 51}
+		account := &storage.Account{}
 		srv := &server{
 			storage: &accountingtest.Storage{
 				Account: account,
