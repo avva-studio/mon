@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"io/ioutil"
+
 	"github.com/glynternet/go-accounting/account"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -44,6 +46,18 @@ func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
 		return http.StatusNotFound, nil, errors.Wrap(err, "selecting handlerSelectAccount from storage")
 	}
 	return http.StatusOK, a, nil
+}
+
+func (s *server) muxAccountInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
+	bod, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "reading request body")
+	}
+	a, err := account.UnmarshalJSON(bod)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "unmarshalling request body")
+	}
+	return s.handlerInsertAccount(a)
 }
 
 func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, error) {

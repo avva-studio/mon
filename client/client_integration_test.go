@@ -117,7 +117,7 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 		},
 	}
 	srv, err := server.New(s)
-	assert.NoError(t, err)
+	common.FatalIfError(t, err, "creating new server")
 	assert.NotNil(t, srv)
 
 	srvErr := make(chan error)
@@ -138,47 +138,44 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 	common.FatalIfError(t, <-srvErr, "serving")
 }
 
-//// TODO: Do these tests actually want to be split up?
-//// What are the best practices here?
-//func TestClient_InsertAccount2(t *testing.T) {
-//	testPort := port + 3
-//
-//	account := &storage.Account{
-//		ID: 51,
-//		Account: accountingtest.NewAccount(
-//			t,
-//			"test",
-//			accountingtest.NewCurrencyCode(t, "EUR"),
-//			time.Now().Truncate(time.Nanosecond),
-//		),
-//	}
-//
-//	s := &accountingtest.Storage{
-//		Account: account,
-//	}
-//	srv, err := server.New(testutils.NewMockStorageFunc(s, false))
-//	common.FatalIfError(t, err, "creating mock storage")
-//	assert.NotNil(t, srv)
-//
-//	srvErr := make(chan error)
-//	go func() {
-//		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
-//	}()
-//
-//	time.Sleep(time.Millisecond * 10)
-//
-//	go func() {
-//		inserted, err := newTestClient(testPort).InsertAccount(account.Account)
-//		assert.NoError(t, err)
-//		if assert.NotNil(t, inserted) {
-//			assert.Equal(t, account.ID, inserted.ID)
-//			assert.Equal(t, account.Account, inserted.Account)
-//		}
-//		close(srvErr)
-//	}()
-//
-//	common.FatalIfError(t, <-srvErr, "serving")
-//}
+func TestClient_InsertAccount(t *testing.T) {
+	testPort := port + 3
+
+	account := &storage.Account{
+		ID: 51,
+		Account: accountingtest.NewAccount(
+			t,
+			"test",
+			accountingtest.NewCurrencyCode(t, "EUR"),
+			time.Date(3000, 0, 0, 0, 0, 0, 0, time.UTC),
+		),
+	}
+
+	s := &accountingtest.Storage{
+		Account: account,
+	}
+	srv, err := server.New(s)
+	common.FatalIfError(t, err, "creating new server")
+
+	srvErr := make(chan error)
+	go func() {
+		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+	}()
+
+	time.Sleep(time.Millisecond * 10)
+
+	go func() {
+		inserted, err := newTestClient(testPort).InsertAccount(account.Account)
+		assert.NoError(t, err)
+		if assert.NotNil(t, inserted) {
+			assert.Equal(t, account.ID, inserted.ID)
+			assert.Equal(t, account.Account, inserted.Account)
+		}
+		close(srvErr)
+	}()
+
+	common.FatalIfError(t, <-srvErr, "serving")
+}
 
 // TODO: newTestClient as closure that increments port everytime it's called
 func newTestClient(port int) Client {
