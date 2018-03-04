@@ -19,21 +19,23 @@ func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error
 }
 
 func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, error) {
-	vars := mux.Vars(r)
-	if vars == nil {
-		return http.StatusBadRequest, nil, errors.New("no context variables")
+	id, err := extractID(mux.Vars(r))
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
 	}
+	return s.handlerSelectAccount(id)
+}
 
-	key := "id"
-	idString, ok := vars[key]
+func extractID(vars map[string]string) (uint, error) {
+	if vars == nil {
+		return 0, errors.New("nil vars map")
+	}
+	idString, ok := vars[("id")]
 	if !ok {
-		return http.StatusBadRequest, nil, errors.New("no account_id context variable")
+		return 0, errors.New("no account id context variable")
 	}
 	id, err := strconv.ParseUint(idString, 10, 64)
-	if err != nil {
-		return http.StatusBadRequest, nil, errors.Wrapf(err, "parsing %s to uint", key)
-	}
-	return s.handlerSelectAccount(uint(id))
+	return uint(id), errors.Wrapf(err, "parsing %s to uint", idString)
 }
 
 func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
