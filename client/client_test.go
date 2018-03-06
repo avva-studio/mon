@@ -1,7 +1,10 @@
 package client
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/glynternet/go-accounting-storage"
@@ -32,18 +35,18 @@ func Test_getBodyFromEndpoint(t *testing.T) {
 	})
 }
 
-type mockMarshal struct {
+type stubMarshal struct {
 	err error
 }
 
-func (m mockMarshal) MarshalJSON() ([]byte, error) {
+func (m stubMarshal) MarshalJSON() ([]byte, error) {
 	return nil, m.err
 }
 
 func Test_postAsJSONToEndpoint(t *testing.T) {
 	t.Run("marshal error", func(t *testing.T) {
 		c := Client("bloopybloop")
-		obj := mockMarshal{
+		obj := stubMarshal{
 			err: errors.New("can't unmarshal me"),
 		}
 		res, err := c.postAsJSONToEndpoint("", obj)
@@ -61,4 +64,19 @@ func Test_postAsJSONToEndpoint(t *testing.T) {
 		}
 		assert.Nil(t, res)
 	})
+}
+
+func newJSONTestServer(encode interface{}, code int) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		bs, err := json.Marshal(encode)
+		if err != nil {
+			panic(fmt.Sprintf("error marshalling to json: %v", err))
+		}
+		w.WriteHeader(code)
+		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
+		_, err = w.Write(bs)
+		if err != nil {
+			panic(fmt.Sprintf("error writing to ResponseWriter: %v", err))
+		}
+	}))
 }

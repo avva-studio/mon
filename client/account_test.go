@@ -6,8 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"fmt"
-
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,7 +67,7 @@ func TestPostAccountToEndpoint(t *testing.T) {
 		assert.Nil(t, bod)
 	})
 
-	t.Run("processRequestForBody err", func(t *testing.T) {
+	t.Run("processResponseForBody err", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 		}))
@@ -79,19 +77,4 @@ func TestPostAccountToEndpoint(t *testing.T) {
 		}
 		assert.Empty(t, bod)
 	})
-}
-
-func newJSONTestServer(encode interface{}, code int) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bs, err := json.Marshal(encode)
-		if err != nil {
-			panic(fmt.Sprintf("error marshalling to json: %v", err))
-		}
-		w.WriteHeader(code)
-		w.Header().Set(`Content-Type`, `application/json; charset=UTF-8`)
-		_, err = w.Write(bs)
-		if err != nil {
-			panic(fmt.Sprintf("error writing to ResponseWriter: %v", err))
-		}
-	}))
 }

@@ -52,7 +52,7 @@ func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, erro
 	if err != nil {
 		return nil, errors.Wrap(err, "posting as JSON")
 	}
-	return processRequestForBody(res)
+	return processResponseForBody(res)
 }
 
 func unmarshalJSONToAccount(data []byte) (*storage.Account, error) {

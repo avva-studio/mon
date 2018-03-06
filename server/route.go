@@ -14,8 +14,10 @@ const (
 	EndpointAccountInsert = EndpointAccount + "/insert"
 
 	// Account Balances
-	EndpointFmtAccountBalances = EndpointAccount + "/%d/balances"
-	patternAccountBalances     = EndpointAccount + "/{id}/balances"
+	EndpointFmtAccountBalances      = EndpointAccount + "/%d/balances"
+	patternAccountBalances          = EndpointAccount + "/{id}/balances"
+	EndpointFmtAccountBalanceInsert = EndpointAccount + "/%d/balance/insert"
+	patternAccountBalanceInsert     = EndpointAccount + "/{id}/balance/insert"
 )
 
 type route struct {
@@ -50,6 +52,12 @@ func (s *server) routes() []route {
 			pattern:    patternAccountBalances,
 			appHandler: s.muxAccountBalancesHandlerFunc,
 			method:     http.MethodGet,
+		},
+		{
+			name:       "BalanceInsert",
+			pattern:    patternAccountBalanceInsert,
+			appHandler: s.muxAccountBalanceInsertHandlerFunc,
+			method:     http.MethodPost,
 		},
 	}
 }

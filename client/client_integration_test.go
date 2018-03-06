@@ -8,6 +8,7 @@ import (
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
 	"github.com/stretchr/testify/assert"
 )
@@ -167,10 +168,37 @@ func TestClient_InsertAccount(t *testing.T) {
 	go func() {
 		inserted, err := newTestClient(testPort).InsertAccount(account.Account)
 		assert.NoError(t, err)
-		if assert.NotNil(t, inserted) {
-			assert.Equal(t, account.ID, inserted.ID)
-			assert.Equal(t, account.Account, inserted.Account)
-		}
+		assert.Equal(t, account.ID, inserted.ID)
+		assert.Equal(t, account.Account, inserted.Account)
+		close(srvErr)
+	}()
+
+	common.FatalIfError(t, <-srvErr, "serving")
+}
+
+func TestClient_InsertBalance(t *testing.T) {
+	testPort := port + 4
+	account := &storage.Account{ID: 51}
+
+	expected := &storage.Balance{ID: 293}
+	s := &accountingtest.Storage{
+		Account: account,
+		Balance: expected,
+	}
+	srv, err := server.New(s)
+	common.FatalIfError(t, err, "creating new server")
+
+	srvErr := make(chan error)
+	go func() {
+		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+	}()
+
+	time.Sleep(time.Millisecond * 10)
+
+	go func() {
+		inserted, err := newTestClient(testPort).InsertBalance(storage.Account{}, balance.Balance{})
+		assert.NoError(t, err)
+		assert.Equal(t, expected, inserted)
 		close(srvErr)
 	}()
 

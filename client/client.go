@@ -37,10 +37,10 @@ func (c Client) getBodyFromEndpoint(e string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting from endpoint")
 	}
-	return processRequestForBody(res)
+	return processResponseForBody(res)
 }
 
-func processRequestForBody(res *http.Response) ([]byte, error) {
+func processResponseForBody(res *http.Response) ([]byte, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned unexpected code %d (%s)", res.StatusCode, res.Status)
 	}

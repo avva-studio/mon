@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/glynternet/go-accounting-storage"
@@ -40,4 +42,21 @@ func (s *server) insertBalance(accountID uint, b balance.Balance) (int, interfac
 		return http.StatusBadRequest, nil, errors.Wrap(err, "inserting balance")
 	}
 	return http.StatusOK, inserted, nil
+}
+
+func (s *server) muxAccountBalanceInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
+	id, err := extractID(mux.Vars(r))
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
+	}
+	bod, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "reading request body")
+	}
+	var b balance.Balance
+	err = json.Unmarshal(bod, &b)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "unmarshalling request body")
+	}
+	return s.insertBalance(id, b)
 }
