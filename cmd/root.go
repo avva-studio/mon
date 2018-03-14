@@ -7,6 +7,7 @@ import (
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,11 +45,11 @@ var RootCmd = &cobra.Command{
 		log.Printf("%s %s", keySSLMode, sslmode)
 		store, err := newStorage(host, user, dbname, sslmode)
 		if err != nil {
-			log.Fatalf("error creating storage: %v", err)
+			log.Fatal(errors.Wrap(err, "error creating storage"))
 		}
 		s, err := server.New(store)
 		if err != nil {
-			log.Fatalf("error creating new server")
+			log.Fatal(errors.Wrap(err, "error creating new server"))
 		}
 		log.Fatal(s.ListenAndServe(":" + port))
 	},
