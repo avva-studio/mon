@@ -1,6 +1,6 @@
 VERSION ?= $(shell git describe --tags --always)
 LDFLAGS = "-w -X main.Version=$(VERSION)"
-NAME = gohmoney-rest
+NAME = accounting-rest
 
 OS ?= linux
 ARCH ?= amd64

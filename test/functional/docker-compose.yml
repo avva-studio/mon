@@ -1,15 +1,15 @@
-version: '2'
+version: '3.5'
 services:
   gohmoneyrestapi:
     container_name: gohmoney-rest
     build: .
-    image: gohmoney-rest:${VERSION}
+    image: gohmoney-rest:functional-test
     ports:
       - "8080:8080"
     environment:
       - ENV=docker
       - PORT=8080
-      - DB-HOST=postgres
-      - DB-USER=functionaltest-dbuser
-      - DB-NAME=functionaltest-dbname
-      - DB-SSLMODE=disable
+      - DB_HOST=postgres
+      - DB_USER=functionaltest-dbuser
+      - DB_NAME=functionaltest-dbname
+      - DB_SSLMODE=disable
