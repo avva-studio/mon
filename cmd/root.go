@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/Pocketbrain/go-logger"
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
@@ -12,38 +14,30 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	host    string
-	user    string
-	dbname  string
-	sslmode string
-	port    string
-)
-
 const (
-	keyHost    = "host"
-	keyUser    = "user"
-	keyDBName  = "dbname"
-	keySSLMode = "sslmode"
-	appName    = "accounting-rest"
+	appName = "accounting-rest"
+
+	// viper keys
+	keyPort      = "port"
+	keyDBHost    = "db-host"
+	keyDBUser    = "db-user"
+	keyDBName    = "db-name"
+	keyDBSSLMode = "db-sslmode"
 )
 
 func Execute() error {
-	return RootCmd.Execute()
+	return rootCmd.Execute()
 }
 
-var RootCmd = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Use: appName,
 	Run: func(cmd *cobra.Command, args []string) {
-		host = viper.GetString(keyHost)
-		log.Printf("%s %s", keyHost, host)
-		user = viper.GetString(keyUser)
-		log.Printf("%s %s", keyUser, user)
-		dbname = viper.GetString(keyDBName)
-		log.Printf("%s %s", keyDBName, dbname)
-		sslmode = viper.GetString(keySSLMode)
-		log.Printf("%s %s", keySSLMode, sslmode)
-		store, err := newStorage(host, user, dbname, sslmode)
+		store, err := newStorage(
+			viper.GetString(keyDBHost),
+			viper.GetString(keyDBUser),
+			viper.GetString(keyDBName),
+			viper.GetString(keyDBSSLMode),
+		)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "error creating storage"))
 		}
@@ -51,22 +45,26 @@ var RootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "error creating new server"))
 		}
-		log.Fatal(s.ListenAndServe(":" + port))
+		log.Fatal(s.ListenAndServe(":" + viper.GetString(keyPort)))
 	},
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	RootCmd.PersistentFlags().StringVar(&port, "port", "8080", "server listening port")
+	rootCmd.PersistentFlags().String(keyPort, "8080", "server listening port")
+	rootCmd.PersistentFlags().String(keyDBHost, "", "host address of the DB backend")
+	rootCmd.PersistentFlags().String(keyDBName, "", "name of the DB set to use")
+	rootCmd.PersistentFlags().String(keyDBUser, "", "DB user to authenticate with")
+	rootCmd.PersistentFlags().String(keyDBSSLMode, "", "DB SSL mode to use")
+	err := viper.BindPFlags(rootCmd.Flags())
+	if err != nil {
+		plog.Error(fmt.Sprintf("unable to BindPFlags: %v", err))
+	}
 }
 
 func initConfig() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath("$HOME/." + appName)
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("error reading config: %v", err)
-	}
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv() // read in environment variables that match
 }
 
 func newStorage(host, user, dbname, sslmode string) (storage.Storage, error) {
