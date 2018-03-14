@@ -29,7 +29,7 @@
   branch = "develop-1"
   name = "github.com/glynternet/go-accounting-storage"
   packages = [".","postgres2"]
-  revision = "60c3b8ff92cf0e9f28c28fcf999beaaa16388a9c"
+  revision = "bc695914609eaf6e88f01f4234983b9f85bf648f"
 
 [[projects]]
   branch = "master"
