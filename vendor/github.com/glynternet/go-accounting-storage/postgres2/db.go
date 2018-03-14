@@ -8,6 +8,8 @@ import (
 	"io"
 	"log"
 	"strings"
+
+	"github.com/glynternet/go-accounting-storage"
 )
 
 const driver = "postgres"
@@ -26,6 +28,7 @@ type postgres struct {
 	db *sql.DB
 }
 
+// NewConnectionString creates a new connection string for the postgres db
 // dbname can be an empty string when you are connecting to create the Storage
 func NewConnectionString(host, user, dbname, sslmode string) (s string, err error) {
 	if len(strings.TrimSpace(host)) == 0 {
@@ -87,7 +90,11 @@ func CreateStorage(host, user, dbname, sslmode string) error {
 	if err != nil {
 		return err
 	}
-	return createAccountsTable(userConnect)
+	err = createAccountsTable(userConnect)
+	if err != nil {
+		return err
+	}
+	return createBalancesTable(userConnect)
 }
 
 func createDatabase(connection, name, owner string) error {
@@ -123,16 +130,39 @@ func createAccountsTable(connection string) error {
 	currency char(3) NOT NULL,
 	opened timestamp with time zone NOT NULL,
 	closed timestamp with time zone,
-	deleted timestamp with time zone
-);`)
+	deleted timestamp with time zone);`)
 	return err
 }
 
-func DeleteStorage(connectionString, name string) error {
+func createBalancesTable(connection string) error {
+	db, err := open(connection)
+	if err != nil {
+		return err
+	}
+	query := fmt.Sprintf(`CREATE TABLE %s (
+	%s SERIAL PRIMARY KEY,
+	%s integer NOT NULL,
+	%s timestamp with time zone NOT NULL,
+	%s bigint NOT NULL);`,
+		balancesTable,
+		balancesFieldID,
+		balancesFieldAccountID,
+		balancesFieldTime,
+		balancesFieldAmount)
+	defer nonReturningCloseDB(db)
+	_, err = db.Exec(query)
+	return err
+}
+
+func DeleteStorage(host, user, name, sslmode string) error {
 	if len(strings.TrimSpace(name)) == 0 {
 		return errors.New("storage name must be non-whitespace and longer than 0 characters")
 	}
-	db, err := open(connectionString)
+	adminConnect, err := NewConnectionString(host, user, "", sslmode)
+	if err != nil {
+		return err
+	}
+	db, err := open(adminConnect)
 	if err != nil {
 		return err
 	}
@@ -155,11 +185,29 @@ func (s postgres) Close() error {
 	return s.db.Close()
 }
 
+func nonReturningClose(c io.Closer, name string) {
+	var nameInsert string
+	if name != "" {
+		nameInsert = fmt.Sprintf("(%s) ", name)
+	}
+	if c == nil {
+		log.Printf("Attempted to close io.Closer %sbut it was nil.", nameInsert)
+		return
+	}
+	err := c.Close()
+	if err != nil {
+		log.Printf("Error closing io.Closer %s%v", nameInsert, c)
+	}
+}
+
 func nonReturningCloseDB(db *sql.DB) {
-	if db == nil {
-		log.Printf("Attempted to close db but it was nil.")
-	}
-	if err := db.Close(); err != nil {
-		log.Printf("Error closing Closer: %s", err)
-	}
+	nonReturningClose(db, "DB")
+}
+
+func nonReturningCloseRows(rows *sql.Rows) {
+	nonReturningClose(rows, "Rows")
+}
+
+func nonReturningCloseStorage(s storage.Storage) {
+	nonReturningClose(s, "Storage")
 }
