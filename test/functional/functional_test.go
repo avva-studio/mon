@@ -9,6 +9,7 @@ import (
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
 	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,8 @@ const (
 	keyDBUser    = "db-user"
 	keyDBName    = "db-name"
 	keyDBSSLMode = "db-sslmode"
+
+	numOfAccounts = 2
 )
 
 func init() {
@@ -50,9 +53,9 @@ func TestCreateStorage(t *testing.T) {
 }
 
 func TestInsertingAndRetrievingTwoAccounts(t *testing.T) {
-	db := createStorage(t)
+	store := createStorage(t)
 
-	as, err := db.SelectAccounts()
+	as, err := store.SelectAccounts()
 	common.FatalIfError(t, err, "selecting accounts")
 
 	if !assert.Len(t, *as, 0) {
@@ -60,11 +63,10 @@ func TestInsertingAndRetrievingTwoAccounts(t *testing.T) {
 	}
 
 	a := accountingtest.NewAccount(t, "A", accountingtest.NewCurrencyCode(t, "BTC"), time.Now())
-	insertedA, err := db.InsertAccount(a)
+	insertedA, err := store.InsertAccount(a)
 	common.FatalIfError(t, err, "inserting account")
 
-	as, err = db.SelectAccounts()
-	common.FatalIfError(t, err, "selecting accounts after inserting one")
+	as = selectAccounts(t, store)
 
 	if !assert.Len(t, *as, 1) {
 		t.FailNow()
@@ -78,13 +80,13 @@ func TestInsertingAndRetrievingTwoAccounts(t *testing.T) {
 
 	b := accountingtest.NewAccount(t, "B", accountingtest.NewCurrencyCode(t, "EUR"), time.Now().Add(-1*time.Hour))
 
-	insertedB, err := db.InsertAccount(b)
+	insertedB, err := store.InsertAccount(b)
 	common.FatalIfError(t, err, "inserting account")
 
-	as, err = db.SelectAccounts()
+	as, err = store.SelectAccounts()
 	common.FatalIfError(t, err, "selecting accounts after inserting two")
 
-	if !assert.Len(t, *as, 2) {
+	if !assert.Len(t, *as, numOfAccounts) {
 		t.FailNow()
 	}
 	retrievedB := (*as)[1]
@@ -107,6 +109,52 @@ func TestInsertingAndRetrievingTwoAccounts(t *testing.T) {
 	}
 }
 
+func TestInsertingBalances(t *testing.T) {
+	store := createStorage(t)
+	as := selectAccounts(t, store)
+	assert.Len(t, *as, numOfAccounts)
+
+	type accountBalances struct {
+		storage.Account
+		storage.Balances
+	}
+
+	abs := make([]accountBalances, numOfAccounts)
+	for i, a := range *as {
+		bs, err := store.SelectAccountBalances(a)
+		common.FatalIfError(t, err, "selecting account balances")
+		assert.Len(t, *bs, 0)
+		abs[i] = accountBalances{
+			Account:  (*as)[i],
+			Balances: *bs,
+		}
+	}
+
+	for i := 0; i < numOfAccounts; i++ {
+		b, err := balance.New(abs[i].Opened())
+		common.FatalIfError(t, err, "creating new Balance")
+		inserted, err := store.InsertBalance(abs[i].Account, *b)
+		common.FatalIfError(t, err, "inserting Balance")
+		equal := b.Equal(inserted.Balance)
+		if !assert.True(t, equal) {
+			t.FailNow()
+		}
+
+		bs, err := store.SelectAccountBalances(abs[i].Account)
+		common.FatalIfError(t, err, "selecting account balances")
+		assert.Len(t, *bs, 1)
+		abs[i].Balances = *bs
+
+		invalidBalance, err := balance.New(abs[i].Opened().Add(-time.Second))
+		common.FatalIfError(t, err, "creating new invalid Balance")
+		inserted, err = store.InsertBalance(abs[i].Account, *invalidBalance)
+		if !assert.Error(t, err, "inserting Balance") {
+			t.FailNow()
+		}
+		assert.Nil(t, inserted)
+	}
+}
+
 func createStorage(t *testing.T) storage.Storage {
 	cs, err := postgres2.NewConnectionString(
 		viper.GetString(keyDBHost),
@@ -115,7 +163,14 @@ func createStorage(t *testing.T) storage.Storage {
 		viper.GetString(keyDBSSLMode),
 	)
 	common.FatalIfError(t, err, "creating connection string")
-	db, err := postgres2.New(cs)
+	store, err := postgres2.New(cs)
 	common.FatalIfError(t, err, "creating storage")
-	return db
+
+	return store
+}
+
+func selectAccounts(t *testing.T, store storage.Storage) *storage.Accounts {
+	as, err := store.SelectAccounts()
+	common.FatalIfError(t, err, "selecting accounts after inserting one")
+	return as
 }
