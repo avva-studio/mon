@@ -3,6 +3,7 @@ package functional
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/glynternet/go-accounting-storage/postgres2"
 	"github.com/spf13/viper"
@@ -20,13 +21,24 @@ const (
 )
 
 func TestInit(t *testing.T) {
-	err := postgres2.CreateStorage(
-		viper.GetString(keyDBHost),
-		viper.GetString(keyDBUser),
-		viper.GetString(keyDBName),
-		viper.GetString(keyDBSSLMode),
-	)
+	const retries = 5
+
+	var err error
+	var i int
+	for i = 1; i <= retries; i++ {
+		err = postgres2.CreateStorage(
+			viper.GetString(keyDBHost),
+			viper.GetString(keyDBUser),
+			viper.GetString(keyDBName),
+			viper.GetString(keyDBSSLMode),
+		)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second)
+	}
 	assert.NoError(t, err)
+	t.Logf("Attempts: %d", i)
 }
 
 func init() {
