@@ -31,10 +31,10 @@ func TestInit(t *testing.T) {
 			viper.GetString(keyDBName),
 			viper.GetString(keyDBSSLMode),
 		)
-		log.Printf("Attempt: %d, err: %v\n", i, err)
 		if err == nil {
 			break
 		}
+		log.Printf("Attempt: %d, err: %v\n", i, err)
 		time.Sleep(time.Second)
 	}
 	assert.NoError(t, err)
@@ -45,11 +45,3 @@ func init() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
 }
-
-//func newStorage(host, user, dbname, sslmode string) (storage.Storage, error) {
-//	cs, err := postgres2.NewConnectionString(host, user, dbname, sslmode)
-//	if err != nil {
-//		return nil, fmt.Errorf("unable to create connection string: %v", err)
-//	}
-//	return postgres2.New(cs)
-//}
