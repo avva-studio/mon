@@ -165,7 +165,9 @@ func createStorage(t *testing.T) storage.Storage {
 	common.FatalIfError(t, err, "creating connection string")
 	store, err := postgres2.New(cs)
 	common.FatalIfError(t, err, "creating storage")
-
+	if !assert.True(t, store.Available(), "store should be available") {
+		t.FailNow()
+	}
 	return store
 }
 
