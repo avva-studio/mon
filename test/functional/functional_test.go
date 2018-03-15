@@ -1,6 +1,7 @@
 package functional
 
 import (
+	"log"
 	"strings"
 	"testing"
 	"time"
@@ -11,8 +12,6 @@ import (
 )
 
 const (
-	appName = "accounting-rest"
-
 	// viper keys
 	keyDBHost    = "db-host"
 	keyDBUser    = "db-user"
@@ -32,6 +31,7 @@ func TestInit(t *testing.T) {
 			viper.GetString(keyDBName),
 			viper.GetString(keyDBSSLMode),
 		)
+		log.Printf("Attempt: %d, err: %v\n", i, err)
 		if err == nil {
 			break
 		}

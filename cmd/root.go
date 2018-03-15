@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
-	"github.com/Pocketbrain/go-logger"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storage/postgres2"
 	"github.com/spf13/cobra"
@@ -39,7 +39,7 @@ func init() {
 	rootCmd.PersistentFlags().String(keyDBSSLMode, "", "DB SSL mode to use")
 	err := viper.BindPFlags(rootCmd.Flags())
 	if err != nil {
-		plog.Error(fmt.Sprintf("unable to BindPFlags: %v", err))
+		log.Printf("unable to BindPFlags: %v", err)
 	}
 }
 

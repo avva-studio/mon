@@ -15,7 +15,12 @@ ARCH ?= amd64
 all:
 	$(MAKE) fetch-bin
 	$(MAKE) build-tests
-	$(MAKE) docker-compose-build-up
+	$(MAKE) test
+	$(MAKE) clean
+
+clean:
+	rm -v ./bin/$(TEST_BIN_NAME)
+	$(MAKE) docker-compose-down
 
 fetch-bin:
 	cp -v $(GOPATH)/src/$(REPO_URI)/bin/$(BIN_NAME) ./bin/$(BIN_NAME)
@@ -23,5 +28,11 @@ fetch-bin:
 build-tests:
 	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go test -c -o ./bin/$(TEST_BIN_NAME) -installsuffix cgo -a -ldflags $(LDFLAGS)
 
-docker-compose-build-up:
-	docker-compose --project-name $(PROJECT_NAME) up --build
+test:
+	$(MAKE) docker-compose-up
+
+docker-compose-up:
+	docker-compose --project-name $(PROJECT_NAME) up --build --abort-on-container-exit --force-recreate
+
+docker-compose-down:
+	docker-compose --project-name $(PROJECT_NAME) down

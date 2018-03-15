@@ -27,7 +27,6 @@ services:
       ENV: docker
       POSTGRES_PASSWORD: ""
       POSTGRES_USER: postgres
-      POSTGRES_DB: functionaltest_dbname
   functional-tests:
     container_name: functional-tests
     image: functional-tests

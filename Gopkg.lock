@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/Pocketbrain/go-logger"
-  packages = ["."]
-  revision = "c26263c78fc9d8286576108a33d1a8a5fe609600"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -29,7 +23,7 @@
   branch = "develop-1"
   name = "github.com/glynternet/go-accounting-storage"
   packages = [".","postgres2"]
-  revision = "bc695914609eaf6e88f01f4234983b9f85bf648f"
+  revision = "760048f251d02550a5901ca201069d7e1aae4f79"
 
 [[projects]]
   branch = "master"
@@ -110,12 +104,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
   name = "github.com/spf13/afero"
   packages = [".","mem"]
   revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
@@ -159,15 +147,9 @@
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "21652f85b0fdddb6c2b6b77a5beca5c5a908174a"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
-  revision = "89ac7f292d17a339edab4de8efcba5d8672ff661"
+  packages = ["unix"]
+  revision = "cc7307a45468e49eaf2997c890f14aa03a26917b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -184,6 +166,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f70ab68b9460192b1b56eb822e1fc75bbd97544963c4fdd352cf632f408310ee"
+  inputs-digest = "96391cb9a261c41bc8a2f427d2a79bd202d022ad2fa9f42facf21d7373ad77be"
   solver-name = "gps-cdcl"
   solver-version = 1
