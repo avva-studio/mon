@@ -22,8 +22,8 @@
 [[projects]]
   branch = "develop-1"
   name = "github.com/glynternet/go-accounting-storage"
-  packages = [".","postgres2"]
-  revision = "760048f251d02550a5901ca201069d7e1aae4f79"
+  packages = [".","postgres2","test"]
+  revision = "f9323da05f5f74f2a837c8086aee9382bb4db8f3"
 
 [[projects]]
   branch = "master"
@@ -166,6 +166,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "96391cb9a261c41bc8a2f427d2a79bd202d022ad2fa9f42facf21d7373ad77be"
+  inputs-digest = "80da1962067df498ac4c0706a378392a4790026f6b9e6cdd327ef2840add7b17"
   solver-name = "gps-cdcl"
   solver-version = 1
