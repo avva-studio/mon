@@ -13,6 +13,7 @@ const dateFormat = `02-01-2006`
 
 func Accounts(as storage.Accounts, w io.Writer) {
 	table := tablewriter.NewWriter(w)
+	table.SetAutoWrapText(false)
 	table.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency"})
 
 	for _, a := range as {
