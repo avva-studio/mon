@@ -57,10 +57,6 @@ func newStorage(host, user, dbname, sslmode string) (storage.Storage, error) {
 var cmdDBServe = &cobra.Command{
 	Use: appName,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Print(viper.GetString(keyDBHost),
-			viper.GetString(keyDBUser),
-			viper.GetString(keyDBName),
-			viper.GetString(keyDBSSLMode))
 		store, err := newStorage(
 			viper.GetString(keyDBHost),
 			viper.GetString(keyDBUser),

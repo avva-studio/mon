@@ -1,7 +1,7 @@
 REPO_NAME ?= accounting-rest
 REPO_URI ?= github.com/glynternet/$(REPO_NAME)
 
-BIN_NAME ?= $(REPO_NAME)
+BIN_NAME ?= $(REPO_NAME)-serve
 TEST_BIN_NAME ?= functional.test
 
 PROJECT_NAME ?= $(REPO_NAME)-functional-test

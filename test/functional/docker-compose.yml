@@ -36,4 +36,4 @@ services:
       dockerfile: tests.Dockerfile
     environment:
       ENV: docker
-      SERVER_HOST: http://accountingrest
+      SERVER_HOST: http://accountingrest:8080

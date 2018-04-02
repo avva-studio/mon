@@ -24,5 +24,8 @@ func setup() {}
 
 func TestSuite(t *testing.T) {
 	store := client.Client(viper.GetString(keyServerHost))
+	if !store.Available() {
+		t.Fatal("store is unavailable")
+	}
 	test.Test(t, store)
 }
