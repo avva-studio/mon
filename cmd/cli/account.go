@@ -24,11 +24,19 @@ var cmdAccount = &cobra.Command{
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "parsing account id"))
 		}
-		a, err := client.Client(viper.GetString(keyServerHost)).SelectAccount(uint(id))
+		c := client.Client(viper.GetString(keyServerHost))
+		a, err := c.SelectAccount(uint(id))
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "selecting account"))
 		}
+
+		bs, err := c.SelectAccountBalances(*a)
+		if err != nil {
+			log.Fatal(errors.Wrap(err, "selecting account balances"))
+		}
+
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
+		table.Balances(*bs, os.Stdout)
 	},
 }
 
