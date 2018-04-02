@@ -34,3 +34,7 @@ services:
     environment:
       ENV: docker
       SERVER_HOST: http://accountingrest:8080
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_NAME: functionaltest_dbname
+      DB_SSLMODE: disable

@@ -1,12 +1,14 @@
 package functional
 
 import (
-	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/glynternet/accounting-rest/client"
+	"github.com/glynternet/go-accounting-storage/postgres2"
 	"github.com/glynternet/go-accounting-storage/test"
 	"github.com/spf13/viper"
 )
@@ -14,6 +16,10 @@ import (
 const (
 	// viper keys
 	keyServerHost = "server-host"
+	keyDBHost     = "db-host"
+	keyDBUser     = "db-user"
+	keyDBName     = "db-name"
+	keyDBSSLMode  = "db-sslmode"
 )
 
 func init() {
@@ -25,10 +31,14 @@ func init() {
 func setup() {
 	const retries = 5
 	errs := make([]error, retries)
-	store := client.Client(viper.GetString(keyServerHost))
 	var i int
 	for i = 0; i < retries; i++ {
-		_, err := store.SelectAccounts()
+		err := postgres2.CreateStorage(
+			viper.GetString(keyDBHost),
+			viper.GetString(keyDBUser),
+			viper.GetString(keyDBName),
+			viper.GetString(keyDBSSLMode),
+		)
 		if err == nil {
 			break
 		}
@@ -37,10 +47,11 @@ func setup() {
 	}
 	if errs[retries-1] != nil {
 		for i, err := range errs {
-			fmt.Printf("[retry: %02d] %v\n", i, err)
+			log.Printf("[retry: %02d] %v\n", i, err)
 		}
+		os.Exit(1)
 	}
-
+	log.Print("Setup complete")
 }
 
 func TestSuite(t *testing.T) {
