@@ -14,8 +14,7 @@ import (
 var cmdAccounts = &cobra.Command{
 	Use: "accounts",
 	Run: func(cmd *cobra.Command, args []string) {
-		c := client.Client(viper.GetString(keyServerHost))
-		as, err := c.SelectAccounts()
+		as, err := client.Client(viper.GetString(keyServerHost)).SelectAccounts()
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "selecting accounts"))
 		}
