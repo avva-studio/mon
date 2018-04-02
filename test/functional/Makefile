@@ -1,7 +1,7 @@
 REPO_NAME ?= accounting-rest
-REPO_URI ?= github.com/glynternet/$(REPO_NAME)
 
-BIN_NAME ?= $(REPO_NAME)-serve
+DOCKER_IMAGE ?= accounting-rest-serve:develop-v0.3.0-2-gc66e16c
+
 TEST_BIN_NAME ?= functional.test
 
 PROJECT_NAME ?= $(REPO_NAME)-functional-test
@@ -24,14 +24,13 @@ clean:
 build-tests:
 	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go test -c -o ./bin/$(TEST_BIN_NAME) -installsuffix cgo -a -ldflags $(LDFLAGS)
 
-fetch-bin:
-	cp -v $(GOPATH)/src/$(REPO_URI)/bin/$(BIN_NAME) ./bin/$(BIN_NAME)
-
 test:
 	$(MAKE) docker-compose-up
 
 docker-compose-up:
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	docker-compose --project-name $(PROJECT_NAME) up --build --abort-on-container-exit --force-recreate
 
 docker-compose-down:
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	docker-compose --project-name $(PROJECT_NAME) down

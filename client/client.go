@@ -25,7 +25,9 @@ func (c Client) postToEndpoint(endpoint string, contentType string, body io.Read
 }
 
 func (c Client) Available() bool {
-	return errors.New("not implemented") != nil
+	// TODO: Deprecate Available in favour of something that returns more information
+	_, err := c.SelectAccounts()
+	return err == nil
 }
 
 func (c Client) Close() error {

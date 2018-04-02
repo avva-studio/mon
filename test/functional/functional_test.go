@@ -1,8 +1,10 @@
 package functional
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/glynternet/accounting-rest/client"
 	"github.com/glynternet/go-accounting-storage/test"
@@ -20,7 +22,26 @@ func init() {
 	setup()
 }
 
-func setup() {}
+func setup() {
+	const retries = 5
+	errs := make([]error, retries)
+	store := client.Client(viper.GetString(keyServerHost))
+	var i int
+	for i = 0; i < retries; i++ {
+		_, err := store.SelectAccounts()
+		if err == nil {
+			break
+		}
+		errs[i] = err
+		time.Sleep(time.Second)
+	}
+	if errs[retries-1] != nil {
+		for i, err := range errs {
+			fmt.Printf("[retry: %02d] %v\n", i, err)
+		}
+	}
+
+}
 
 func TestSuite(t *testing.T) {
 	store := client.Client(viper.GetString(keyServerHost))
