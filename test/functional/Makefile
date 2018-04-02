@@ -13,7 +13,6 @@ OS ?= linux
 ARCH ?= amd64
 
 all:
-	$(MAKE) fetch-bin
 	$(MAKE) build-tests
 	$(MAKE) test; $(MAKE) clean
 
