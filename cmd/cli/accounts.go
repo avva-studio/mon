@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -12,7 +13,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-const keyOpen = "open"
+const (
+	keyOpen  = "open"
+	keyQuiet = "quiet"
+)
 
 var cmdAccounts = &cobra.Command{
 	Use: "accounts",
@@ -24,6 +28,12 @@ var cmdAccounts = &cobra.Command{
 		if viper.GetBool(keyOpen) {
 			*as = filter.Filter(*as, filter.Open())
 		}
+		if viper.GetBool(keyQuiet) {
+			for _, a := range *as {
+				fmt.Println(a.ID)
+			}
+			return
+		}
 		table.Accounts(*as, os.Stdout)
 	},
 }
@@ -31,6 +41,7 @@ var cmdAccounts = &cobra.Command{
 func init() {
 	cmdRoot.AddCommand(cmdAccounts)
 	cmdAccounts.Flags().BoolP(keyOpen, "", false, "show only open accounts")
+	cmdAccounts.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	if err := viper.BindPFlags(cmdAccounts.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
