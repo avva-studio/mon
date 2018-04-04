@@ -1,23 +1,36 @@
 VERSION ?= $(shell git describe --tags --always)
 LDFLAGS = "-w -X main.Version=$(VERSION)"
 
-REPO_NAME = accounting-rest
-SERVE_NAME = $(REPO_NAME)-serve
-CLI_NAME = $(REPO_NAME)-cli
+SERVE_NAME = monserve
+CLI_NAME = moncli
 
 OS ?= linux
 ARCH ?= amd64
 
+all: build install clean
+
 build:
-	$(MAKE) build-serve
-	$(MAKE) build-cli
-	$(MAKE) build-serve-docker
+	$(MAKE) monserve
+	$(MAKE) moncli
 
-build-serve:
-	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(SERVE_NAME) -a -ldflags $(LDFLAGS) ./cmd/serve
+install:
+	cp ./bin/* $(GOPATH)/bin/
 
-build-serve-docker:
+clean:
+	rm ./bin/*
+
+monserve:
+	$(MAKE) build-monserve
+	$(MAKE) build-monserve-docker
+
+build-monserve:
+	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(SERVE_NAME) -a -ldflags $(LDFLAGS) ./cmd/$(SERVE_NAME)
+
+build-monserve-docker:
 	docker build --tag $(SERVE_NAME):$(VERSION) .
 
-build-cli:
-	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(CLI_NAME) -a -ldflags $(LDFLAGS) ./cmd/cli
+moncli:
+	$(MAKE) build-moncli
+
+build-moncli:
+	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(CLI_NAME) -a -ldflags $(LDFLAGS) ./cmd/$(CLI_NAME)
