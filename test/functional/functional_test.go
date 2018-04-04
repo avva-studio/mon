@@ -1,3 +1,5 @@
+// +build functional
+
 package functional
 
 import (
