@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -13,6 +14,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+const (
+	keyDate   = "date"
+	keyAmount = "amount"
 )
 
 var accountCmd = &cobra.Command{
@@ -64,38 +70,53 @@ var accountBalancesCmd = &cobra.Command{
 
 var accountBalanceInsertCmd = &cobra.Command{
 	Use: "balance-insert",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			log.Fatal(errors.New("no account id and amount given"))
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("no account id given")
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "parsing account id"))
-		}
-		amount, err := strconv.Atoi(args[1])
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "parsing balance amount"))
+			return errors.Wrap(err, "parsing account id")
 		}
 		c := client.Client(viper.GetString(keyServerHost))
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "selecting account"))
+			return errors.Wrap(err, "selecting account")
 		}
 
+		t := time.Now()
+		if d := viper.GetString(keyDate); d != "" {
+			fmt.Println("parsing the d")
+			t, err = parseDateString(d)
+			if err != nil {
+				return errors.Wrap(err, "parsing date string")
+			}
+		}
 		b, err := c.InsertBalance(*a, balance.Balance{
-			Date:   time.Now(),
-			Amount: amount,
+			Date:   t,
+			Amount: viper.GetInt(keyAmount),
 		})
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "inserting balance"))
+			return errors.Wrap(err, "inserting balance")
 		}
 
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
 		table.Balances(storage.Balances{*b}, os.Stdout)
+		return nil
 	},
 }
 
+func parseDateString(dateString string) (time.Time, error) {
+	return time.Parse("2006-01-02", dateString)
+}
+
 func init() {
+	accountBalanceInsertCmd.Flags().StringP(keyDate, "d", "", "date of balance to insert")
+	accountBalanceInsertCmd.Flags().StringP(keyAmount, "a", "", "amount of balance to insert")
+	err := viper.BindPFlags(accountBalanceInsertCmd.Flags())
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
 	rootCmd.AddCommand(accountCmd)
 	accountCmd.AddCommand(accountBalancesCmd)
 	accountCmd.AddCommand(accountBalanceInsertCmd)
