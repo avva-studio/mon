@@ -23,48 +23,50 @@ const (
 
 var accountCmd = &cobra.Command{
 	Use: "account",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			log.Fatal(errors.New("no account id given"))
+			return errors.New("no account id given")
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "parsing account id"))
+			return errors.Wrap(err, "parsing account id")
 		}
 		c := client.Client(viper.GetString(keyServerHost))
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "selecting account"))
+			return errors.Wrap(err, "selecting account")
 		}
 
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
+		return nil
 	},
 }
 
 var accountBalancesCmd = &cobra.Command{
 	Use: "balances",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			log.Fatal(errors.New("no account id given"))
+			return errors.New("no account id given")
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "parsing account id"))
+			return errors.Wrap(err, "parsing account id")
 		}
 		c := client.Client(viper.GetString(keyServerHost))
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "selecting account"))
+			return errors.Wrap(err, "selecting account")
 		}
 
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
 
 		bs, err := c.SelectAccountBalances(*a)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "selecting account balances"))
+			return errors.Wrap(err, "selecting account balances")
 		}
 
 		table.Balances(*bs, os.Stdout)
+		return nil
 	},
 }
 
