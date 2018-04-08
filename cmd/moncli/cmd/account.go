@@ -5,20 +5,28 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/glynternet/accounting-rest/client"
 	"github.com/glynternet/accounting-rest/pkg/table"
 	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/go-money/currency"
+	gtime "github.com/glynternet/go-time"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 const (
-	keyDate   = "date"
-	keyAmount = "amount"
+	keyDate     = "date"
+	keyAmount   = "amount"
+	keyName     = "name"
+	keyCurrency = "currency"
+	keyOpened   = "opened"
+	keyClosed   = "closed"
 )
 
 var accountCmd = &cobra.Command{
@@ -38,6 +46,53 @@ var accountCmd = &cobra.Command{
 		}
 
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
+		return nil
+	},
+}
+
+var accountAddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "add an account",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cc, err := currency.NewCode(viper.GetString(keyCurrency))
+		if err != nil {
+			return errors.Wrap(err, "creating new currency code")
+		}
+		opened, err := parseNullTime(viper.GetString(keyOpened))
+		if err != nil {
+			return errors.Wrap(err, "parsing opened date")
+		}
+		if !opened.Valid {
+			opened = gtime.NullTime{
+				Valid: true,
+				Time:  time.Now(),
+			}
+		}
+
+		closed, err := parseNullTime(viper.GetString(keyClosed))
+		if err != nil {
+			return errors.Wrap(err, "parsing closed date")
+		}
+
+		var ops []account.Option
+		if closed.Valid {
+			ops = append(ops, account.CloseTime(closed.Time))
+		}
+		a, err := account.New(
+			viper.GetString(keyName),
+			*cc,
+			opened.Time,
+			ops...,
+		)
+		if err != nil {
+			return errors.Wrap(err, "creating new account for insert")
+		}
+
+		i, err := client.Client(viper.GetString(keyServerHost)).InsertAccount(a)
+		if err != nil {
+			return errors.Wrap(err, "inserting new account")
+		}
+		table.Accounts(storage.Accounts{*i}, os.Stdout)
 		return nil
 	},
 }
@@ -86,14 +141,16 @@ var accountBalanceInsertCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting account")
 		}
 
-		t := time.Now()
-		if d := viper.GetString(keyDate); d != "" {
-			fmt.Println("parsing the d")
-			t, err = parseDateString(d)
-			if err != nil {
-				return errors.Wrap(err, "parsing date string")
-			}
+		nt, err := parseNullTime(viper.GetString(keyDate))
+		if err != nil {
+			return errors.Wrap(err, "getting date")
 		}
+
+		t := time.Now()
+		if nt.Valid {
+			t = nt.Time
+		}
+
 		b, err := c.InsertBalance(*a, balance.Balance{
 			Date:   t,
 			Amount: viper.GetInt(keyAmount),
@@ -108,18 +165,43 @@ var accountBalanceInsertCmd = &cobra.Command{
 	},
 }
 
+func parseNullTime(ds string) (gtime.NullTime, error) {
+	ds = strings.TrimSpace(ds)
+	if ds == "" {
+		return gtime.NullTime{}, nil
+	}
+	t, err := parseDateString(ds)
+	if err != nil {
+		return gtime.NullTime{}, errors.Wrap(err, "parsing date string")
+	}
+	return gtime.NullTime{
+		Valid: true,
+		Time:  t,
+	}, nil
+}
+
 func parseDateString(dateString string) (time.Time, error) {
 	return time.Parse("2006-01-02", dateString)
 }
 
 func init() {
+	accountAddCmd.Flags().StringP(keyName, "n", "", "")
+	accountAddCmd.Flags().StringP(keyOpened, "o", "", "opened date")
+	accountAddCmd.Flags().StringP(keyClosed, "c", "", "closed date")
+	accountAddCmd.Flags().String(keyCurrency, "EUR", "")
+	err := viper.BindPFlags(accountAddCmd.Flags())
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
+
 	accountBalanceInsertCmd.Flags().StringP(keyDate, "d", "", "date of balance to insert")
 	accountBalanceInsertCmd.Flags().StringP(keyAmount, "a", "", "amount of balance to insert")
-	err := viper.BindPFlags(accountBalanceInsertCmd.Flags())
+	err = viper.BindPFlags(accountBalanceInsertCmd.Flags())
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
 	rootCmd.AddCommand(accountCmd)
+	accountCmd.AddCommand(accountAddCmd)
 	accountCmd.AddCommand(accountBalancesCmd)
 	accountCmd.AddCommand(accountBalanceInsertCmd)
 }
