@@ -195,7 +195,7 @@ func init() {
 	}
 
 	accountBalanceInsertCmd.Flags().StringP(keyDate, "d", "", "date of balance to insert")
-	accountBalanceInsertCmd.Flags().StringP(keyAmount, "a", "", "amount of balance to insert")
+	accountBalanceInsertCmd.Flags().IntP(keyAmount, "a", 0, "amount of balance to insert")
 	err = viper.BindPFlags(accountBalanceInsertCmd.Flags())
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
