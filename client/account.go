@@ -19,8 +19,8 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
-	as := new(storage.Accounts)
-	err = errors.Wrap(json.Unmarshal(bod, as), "unmarshalling response")
+	as := &storage.Accounts{}
+	err = errors.Wrapf(json.Unmarshal(bod, as), "unmarshalling response body: %s", string(bod))
 	if err != nil {
 		as = nil
 	}
@@ -56,7 +56,7 @@ func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, erro
 }
 
 func unmarshalJSONToAccount(data []byte) (*storage.Account, error) {
-	a := new(storage.Account)
+	a := &storage.Account{}
 	err := errors.Wrapf(json.Unmarshal(data, a), "json unmarshalling into account. bytes as string: %s", data)
 	if err != nil {
 		a = nil

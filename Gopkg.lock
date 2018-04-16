@@ -16,35 +16,25 @@
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-accounting"
-  packages = [
-    "account",
-    "balance"
-  ]
-  revision = "087a30567a6bf8bbeeff3e1c5ed7620f9f640417"
+  packages = ["account","balance"]
+  revision = "e07d9248f1e71aa5639231ef1ca09c81abcac021"
 
 [[projects]]
   branch = "develop-1"
   name = "github.com/glynternet/go-accounting-storage"
-  packages = [
-    ".",
-    "postgres2",
-    "test"
-  ]
-  revision = "f9323da05f5f74f2a837c8086aee9382bb4db8f3"
+  packages = [".","postgres2","test"]
+  revision = "d2d69776482235774a6da9cc9995fbf129b4c30a"
 
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-accounting-storagetest"
-  packages = ["."]
-  revision = "055c2d528a2f168476b769a3d8ae754042a46cb5"
+  packages = [".","storagetest"]
+  revision = "a040b7079fb76b9f506e3abf79a6fc3676e4365a"
 
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-money"
-  packages = [
-    "common",
-    "currency"
-  ]
+  packages = ["common","currency"]
   revision = "b3d3641039f8f22785977d809e717e56d362303f"
 
 [[projects]]
@@ -68,19 +58,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [
-    ".",
-    "hcl/ast",
-    "hcl/parser",
-    "hcl/printer",
-    "hcl/scanner",
-    "hcl/strconv",
-    "hcl/token",
-    "json/parser",
-    "json/scanner",
-    "json/token"
-  ]
-  revision = "f40e974e75af4e271d97ce0fc917af5898ae7bda"
+  packages = [".","hcl/ast","hcl/parser","hcl/printer","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -91,10 +70,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [
-    ".",
-    "oid"
-  ]
+  packages = [".","oid"]
   revision = "d34b9ff171c21ad295489235aec8b6626023cd04"
 
 [[projects]]
@@ -141,10 +117,7 @@
 
 [[projects]]
   name = "github.com/spf13/afero"
-  packages = [
-    ".",
-    "mem"
-  ]
+  packages = [".","mem"]
   revision = "63644898a8da0bc22138abf860edaf5277b6102e"
   version = "v1.1.0"
 
@@ -169,8 +142,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/spf13/viper"
@@ -188,18 +161,11 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
+  revision = "2f57af4873d00d535c5c9028850aa2152e6a5566"
 
 [[projects]]
   name = "golang.org/x/text"
-  packages = [
-    "internal/gen",
-    "internal/triegen",
-    "internal/ucd",
-    "transform",
-    "unicode/cldr",
-    "unicode/norm"
-  ]
+  packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm"]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
@@ -212,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7f88ea0f46988233b01165722be67fd80999f503bf41c79c546ab276818de155"
+  inputs-digest = "0a4495bed350a3284076b90c6b194634fb2febe84956e2ff49da8e19bd8b2d6e"
   solver-name = "gps-cdcl"
   solver-version = 1

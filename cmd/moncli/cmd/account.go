@@ -89,7 +89,7 @@ var accountAddCmd = &cobra.Command{
 			return errors.Wrap(err, "creating new account for insert")
 		}
 
-		i, err := client.Client(viper.GetString(keyServerHost)).InsertAccount(a)
+		i, err := client.Client(viper.GetString(keyServerHost)).InsertAccount(*a)
 		if err != nil {
 			return errors.Wrap(err, "inserting new account")
 		}

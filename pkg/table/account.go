@@ -18,10 +18,10 @@ func Accounts(as storage.Accounts, w io.Writer) {
 	for _, a := range as {
 		t.Append([]string{
 			strconv.FormatUint(uint64(a.ID), 10),
-			a.Name(),
-			a.Opened().Format(dateFormat),
-			closedString(a.Closed()),
-			a.CurrencyCode().String(),
+			a.Account.Name(),
+			a.Account.Opened().Format(dateFormat),
+			closedString(a.Account.Closed()),
+			a.Account.CurrencyCode().String(),
 		})
 	}
 	t.Render() // Send output

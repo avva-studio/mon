@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-accounting-storagetest/storagetest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ func Test_balances(t *testing.T) {
 	t.Run("SelectAccount error", func(t *testing.T) {
 		expected := errors.New("account error")
 		srv := &server{
-			storage: &accountingtest.Storage{
+			storage: &storagetest.Storage{
 				AccountErr: expected,
 			},
 		}
@@ -29,7 +29,7 @@ func Test_balances(t *testing.T) {
 		account := &storage.Account{}
 		expected := errors.New("balances error")
 		srv := &server{
-			storage: &accountingtest.Storage{
+			storage: &storagetest.Storage{
 				Account:     account,
 				BalancesErr: expected,
 			},
@@ -43,7 +43,7 @@ func Test_balances(t *testing.T) {
 	t.Run("all ok", func(t *testing.T) {
 		expected := &storage.Balances{{ID: 1}}
 		srv := &server{
-			storage: &accountingtest.Storage{
+			storage: &storagetest.Storage{
 				Account:  &storage.Account{},
 				Balances: expected,
 			},
@@ -59,7 +59,7 @@ func Test_balances(t *testing.T) {
 func TestServer_InsertBalance(t *testing.T) {
 	t.Run("SelectAccount error", func(t *testing.T) {
 		expected := errors.New("SelectAccount error")
-		srv := server{&accountingtest.Storage{
+		srv := server{&storagetest.Storage{
 			AccountErr: expected,
 		}}
 		code, b, err := srv.insertBalance(0, balance.Balance{})
@@ -71,7 +71,7 @@ func TestServer_InsertBalance(t *testing.T) {
 
 	t.Run("InsertBalance error", func(t *testing.T) {
 		expected := errors.New("InsertBalance error")
-		srv := server{&accountingtest.Storage{
+		srv := server{&storagetest.Storage{
 			Account:    &storage.Account{},
 			BalanceErr: expected,
 		}}
@@ -84,7 +84,7 @@ func TestServer_InsertBalance(t *testing.T) {
 
 	t.Run("all ok", func(t *testing.T) {
 		expected := &storage.Balance{}
-		srv := server{&accountingtest.Storage{
+		srv := server{&storagetest.Storage{
 			Account: &storage.Account{},
 			Balance: expected,
 		}}

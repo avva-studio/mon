@@ -32,6 +32,7 @@ func Test(t *testing.T, store storage.Storage) {
 			test.run(t, store)
 		})
 		if !success {
+			t.Fail()
 			return
 		}
 	}
@@ -46,7 +47,7 @@ func InsertAndRetrieveAccounts(t *testing.T, store storage.Storage) {
 	}
 
 	a := accountingtest.NewAccount(t, "A", accountingtest.NewCurrencyCode(t, "YEN"), time.Now())
-	insertedA, err := store.InsertAccount(a)
+	insertedA, err := store.InsertAccount(*a)
 	common.FatalIfError(t, err, "inserting account")
 
 	as = selectAccounts(t, store)
@@ -86,7 +87,7 @@ func InsertAndRetrieveAccounts(t *testing.T, store storage.Storage) {
 
 	b := accountingtest.NewAccount(t, "B", accountingtest.NewCurrencyCode(t, "EUR"), time.Now().Add(-1*time.Hour))
 
-	insertedB, err := store.InsertAccount(b)
+	insertedB, err := store.InsertAccount(*b)
 	common.FatalIfError(t, err, "inserting account")
 
 	as, err = store.SelectAccounts()
@@ -159,7 +160,7 @@ func InsertAndRetrieveBalances(t *testing.T, store storage.Storage) {
 	}
 
 	for i := 0; i < numOfAccounts; i++ {
-		b, err := balance.New(abs[i].Opened())
+		b, err := balance.New(abs[i].Account.Account.Opened())
 		common.FatalIfError(t, err, "creating new Balance")
 		inserted, err := store.InsertBalance(abs[i].Account, *b)
 		common.FatalIfError(t, err, "inserting Balance")
@@ -173,7 +174,7 @@ func InsertAndRetrieveBalances(t *testing.T, store storage.Storage) {
 		assert.Len(t, *bs, 1)
 		abs[i].Balances = *bs
 
-		invalidBalance, err := balance.New(abs[i].Opened().Add(-time.Second))
+		invalidBalance, err := balance.New(abs[i].Account.Account.Opened().Add(-time.Second))
 		common.FatalIfError(t, err, "creating new invalid Balance")
 		inserted, err = store.InsertBalance(abs[i].Account, *invalidBalance)
 		if !assert.Error(t, err, "inserting Balance") {

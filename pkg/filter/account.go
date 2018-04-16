@@ -6,7 +6,7 @@ type AccountFilter func(storage.Account) bool
 
 func Open() AccountFilter {
 	return func(a storage.Account) bool {
-		return a.IsOpen()
+		return a.Account.IsOpen()
 	}
 }
 
