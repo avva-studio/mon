@@ -27,6 +27,7 @@ const (
 	keyCurrency = "currency"
 	keyOpened   = "opened"
 	keyClosed   = "closed"
+	keyLimit    = "limit"
 )
 
 var accountCmd = &cobra.Command{
@@ -120,6 +121,14 @@ var accountBalancesCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting account balances")
 		}
 
+		limit := viper.GetInt(keyLimit)
+		if limit > len(*bs) {
+			limit = len(*bs)
+		}
+		if limit != 0 {
+			*bs = (*bs)[len(*bs)-limit:]
+		}
+
 		table.Balances(*bs, os.Stdout)
 		return nil
 	},
@@ -189,19 +198,22 @@ func init() {
 	accountAddCmd.Flags().StringP(keyOpened, "o", "", "opened date")
 	accountAddCmd.Flags().StringP(keyClosed, "c", "", "closed date")
 	accountAddCmd.Flags().String(keyCurrency, "EUR", "")
-	err := viper.BindPFlags(accountAddCmd.Flags())
-	if err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
-	}
+
+	accountBalancesCmd.Flags().UintP(keyLimit, "l", 0, "limit results")
 
 	accountBalanceInsertCmd.Flags().StringP(keyDate, "d", "", "date of balance to insert")
 	accountBalanceInsertCmd.Flags().IntP(keyAmount, "a", 0, "amount of balance to insert")
-	err = viper.BindPFlags(accountBalanceInsertCmd.Flags())
-	if err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
-	}
+
 	rootCmd.AddCommand(accountCmd)
-	accountCmd.AddCommand(accountAddCmd)
-	accountCmd.AddCommand(accountBalancesCmd)
-	accountCmd.AddCommand(accountBalanceInsertCmd)
+	for _, c := range []*cobra.Command{
+		accountAddCmd,
+		accountBalancesCmd,
+		accountBalanceInsertCmd,
+	} {
+		err := viper.BindPFlags(c.Flags())
+		if err != nil {
+			log.Fatal(errors.Wrap(err, "binding pflags"))
+		}
+		accountCmd.AddCommand(c)
+	}
 }
