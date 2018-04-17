@@ -1,6 +1,7 @@
 package table
 
 import (
+	"fmt"
 	"io"
 	"strconv"
 
@@ -43,6 +44,19 @@ func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
 		})
 	}
 	t.Render() // Send output
+}
+
+func Basic(data [][]string, w io.Writer) error {
+	if len(data) < 2 {
+		return fmt.Errorf("requires at least 2 rows of data")
+	}
+	t := newDefaultTable(w)
+	t.SetHeader(data[0])
+	for _, row := range data[1:] {
+		t.Append(row)
+	}
+	t.Render()
+	return nil
 }
 
 func newDefaultTable(w io.Writer) *tablewriter.Table {

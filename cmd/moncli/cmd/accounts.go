@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/glynternet/accounting-rest/client"
@@ -11,6 +12,7 @@ import (
 	"github.com/glynternet/accounting-rest/pkg/table"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/go-money/currency"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,7 +42,9 @@ var accountsCmd = &cobra.Command{
 			return nil
 		}
 		if viper.GetBool(keyBalances) {
+			// TODO: Should these be kept in order of ID here?
 			abs := make(map[storage.Account]balance.Balance)
+			cbs := make(map[currency.Code]balance.Balances)
 			for _, a := range *as {
 				bs, err := c.SelectAccountBalances(a)
 				if err != nil {
@@ -60,8 +64,22 @@ var accountsCmd = &cobra.Command{
 					return errors.Wrapf(err, "getting balances at time:%+v for account:%+v", t, a)
 				}
 				abs[a] = current
+
+				crncy := a.Account.CurrencyCode()
+				if _, ok := cbs[crncy]; !ok {
+					cbs[crncy] = balance.Balances{}
+				}
+				cbs[crncy] = append(cbs[crncy], current)
 			}
 			table.AccountsWithBalance(abs, os.Stdout)
+			if len(cbs) == 0 {
+				return nil
+			}
+			totals := [][]string{{"Currency", "Amount"}}
+			for crncy, bs := range cbs {
+				totals = append(totals, []string{crncy.String(), strconv.Itoa(bs.Sum())})
+			}
+			table.Basic(totals, os.Stdout)
 			return nil
 		}
 		table.Accounts(*as, os.Stdout)
