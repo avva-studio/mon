@@ -1,8 +1,18 @@
 package filter
 
-import "github.com/glynternet/go-accounting-storage"
+import (
+	"time"
+
+	"github.com/glynternet/go-accounting-storage"
+)
 
 type AccountFilter func(storage.Account) bool
+
+func Existed(t time.Time) AccountFilter {
+	return func(a storage.Account) bool {
+		return !a.Account.Opened().After(t)
+	}
+}
 
 func Open() AccountFilter {
 	return func(a storage.Account) bool {

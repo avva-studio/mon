@@ -29,11 +29,22 @@ const (
 var accountsCmd = &cobra.Command{
 	Use: "accounts",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		t, err := parseNullTime(viper.GetString(keyAtDate))
+		if err != nil {
+			return errors.Wrapf(err, "parsing %s", keyAtDate)
+		}
+		if !t.Valid {
+			t = gtime.NullTime{Valid: true, Time: time.Now()}
+		}
+
 		c := client.Client(viper.GetString(keyServerHost))
 		as, err := c.SelectAccounts()
 		if err != nil {
 			return errors.Wrap(err, "selecting accounts")
 		}
+
+		*as = filter.Filter(*as, filter.Existed(t.Time))
+
 		if viper.GetBool(keyOpen) {
 			*as = filter.Filter(*as, filter.Open())
 		}
@@ -59,13 +70,6 @@ var accountsCmd = &cobra.Command{
 				var bbs balance.Balances
 				for _, b := range *bs {
 					bbs = append(bbs, b.Balance)
-				}
-				t, err := parseNullTime(viper.GetString(keyAtDate))
-				if err != nil {
-					return errors.Wrapf(err, "parsing %s", keyAtDate)
-				}
-				if !t.Valid {
-					t = gtime.NullTime{Valid: true, Time: time.Now()}
 				}
 				current, err := bbs.AtTime(t.Time)
 				if err != nil {
