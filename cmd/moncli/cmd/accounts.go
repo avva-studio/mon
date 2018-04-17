@@ -13,6 +13,7 @@ import (
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
+	gtime "github.com/glynternet/go-time"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,6 +23,7 @@ const (
 	keyOpen     = "open"
 	keyQuiet    = "quiet"
 	keyBalances = "balances"
+	keyAtDate   = "at-date"
 )
 
 var accountsCmd = &cobra.Command{
@@ -58,10 +60,17 @@ var accountsCmd = &cobra.Command{
 				for _, b := range *bs {
 					bbs = append(bbs, b.Balance)
 				}
-				t := time.Now()
-				current, err := bbs.AtTime(t)
+				t, err := parseNullTime(viper.GetString(keyAtDate))
 				if err != nil {
-					return errors.Wrapf(err, "getting balances at time:%+v for account:%+v", t, a)
+					return errors.Wrapf(err, "parsing %s", keyAtDate)
+				}
+				if !t.Valid {
+					t = gtime.NullTime{Valid: true, Time: time.Now()}
+				}
+				current, err := bbs.AtTime(t.Time)
+				if err != nil {
+					log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", t, a))
+					continue
 				}
 				abs[a] = current
 
@@ -92,6 +101,7 @@ func init() {
 	accountsCmd.Flags().BoolP(keyOpen, "", false, "show only open accounts")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
+	accountsCmd.Flags().String(keyAtDate, "", "show balances at a certain date")
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
