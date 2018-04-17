@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-time"
 	"github.com/olekukonko/tablewriter"
 )
@@ -22,6 +23,23 @@ func Accounts(as storage.Accounts, w io.Writer) {
 			a.Account.Opened().Format(dateFormat),
 			closedString(a.Account.Closed()),
 			a.Account.CurrencyCode().String(),
+		})
+	}
+	t.Render() // Send output
+}
+
+func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
+	t := newDefaultTable(w)
+	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency", "Balance"})
+
+	for a, b := range abs {
+		t.Append([]string{
+			strconv.FormatUint(uint64(a.ID), 10),
+			a.Account.Name(),
+			a.Account.Opened().Format(dateFormat),
+			closedString(a.Account.Closed()),
+			a.Account.CurrencyCode().String(),
+			strconv.Itoa(b.Amount),
 		})
 	}
 	t.Render() // Send output

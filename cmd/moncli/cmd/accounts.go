@@ -4,24 +4,29 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/glynternet/accounting-rest/client"
 	"github.com/glynternet/accounting-rest/pkg/filter"
 	"github.com/glynternet/accounting-rest/pkg/table"
+	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 const (
-	keyOpen  = "open"
-	keyQuiet = "quiet"
+	keyOpen     = "open"
+	keyQuiet    = "quiet"
+	keyBalances = "balances"
 )
 
 var accountsCmd = &cobra.Command{
 	Use: "accounts",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		as, err := client.Client(viper.GetString(keyServerHost)).SelectAccounts()
+		c := client.Client(viper.GetString(keyServerHost))
+		as, err := c.SelectAccounts()
 		if err != nil {
 			return errors.Wrap(err, "selecting accounts")
 		}
@@ -34,6 +39,31 @@ var accountsCmd = &cobra.Command{
 			}
 			return nil
 		}
+		if viper.GetBool(keyBalances) {
+			abs := make(map[storage.Account]balance.Balance)
+			for _, a := range *as {
+				bs, err := c.SelectAccountBalances(a)
+				if err != nil {
+					return errors.Wrapf(err, "selecting balances for account: %+v", a)
+				}
+				if len(*bs) == 0 {
+					log.Printf("no balances for account:%+v", a)
+					continue
+				}
+				var bbs balance.Balances
+				for _, b := range *bs {
+					bbs = append(bbs, b.Balance)
+				}
+				t := time.Now()
+				current, err := bbs.AtTime(t)
+				if err != nil {
+					return errors.Wrapf(err, "getting balances at time:%+v for account:%+v", t, a)
+				}
+				abs[a] = current
+			}
+			table.AccountsWithBalance(abs, os.Stdout)
+			return nil
+		}
 		table.Accounts(*as, os.Stdout)
 		return nil
 	},
@@ -43,6 +73,7 @@ func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.Flags().BoolP(keyOpen, "", false, "show only open accounts")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
+	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
