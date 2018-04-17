@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/glynternet/go-accounting"
   packages = ["account","balance"]
-  revision = "e07d9248f1e71aa5639231ef1ca09c81abcac021"
+  revision = "08a8aaf9190ef1d08a075f9b7477937769f45f79"
 
 [[projects]]
   branch = "develop-1"
@@ -35,7 +35,7 @@
   branch = "master"
   name = "github.com/glynternet/go-money"
   packages = ["common","currency"]
-  revision = "b3d3641039f8f22785977d809e717e56d362303f"
+  revision = "95ce07f4b89426d1df4b44f6493e366dd9322e07"
 
 [[projects]]
   branch = "master"
@@ -161,7 +161,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "2f57af4873d00d535c5c9028850aa2152e6a5566"
+  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [[projects]]
   name = "golang.org/x/text"

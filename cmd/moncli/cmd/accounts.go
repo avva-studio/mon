@@ -46,7 +46,7 @@ var accountsCmd = &cobra.Command{
 		*as = filter.Filter(*as, filter.Existed(t.Time))
 
 		if viper.GetBool(keyOpen) {
-			*as = filter.Filter(*as, filter.Open())
+			*as = filter.Filter(*as, filter.OpenAt(t.Time))
 		}
 		if viper.GetBool(keyQuiet) {
 			for _, a := range *as {

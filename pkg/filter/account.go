@@ -14,9 +14,9 @@ func Existed(t time.Time) AccountFilter {
 	}
 }
 
-func Open() AccountFilter {
+func OpenAt(t time.Time) AccountFilter {
 	return func(a storage.Account) bool {
-		return a.Account.IsOpen()
+		return a.Account.OpenAt(t)
 	}
 }
 
