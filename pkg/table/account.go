@@ -31,7 +31,7 @@ func Accounts(as storage.Accounts, w io.Writer) {
 
 func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
 	t := newDefaultTable(w)
-	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency", "Balance"})
+	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency", "Balance Date", "Balance Amount"})
 
 	for a, b := range abs {
 		t.Append([]string{
@@ -40,6 +40,7 @@ func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
 			a.Account.Opened().Format(dateFormat),
 			closedString(a.Account.Closed()),
 			a.Account.CurrencyCode().String(),
+			b.Date.Format(dateFormat),
 			strconv.Itoa(b.Amount),
 		})
 	}
