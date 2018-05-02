@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY ./bin/accounting-rest-serve /
+COPY ./bin/monserve /
 
-CMD ["/accounting-rest-serve"]
+CMD ["/monserve"]

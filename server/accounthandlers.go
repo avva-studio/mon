@@ -57,7 +57,7 @@ func (s *server) muxAccountInsertHandlerFunc(r *http.Request) (int, interface{},
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "unmarshalling request body")
 	}
-	return s.handlerInsertAccount(a)
+	return s.handlerInsertAccount(*a)
 }
 
 func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, error) {

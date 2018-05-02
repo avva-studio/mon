@@ -8,6 +8,7 @@ import (
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting-storagetest"
+	"github.com/glynternet/go-accounting-storagetest/storagetest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +19,11 @@ const port = 23456
 func TestClient_SelectAccounts(t *testing.T) {
 	testPort := port + 0
 
-	s := &accountingtest.Storage{
+	s := &storagetest.Storage{
 		Accounts: &storage.Accounts{
 			{
 				ID: 51,
-				Account: accountingtest.NewAccount(
+				Account: *accountingtest.NewAccount(
 					t,
 					"test-0",
 					accountingtest.NewCurrencyCode(t, "EUR"),
@@ -31,7 +32,7 @@ func TestClient_SelectAccounts(t *testing.T) {
 			},
 			{
 				ID: 981742,
-				Account: accountingtest.NewAccount(
+				Account: *accountingtest.NewAccount(
 					t,
 					"test-1",
 					accountingtest.NewCurrencyCode(t, "GBP"),
@@ -67,10 +68,10 @@ func TestClient_SelectAccounts(t *testing.T) {
 func TestClient_SelectAccount(t *testing.T) {
 	testPort := port + 1
 
-	s := &accountingtest.Storage{
+	s := &storagetest.Storage{
 		Account: &storage.Account{
 			ID: 51,
-			Account: accountingtest.NewAccount(
+			Account: *accountingtest.NewAccount(
 				t,
 				"test",
 				accountingtest.NewCurrencyCode(t, "EUR"),
@@ -103,10 +104,10 @@ func TestClient_SelectAccount(t *testing.T) {
 
 func TestClient_SelectAccountBalances(t *testing.T) {
 	testPort := port + 2
-	s := &accountingtest.Storage{
+	s := &storagetest.Storage{
 		Account: &storage.Account{
 			ID: 51,
-			Account: accountingtest.NewAccount(
+			Account: *accountingtest.NewAccount(
 				t,
 				"test",
 				accountingtest.NewCurrencyCode(t, "EUR"),
@@ -144,7 +145,7 @@ func TestClient_InsertAccount(t *testing.T) {
 
 	account := &storage.Account{
 		ID: 51,
-		Account: accountingtest.NewAccount(
+		Account: *accountingtest.NewAccount(
 			t,
 			"test",
 			accountingtest.NewCurrencyCode(t, "EUR"),
@@ -152,7 +153,7 @@ func TestClient_InsertAccount(t *testing.T) {
 		),
 	}
 
-	s := &accountingtest.Storage{
+	s := &storagetest.Storage{
 		Account: account,
 	}
 	srv, err := server.New(s)
@@ -178,11 +179,10 @@ func TestClient_InsertAccount(t *testing.T) {
 
 func TestClient_InsertBalance(t *testing.T) {
 	testPort := port + 4
-	account := &storage.Account{ID: 51}
-
 	expected := &storage.Balance{ID: 293}
-	s := &accountingtest.Storage{
-		Account: account,
+
+	s := &storagetest.Storage{
+		Account: &storage.Account{ID: 51},
 		Balance: expected,
 	}
 	srv, err := server.New(s)

@@ -23,10 +23,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/Pocketbrain/go-logger"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/glynternet/go-accounting"
 
 [[constraint]]
@@ -42,8 +38,16 @@
   name = "github.com/glynternet/go-money"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/glynternet/go-time"
+
+[[constraint]]
   name = "github.com/gorilla/mux"
   version = "1.6.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
 
 [[constraint]]
   name = "github.com/pkg/errors"
@@ -51,11 +55,11 @@
 
 [[constraint]]
   name = "github.com/spf13/cobra"
-  version = "0.0.1"
+  version = "0.0.2"
 
 [[constraint]]
   name = "github.com/spf13/viper"
-  version = "1.0.0"
+  version = "1.0.2"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
