@@ -1,10 +1,8 @@
 package date
 
 import (
-	"testing"
-
 	"strconv"
-
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -55,11 +53,12 @@ func TestFlag_Set(t *testing.T) {
 					f := &flag{}
 					err := f.Set(v)
 					if test.err {
+						assert.Nil(t, f.Time)
 						assert.Error(t, err)
 						return
 					}
 					assert.NotNil(t, f)
-					diff := absDuration(time.Time(*f).Sub(test.Time))
+					diff := absDuration(f.Time.Sub(test.Time))
 					assert.Truef(t, diff < time.Millisecond*5 && diff > -time.Millisecond*5, "difference should be small but was %d", diff)
 					assert.NoError(t, err)
 				})
@@ -68,6 +67,9 @@ func TestFlag_Set(t *testing.T) {
 	}
 }
 
+// absDuration will make any Duration positive.
+// BUG: If the duration given is equal to math.MinInt64, which is a large
+// negative number, the duration returned will be negative, still.
 func absDuration(a time.Duration) time.Duration {
 	if a >= 0 {
 		return a

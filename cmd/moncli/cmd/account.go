@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/glynternet/accounting-rest/client"
+	"github.com/glynternet/accounting-rest/pkg/date"
 	"github.com/glynternet/accounting-rest/pkg/table"
 	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/account"
@@ -134,6 +135,7 @@ var accountBalancesCmd = &cobra.Command{
 	},
 }
 
+var balanceDate = date.Flag()
 var accountBalanceInsertCmd = &cobra.Command{
 	Use: "balance-insert",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -150,14 +152,9 @@ var accountBalanceInsertCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting account")
 		}
 
-		nt, err := parseNullTime(viper.GetString(keyDate))
-		if err != nil {
-			return errors.Wrap(err, "getting date")
-		}
-
 		t := time.Now()
-		if nt.Valid {
-			t = nt.Time
+		if balanceDate.Time != nil {
+			t = *balanceDate.Time
 		}
 
 		b, err := c.InsertBalance(*a, balance.Balance{
@@ -201,7 +198,8 @@ func init() {
 
 	accountBalancesCmd.Flags().UintP(keyLimit, "l", 0, "limit results")
 
-	accountBalanceInsertCmd.Flags().StringP(keyDate, "d", "", "date of balance to insert")
+	// TODO: Stop multiple usage of the flag like in this article: http://blog.ralch.com/tutorial/golang-custom-flags/
+	accountBalanceInsertCmd.Flags().VarP(balanceDate, keyDate, "d", "date of balance to insert")
 	accountBalanceInsertCmd.Flags().IntP(keyAmount, "a", 0, "amount of balance to insert")
 
 	rootCmd.AddCommand(accountCmd)
