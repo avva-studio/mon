@@ -28,6 +28,11 @@ func (s *Storage) Close() error    { return s.Err }
 func (s *Storage) InsertAccount(a account.Account) (*storage.Account, error) {
 	return s.Account, s.AccountErr
 }
+
+func (s *Storage) UpdateAccount(a *storage.Account, updates *account.Account) (*storage.Account, error) {
+	return s.Account, s.AccountErr
+}
+
 func (s *Storage) SelectAccount(u uint) (*storage.Account, error) { return s.Account, s.AccountErr }
 func (s *Storage) SelectAccounts() (*storage.Accounts, error)     { return s.Accounts, s.Err }
 

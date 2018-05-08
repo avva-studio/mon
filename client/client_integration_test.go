@@ -7,8 +7,8 @@ import (
 
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storagetest"
-	"github.com/glynternet/go-accounting-storagetest/storagetest"
+	"github.com/glynternet/go-accounting-storage/storagetest"
+	"github.com/glynternet/go-accounting/accountingtest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
 	"github.com/stretchr/testify/assert"

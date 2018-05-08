@@ -3,13 +3,12 @@ package server
 import (
 	"net/http"
 	"testing"
-
 	"time"
 
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storagetest"
-	"github.com/glynternet/go-accounting-storagetest/storagetest"
+	"github.com/glynternet/go-accounting-storage/storagetest"
 	"github.com/glynternet/go-accounting/account"
+	"github.com/glynternet/go-accounting/accountingtest"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

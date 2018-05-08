@@ -47,6 +47,10 @@ func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
 	return unmarshalJSONToAccount(bs)
 }
 
+func (c Client) UpdateAccount(account *storage.Account, updates *account.Account) (*storage.Account, error) {
+	return nil, errors.New("not yet implemented")
+}
+
 func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, error) {
 	res, err := c.postAsJSONToEndpoint(e, a)
 	if err != nil {

@@ -16,25 +16,31 @@
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-accounting"
-  packages = ["account","balance"]
-  revision = "08a8aaf9190ef1d08a075f9b7477937769f45f79"
+  packages = [
+    "account",
+    "accountingtest",
+    "balance"
+  ]
+  revision = "f7cd0cb863a1c2334d0dc782aa554d4f685f6280"
 
 [[projects]]
   branch = "develop-1"
   name = "github.com/glynternet/go-accounting-storage"
-  packages = [".","postgres2","test"]
-  revision = "d2d69776482235774a6da9cc9995fbf129b4c30a"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/glynternet/go-accounting-storagetest"
-  packages = [".","storagetest"]
-  revision = "a040b7079fb76b9f506e3abf79a6fc3676e4365a"
+  packages = [
+    ".",
+    "postgres",
+    "storagetest",
+    "test"
+  ]
+  revision = "f7586d3d3f7a0bea95a177bb33e533f9eadda759"
 
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-money"
-  packages = ["common","currency"]
+  packages = [
+    "common",
+    "currency"
+  ]
   revision = "95ce07f4b89426d1df4b44f6493e366dd9322e07"
 
 [[projects]]
@@ -58,7 +64,18 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [".","hcl/ast","hcl/parser","hcl/printer","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/printer",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token"
+  ]
   revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
@@ -70,7 +87,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [".","oid"]
+  packages = [
+    ".",
+    "oid"
+  ]
   revision = "d34b9ff171c21ad295489235aec8b6626023cd04"
 
 [[projects]]
@@ -95,7 +115,7 @@
   branch = "master"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
-  revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
+  revision = "d4647c9c7a84d847478d890b816b7d8b62b0b279"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -117,7 +137,10 @@
 
 [[projects]]
   name = "github.com/spf13/afero"
-  packages = [".","mem"]
+  packages = [
+    ".",
+    "mem"
+  ]
   revision = "63644898a8da0bc22138abf860edaf5277b6102e"
   version = "v1.1.0"
 
@@ -161,11 +184,18 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
+  revision = "7db1c3b1a98089d0071c84f646ff5c96aad43682"
 
 [[projects]]
   name = "golang.org/x/text"
-  packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm"]
+  packages = [
+    "internal/gen",
+    "internal/triegen",
+    "internal/ucd",
+    "transform",
+    "unicode/cldr",
+    "unicode/norm"
+  ]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
@@ -178,6 +208,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0a4495bed350a3284076b90c6b194634fb2febe84956e2ff49da8e19bd8b2d6e"
+  inputs-digest = "634774d2cb31053b10bf448b98fab2f929e732686dd4d871663b3d9a659c88b8"
   solver-name = "gps-cdcl"
   solver-version = 1

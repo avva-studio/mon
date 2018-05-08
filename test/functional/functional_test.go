@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/glynternet/accounting-rest/client"
-	"github.com/glynternet/go-accounting-storage/postgres2"
+	"github.com/glynternet/go-accounting-storage/postgres"
 	"github.com/glynternet/go-accounting-storage/test"
 	"github.com/spf13/viper"
 )
@@ -35,7 +35,7 @@ func setup() {
 	errs := make([]error, retries)
 	var i int
 	for i = 0; i < retries; i++ {
-		err := postgres2.CreateStorage(
+		err := postgres.CreateStorage(
 			viper.GetString(keyDBHost),
 			viper.GetString(keyDBUser),
 			viper.GetString(keyDBName),

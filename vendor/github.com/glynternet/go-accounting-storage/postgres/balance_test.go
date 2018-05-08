@@ -1,46 +1,101 @@
-package postgres_test
+// +build integration
+
+package postgres
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting/common"
+	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/go-money/common"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BalancesForInvalidAccountId(t *testing.T) {
-	validID := uint(1)
-	store := prepareTestDB(t)
-	defer nonReturningCloseStorage(t, store)
-	as, err := store.SelectAccounts()
-	assert.Nil(t, err)
-	var selectedA storage.Account
-	for _, a := range *as {
-		if a.ID != validID {
-			continue
+func TestPostgres_InsertBalance_selectBalanceByID(t *testing.T) {
+	s := createTestDB(t)
+	defer deleteTestDB(t)
+	defer nonReturningCloseStorage(s)
+
+	a := newTestDBAccountOpen(t, s)
+
+	for i, test := range []struct {
+		time.Time
+		int
+		error bool
+	}{
+		{
+			Time:  a.Account.Opened().AddDate(-1, 0, 0),
+			error: true,
+		},
+		{
+			Time: a.Account.Opened(),
+			int:  -999,
+		},
+		{
+			Time: a.Account.Opened().AddDate(1, 0, 0),
+			int:  0137,
+		},
+	} {
+		b := newTestBalance(t, test.Time, balance.Amount(test.int))
+		dbb, err := s.InsertBalance(a, b)
+		assert.Equal(t, test.error, err != nil, "[test: %d] %v", i, err)
+		if err != nil {
+			return
 		}
-		selectedA = a
+		assert.Equal(t, b, dbb.Balance)
+		dbbb, err := s.(*postgres).selectBalanceByID(dbb.ID)
+		common.FatalIfError(t, err, "selecting balance to check against inserted")
+		assert.Equal(t, dbb, dbbb)
 	}
-	if !assert.NotNil(t, selectedA) {
-		t.FailNow()
+}
+
+// TODO: Add selectBalanceByID to features
+func (pg postgres) selectBalanceByID(id uint) (*storage.Balance, error) {
+	b, err := queryBalance(pg.db, fmt.Sprintf(
+		`%s%s = $1;`,
+		balancesSelectPrefix,
+		balancesFieldID), id)
+	return b, errors.Wrap(err, "querying balance")
+}
+
+func TestPostgres_SelectAccountBalances(t *testing.T) {
+	deleteTestDBIgnorantly(t)
+	store := createTestDB(t)
+	defer deleteTestDB(t)
+	defer nonReturningCloseStorage(store)
+	count := 10
+	as := newTestInsertedStorageAccounts(t, store, count)
+	for i := 0; i < count; i++ {
+		numBalances := i
+		inserted := make([]storage.Balance, numBalances)
+		for j, b := range newTestBalances(t, numBalances, time.Now(), time.Hour) {
+			err := balance.Amount(j)(&b)
+			common.FatalIfError(t, err, "setting balance amount")
+			dba, err := store.InsertBalance(*as[i], b)
+			common.FatalIfError(t, err, "inserting Balance")
+			inserted[j] = *dba
+		}
+		returned, err := store.SelectAccountBalances(*as[i])
+		common.FatalIfError(t, err, "selecting account balances")
+		for j := 0; j < i; j++ {
+			assert.Equal(t, inserted[j], (*returned)[j])
+		}
 	}
-	balances, err := store.SelectAccountBalances(selectedA)
-	common.ErrorIfErrorf(t, err, "Getting balances for account %d", validID)
-	minBalances := 91
-	if len(*balances) < minBalances {
-		t.Errorf("account ID: %d, expected at least %d balances but got: %d", validID, minBalances, len(*balances))
-		return
+}
+
+func newTestBalance(t *testing.T, time time.Time, os ...balance.Option) balance.Balance {
+	b, err := balance.New(time, os...)
+	common.FatalIfError(t, err, "creating test balance")
+	return *b
+}
+
+func newTestBalances(t *testing.T, count int, startTime time.Time, interval time.Duration, os ...balance.Option) []balance.Balance {
+	bs := make([]balance.Balance, count)
+	for i := 0; i < count; i++ {
+		bs[i] = newTestBalance(t, startTime.Add(time.Duration(i)*interval), os...)
 	}
-	expectedID := uint(1)
-	actualID := (*balances)[0].ID
-	if expectedID != actualID {
-		t.Errorf(`Unexpected Balance ID.\nExpected: %d\nActual:  %d`, expectedID, actualID)
-	}
-	expectedAmount := 63641
-	actualAmount := (*balances)[0].Amount
-	assert.Equal(t, expectedAmount, actualAmount)
-	expectedDate := time.Date(2016, 06, 17, 0, 0, 0, 0, time.UTC)
-	actualDate := (*balances)[0].Date
-	assert.True(t, expectedDate.Equal(actualDate))
+	return bs
 }

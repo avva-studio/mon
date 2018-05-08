@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storagetest/storagetest"
+	"github.com/glynternet/go-accounting-storage/storagetest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

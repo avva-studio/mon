@@ -7,7 +7,7 @@ import (
 
 	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storage/postgres2"
+	"github.com/glynternet/go-accounting-storage/postgres"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -47,11 +47,11 @@ func initConfig() {
 }
 
 func newStorage(host, user, dbname, sslmode string) (storage.Storage, error) {
-	cs, err := postgres2.NewConnectionString(host, user, dbname, sslmode)
+	cs, err := postgres.NewConnectionString(host, user, dbname, sslmode)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create connection string: %v", err)
 	}
-	return postgres2.New(cs)
+	return postgres.New(cs)
 }
 
 var cmdDBServe = &cobra.Command{
