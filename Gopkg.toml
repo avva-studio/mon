@@ -30,10 +30,6 @@
   name = "github.com/glynternet/go-accounting"
 
 [[constraint]]
-  branch = "develop-1"
-  name = "github.com/glynternet/accounting-rest/pkg/storage"
-
-[[constraint]]
   branch = "master"
   name = "github.com/glynternet/go-money"
 
