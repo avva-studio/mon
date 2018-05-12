@@ -3,25 +3,26 @@
 package functional
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/client"
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/accounting-rest/pkg/storage/postgres"
 	"github.com/glynternet/accounting-rest/pkg/storage/storagetest"
+	"github.com/glynternet/go-money/common"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
 	// viper keys
-	keyServerHost = "server-host"
-	keyDBHost     = "db-host"
-	keyDBUser     = "db-user"
-	keyDBName     = "db-name"
-	keyDBSSLMode  = "db-sslmode"
+	keyDBHost    = "db-host"
+	keyDBUser    = "db-user"
+	keyDBName    = "db-name"
+	keyDBSSLMode = "db-sslmode"
 )
 
 func init() {
@@ -49,17 +50,29 @@ func setup() {
 	}
 	if errs[retries-1] != nil {
 		for i, err := range errs {
-			log.Printf("[retry: %02d] %v\n", i, err)
+			fmt.Printf("[retry: %02d] %v\n", i, err)
 		}
 		os.Exit(1)
 	}
-	log.Print("Setup complete")
 }
 
 func TestSuite(t *testing.T) {
-	store := client.Client(viper.GetString(keyServerHost))
-	if !store.Available() {
-		t.Fatal("store is unavailable")
-	}
+	store := createStorage(t)
 	storagetest.Test(t, store)
+}
+
+func createStorage(t *testing.T) storage.Storage {
+	cs, err := postgres.NewConnectionString(
+		viper.GetString(keyDBHost),
+		viper.GetString(keyDBUser),
+		viper.GetString(keyDBName),
+		viper.GetString(keyDBSSLMode),
+	)
+	common.FatalIfError(t, err, "creating connection string")
+	store, err := postgres.New(cs)
+	common.FatalIfError(t, err, "creating storage")
+	if !assert.True(t, store.Available(), "store should be available") {
+		t.FailNow()
+	}
+	return store
 }

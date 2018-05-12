@@ -10,8 +10,8 @@ import (
 
 	"github.com/glynternet/accounting-rest/client"
 	"github.com/glynternet/accounting-rest/pkg/date"
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/accounting-rest/pkg/table"
-	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"

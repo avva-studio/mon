@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/glynternet/accounting-rest/pkg/storage"
+	"github.com/glynternet/accounting-rest/pkg/storage/storagetest"
 	"github.com/glynternet/accounting-rest/server"
-	"github.com/glynternet/go-accounting-storage"
-	"github.com/glynternet/go-accounting-storage/storagetest"
 	"github.com/glynternet/go-accounting/accountingtest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"

@@ -1,7 +1,7 @@
 package storagetest
 
 import (
-	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 )

@@ -3,15 +3,15 @@ package server
 import (
 	"net/http"
 
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/pkg/errors"
-	"github.com/glynternet/go-accounting-storage"
 )
 
 func New(store storage.Storage) (*server, error) {
 	if store == nil {
 		return nil, errors.New("nil store")
 	}
-	return &server{storage:store}, nil
+	return &server{storage: store}, nil
 }
 
 type server struct {

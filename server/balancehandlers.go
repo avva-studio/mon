@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/glynternet/go-accounting-storage"
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"

@@ -31,7 +31,7 @@
 
 [[constraint]]
   branch = "develop-1"
-  name = "github.com/glynternet/go-accounting-storage"
+  name = "github.com/glynternet/accounting-rest/pkg/storage"
 
 [[constraint]]
   branch = "master"

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/accounting-rest/server"
-	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/account"
 	"github.com/pkg/errors"
 )
