@@ -1,6 +1,6 @@
 REPO_NAME ?= accounting-rest
 
-DOCKER_IMAGE ?= monserve:c74dc30
+DOCKER_IMAGE ?= monserve:develop-v0.3.5-4-g8006b2e
 
 TEST_BIN_NAME ?= functional.test
 
