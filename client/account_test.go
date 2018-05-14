@@ -60,6 +60,8 @@ func TestGetAccountFromEndpoint(t *testing.T) {
 }
 
 func TestPostAccountToEndpoint(t *testing.T) {
+	// TODO: this error can probably be caused by a timeout when timeouts are
+	// implemented in the repo
 	//t.Run("post as json error", func(t *testing.T) {
 	//	bod, err := Client("BLOOOOP").postAccountToEndpoint("", nil)
 	//	if assert.Error(t, err) {

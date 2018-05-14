@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -18,6 +20,7 @@ func (s *server) newRouter() (*mux.Router, error) {
 			Path(route.pattern).
 			Name(route.name).
 			Handler(handler)
+		log.Printf("Route registered: %+v", route)
 	}
 	return router, nil
 }

@@ -51,7 +51,7 @@ func Test_balances(t *testing.T) {
 		code, bs, err := srv.balances(1) // any ID can be used because of the stub
 		assert.Equal(t, http.StatusOK, code)
 		assert.NoError(t, err)
-		assert.IsType(t, new(storage.Balances), bs)
+		assert.IsType(t, &storage.Balances{}, bs)
 		assert.Equal(t, expected, bs)
 	})
 }

@@ -15,7 +15,7 @@ import (
 
 func Test_handlerSelectAccounts(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		expected := errors.New("selecting Accounts")
+		expected := errors.New("select accounts test error")
 		server := &server{
 			storage: &storagetest.Storage{Err: expected},
 		}
@@ -44,7 +44,7 @@ func Test_handlerSelectAccounts(t *testing.T) {
 
 func Test_handlerSelectAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		expected := errors.New("selecting Account")
+		expected := errors.New("select account test error")
 		server := &server{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
@@ -76,7 +76,7 @@ func Test_handlerSelectAccount(t *testing.T) {
 
 func Test_handlerInsertAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		expected := errors.New("inserting account")
+		expected := errors.New("insert account test error")
 		server := &server{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
@@ -102,5 +102,40 @@ func Test_handlerInsertAccount(t *testing.T) {
 		assert.Equal(t, http.StatusOK, code)
 		assert.NotNil(t, inserted)
 		assert.Equal(t, expected, inserted)
+	})
+}
+
+func Test_handlerUpdateAccount(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		expected := errors.New("update account test error")
+		server := &server{
+			storage: &storagetest.Storage{AccountErr: expected},
+		}
+		code, updated, err := server.handlerUpdateAccount(
+			storage.Account{},
+			account.Account{},
+		)
+		assert.Equal(t, errors.Cause(err), expected)
+		assert.Nil(t, updated)
+		assert.Equal(t, code, http.StatusBadRequest)
+		t.Log(code, updated, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		expected := &storage.Account{
+			ID: 456,
+			Account: *accountingtest.NewAccount(t,
+				"success account",
+				accountingtest.NewCurrencyCode(t, "GBP"),
+				time.Date(1000, 1, 0, 0, 0, 0, 0, time.UTC)),
+		}
+		server := &server{
+			storage: &storagetest.Storage{Account: expected},
+		}
+		code, updated, err := server.handlerUpdateAccount(storage.Account{}, expected.Account)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, code)
+		assert.NotNil(t, updated)
+		assert.Equal(t, expected, updated)
 	})
 }

@@ -202,6 +202,9 @@ func updateAccounts(t *testing.T, store storage.Storage) {
 
 		updatedA, err := store.UpdateAccount(inserted, updates)
 		common.FatalIfError(t, err, "updating account")
+		if !assert.NotNil(t, updatedA) {
+			t.FailNow()
+		}
 		assert.Equal(t, updatedA.ID, inserted.ID)
 		assert.True(t,
 			updatedA.Account.Equal(*updates),

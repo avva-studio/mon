@@ -8,10 +8,12 @@ const (
 	patternAccounts  = EndpointAccounts
 
 	// Account
-	EndpointAccount       = "/account"
-	EndpointFmtAccount    = EndpointAccount + "/%d"
-	patternAccount        = EndpointAccount + "/{id}"
-	EndpointAccountInsert = EndpointAccount + "/insert"
+	EndpointAccount          = "/account"
+	EndpointFmtAccount       = EndpointAccount + "/%d"
+	patternAccount           = EndpointAccount + "/{id}"
+	EndpointAccountInsert    = EndpointAccount + "/insert"
+	EndpointFmtAccountUpdate = EndpointFmtAccount + "/update"
+	patternAccountUpdate     = patternAccount + "/update"
 
 	// Account Balances
 	EndpointFmtAccountBalances      = EndpointAccount + "/%d/balances"
@@ -45,6 +47,12 @@ func (s *server) routes() []route {
 			name:       "AccountInsert",
 			pattern:    EndpointAccountInsert,
 			appHandler: s.muxAccountInsertHandlerFunc,
+			method:     http.MethodPost,
+		},
+		{
+			name:       "AccountUpdate",
+			pattern:    patternAccountUpdate,
+			appHandler: s.muxAccountUpdateHandlerFunc,
 			method:     http.MethodPost,
 		},
 		{

@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/glynternet/go-accounting/balance"
@@ -49,10 +50,20 @@ func (s *server) muxAccountBalanceInsertHandlerFunc(r *http.Request) (int, inter
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
 	}
+
 	bod, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "reading request body")
 	}
+
+	defer func() {
+		// TODO: this handler only needs to take a []byte which would mean we can handle closing the body elsewhere
+		cErr := r.Body.Close()
+		if cErr != nil {
+			log.Print(errors.Wrap(err, "closing request body"))
+		}
+	}()
+
 	var b balance.Balance
 	err = json.Unmarshal(bod, &b)
 	if err != nil {

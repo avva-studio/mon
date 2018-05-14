@@ -20,7 +20,7 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
-	bs := new(storage.Balances)
+	bs := &storage.Balances{}
 	err = errors.Wrap(json.Unmarshal(bod, bs), "unmarshalling response")
 	if err != nil {
 		bs = nil
@@ -46,8 +46,9 @@ func (c Client) postBalanceToEndpoint(e string, b balance.Balance) ([]byte, erro
 	}
 	return processResponseForBody(res)
 }
+
 func unmarshalJSONToBalance(data []byte) (*storage.Balance, error) {
-	b := new(storage.Balance)
+	b := &storage.Balance{}
 	err := errors.Wrapf(json.Unmarshal(data, b), "json unmarshalling into balance. bytes as string: %s", data)
 	if err != nil {
 		b = nil

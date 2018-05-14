@@ -48,7 +48,12 @@ func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
 }
 
 func (c Client) UpdateAccount(account *storage.Account, updates *account.Account) (*storage.Account, error) {
-	return nil, errors.New("not yet implemented")
+	endpoint := fmt.Sprintf(server.EndpointFmtAccountUpdate, account.ID)
+	bs, err := c.postAccountToEndpoint(endpoint, *updates)
+	if err != nil {
+		return nil, errors.Wrapf(err, "posting account to endpoint %s", endpoint)
+	}
+	return unmarshalJSONToAccount(bs)
 }
 
 func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, error) {
@@ -60,6 +65,12 @@ func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, erro
 }
 
 func unmarshalJSONToAccount(data []byte) (*storage.Account, error) {
+	if len(data) == 0 {
+		return nil, errors.New("no data provided")
+	}
+	if string(data) == "null" {
+		return nil, errors.New(`data was "null"`)
+	}
 	a := &storage.Account{}
 	err := errors.Wrapf(json.Unmarshal(data, a), "json unmarshalling into account. bytes as string: %s", data)
 	if err != nil {

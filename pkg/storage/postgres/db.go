@@ -51,7 +51,7 @@ func NewConnectionString(host, user, dbname, sslmode string) (s string, err erro
 		"dbname":  dbname,
 		"sslmode": sslmode,
 	}
-	cs := new(bytes.Buffer)
+	cs := &bytes.Buffer{}
 	for k, v := range kvs {
 		if len(v) > 0 {
 			_, err = fmt.Fprintf(cs, "%s=%s ", k, v)
@@ -113,7 +113,7 @@ func createDatabase(connection, name, owner string) error {
 	// When using $1 whilst creating a DB with the db driver, errors were being
 	// returned to do with the use of $ signs.
 	// So I've reverted to plain old forming a query string manually.
-	q := new(bytes.Buffer)
+	q := &bytes.Buffer{}
 	w := failSafeWriter{Writer: q}
 	w.writef("CREATE DATABASE %s ", name)
 	w.writef("WITH OWNER = %s ", owner)

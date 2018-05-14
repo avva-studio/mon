@@ -77,6 +77,9 @@ func (a *Account) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return fmt.Errorf("error unmarshalling into auxilliary account struct: %v", err)
 	}
+	if aux == nil {
+		return errors.New("unmarshalling into auxiliary caused nil value")
+	}
 	a.ID = aux.ID
 	a.deletedAt = aux.DeletedAt
 	c, err := currency.NewCode(aux.Account.Currency)

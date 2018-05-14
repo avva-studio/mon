@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"encoding/json"
@@ -42,17 +43,20 @@ func (c Client) getBodyFromEndpoint(e string) ([]byte, error) {
 	return processResponseForBody(res)
 }
 
-func processResponseForBody(res *http.Response) ([]byte, error) {
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned unexpected code %d (%s)", res.StatusCode, res.Status)
+func processResponseForBody(r *http.Response) ([]byte, error) {
+	if r.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("server returned unexpected code %d (%s)", r.StatusCode, r.Status)
 	}
-	bod, err := ioutil.ReadAll(res.Body)
+	bod, err := ioutil.ReadAll(r.Body)
+
 	defer func() {
-		cErr := res.Body.Close()
-		if err == nil {
-			err = errors.Wrapf(cErr, "closing response body")
+		// TODO: this handler only needs to take a []byte which would mean we can handle closing the body elsewhere
+		cErr := r.Body.Close()
+		if cErr != nil {
+			log.Print(errors.Wrap(err, "closing response body"))
 		}
 	}()
+
 	return bod, errors.Wrap(err, "reading response body")
 }
 

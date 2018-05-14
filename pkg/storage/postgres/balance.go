@@ -118,7 +118,7 @@ func queryBalances(db *sql.DB, queryString string, values ...interface{}) (*stor
 // scanRowsForBalance scans a sql.Rows for a Balances object and returns any
 // error occurring along the way.
 func scanRowsForBalances(rows *sql.Rows) (bs *storage.Balances, err error) {
-	bs = new(storage.Balances)
+	bs = &storage.Balances{}
 	for rows.Next() {
 		var ID uint
 		var date time.Time
