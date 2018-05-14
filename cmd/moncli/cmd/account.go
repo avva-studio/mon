@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/glynternet/go-accounting/account"
@@ -29,6 +28,11 @@ const (
 	keyOpened   = "opened"
 	keyClosed   = "closed"
 	keyLimit    = "limit"
+)
+
+var (
+	accountOpened = date.Flag()
+	accountClosed = date.Flag()
 )
 
 var accountCmd = &cobra.Command{
@@ -60,20 +64,21 @@ var accountAddCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "creating new currency code")
 		}
-		opened, err := parseNullTime(viper.GetString(keyOpened))
-		if err != nil {
-			return errors.Wrap(err, "parsing opened date")
+
+		opened := gtime.NullTime{
+			Valid: true,
+			Time:  time.Now(),
 		}
-		if !opened.Valid {
-			opened = gtime.NullTime{
-				Valid: true,
-				Time:  time.Now(),
-			}
+		if accountOpened.Time != nil {
+			opened.Time = *accountOpened.Time
 		}
 
-		closed, err := parseNullTime(viper.GetString(keyClosed))
-		if err != nil {
-			return errors.Wrap(err, "parsing closed date")
+		var closed gtime.NullTime
+		if accountClosed.Time != nil {
+			closed = gtime.NullTime{
+				Valid: true,
+				Time:  *accountClosed.Time,
+			}
 		}
 
 		var ops []account.Option
@@ -171,29 +176,10 @@ var accountBalanceInsertCmd = &cobra.Command{
 	},
 }
 
-func parseNullTime(ds string) (gtime.NullTime, error) {
-	ds = strings.TrimSpace(ds)
-	if ds == "" {
-		return gtime.NullTime{}, nil
-	}
-	t, err := parseDateString(ds)
-	if err != nil {
-		return gtime.NullTime{}, errors.Wrap(err, "parsing date string")
-	}
-	return gtime.NullTime{
-		Valid: true,
-		Time:  t,
-	}, nil
-}
-
-func parseDateString(dateString string) (time.Time, error) {
-	return time.Parse("2006-01-02", dateString)
-}
-
 func init() {
 	accountAddCmd.Flags().StringP(keyName, "n", "", "")
-	accountAddCmd.Flags().StringP(keyOpened, "o", "", "opened date")
-	accountAddCmd.Flags().StringP(keyClosed, "c", "", "closed date")
+	accountAddCmd.Flags().VarP(accountOpened, keyOpened, "o", "opened date")
+	accountAddCmd.Flags().VarP(accountClosed, keyClosed, "c", "closed date")
 	accountAddCmd.Flags().String(keyCurrency, "EUR", "")
 
 	accountBalancesCmd.Flags().UintP(keyLimit, "l", 0, "limit results")
