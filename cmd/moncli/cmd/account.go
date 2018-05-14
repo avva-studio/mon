@@ -39,7 +39,7 @@ var accountCmd = &cobra.Command{
 	Use: "account",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("no account id given")
+			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -104,11 +104,63 @@ var accountAddCmd = &cobra.Command{
 	},
 }
 
+var accountUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "update an account",
+	Long:  "update an account with the given details. All of the details of an account must be provided, even if they are exactly the same as the original account",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
+		}
+		id, err := strconv.ParseUint(args[0], 10, 64)
+		if err != nil {
+			return errors.Wrap(err, "parsing account id")
+		}
+		c := client.Client(viper.GetString(keyServerHost))
+		a, err := c.SelectAccount(uint(id))
+		if err != nil {
+			return errors.Wrap(err, "selecting account to update")
+		}
+
+		opened := time.Now()
+		if accountOpened.Time != nil {
+			opened = *accountOpened.Time
+		}
+
+		var ops []account.Option
+		if accountClosed.Time != nil {
+			ops = append(ops, account.CloseTime(*accountClosed.Time))
+		}
+
+		cc, err := currency.NewCode(viper.GetString(keyCurrency))
+		if err != nil {
+			return errors.Wrap(err, "creating new currency code")
+		}
+
+		us, err := account.New(viper.GetString(keyName), *cc, opened, ops...)
+		if err != nil {
+			return errors.Wrap(err, "creating account for update")
+		}
+
+		updated, err := c.UpdateAccount(a, us)
+		if err != nil {
+			return errors.Wrap(err, "updating account")
+		}
+
+		fmt.Println("ORIGINAL")
+		table.Accounts(storage.Accounts{*a}, os.Stdout)
+
+		fmt.Println("UPDATED")
+		table.Accounts(storage.Accounts{*updated}, os.Stdout)
+		return nil
+	},
+}
+
 var accountBalancesCmd = &cobra.Command{
 	Use: "balances",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("no account id given")
+			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -145,7 +197,7 @@ var accountBalanceInsertCmd = &cobra.Command{
 	Use: "balance-insert",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument, receieved %d", len(args))
+			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -177,10 +229,15 @@ var accountBalanceInsertCmd = &cobra.Command{
 }
 
 func init() {
-	accountAddCmd.Flags().StringP(keyName, "n", "", "")
-	accountAddCmd.Flags().VarP(accountOpened, keyOpened, "o", "opened date")
-	accountAddCmd.Flags().VarP(accountClosed, keyClosed, "c", "closed date")
-	accountAddCmd.Flags().String(keyCurrency, "EUR", "")
+	accountAddCmd.Flags().StringP(keyName, "n", "", "account name")
+	accountAddCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
+	accountAddCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
+	accountAddCmd.Flags().String(keyCurrency, "EUR", "account currency")
+
+	accountUpdateCmd.Flags().StringP(keyName, "n", "", "account name")
+	accountUpdateCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
+	accountUpdateCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
+	accountUpdateCmd.Flags().String(keyCurrency, "EUR", "account currency")
 
 	accountBalancesCmd.Flags().UintP(keyLimit, "l", 0, "limit results")
 
@@ -191,6 +248,7 @@ func init() {
 	rootCmd.AddCommand(accountCmd)
 	for _, c := range []*cobra.Command{
 		accountAddCmd,
+		accountUpdateCmd,
 		accountBalancesCmd,
 		accountBalanceInsertCmd,
 	} {

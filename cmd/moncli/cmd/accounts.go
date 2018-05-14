@@ -91,8 +91,7 @@ var accountsCmd = &cobra.Command{
 			for crncy, bs := range cbs {
 				totals = append(totals, []string{crncy.String(), strconv.Itoa(bs.Sum())})
 			}
-			table.Basic(totals, os.Stdout)
-			return nil
+			return errors.Wrap(table.Basic(totals, os.Stdout), "printing basic table for totals")
 		}
 		table.Accounts(*as, os.Stdout)
 		return nil

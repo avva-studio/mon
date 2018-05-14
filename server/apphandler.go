@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
-	"io"
 
 	"github.com/pkg/errors"
 )

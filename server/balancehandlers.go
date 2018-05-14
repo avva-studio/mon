@@ -30,7 +30,7 @@ func (s *server) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
 	}
-	return s.balances(uint(id))
+	return s.balances(id)
 }
 
 func (s *server) insertBalance(accountID uint, b balance.Balance) (int, interface{}, error) {
