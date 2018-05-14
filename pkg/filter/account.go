@@ -3,7 +3,7 @@ package filter
 import (
 	"time"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage"
 )
 
 type AccountFilter func(storage.Account) bool

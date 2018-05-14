@@ -5,9 +5,9 @@ import (
 
 	"fmt"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
-	"github.com/glynternet/accounting-rest/server"
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/server"
 	"github.com/pkg/errors"
 )
 

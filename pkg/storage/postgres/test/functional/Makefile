@@ -1,4 +1,4 @@
-REPO_NAME ?= accounting-rest/pkg/storage
+REPO_NAME ?= mon/pkg/storage
 REPO_URI ?= github.com/glynternet/$(REPO_NAME)
 
 TEST_BIN_NAME ?= functional.test

@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
-	"github.com/glynternet/accounting-rest/pkg/storage/postgres"
-	"github.com/glynternet/accounting-rest/server"
+	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage/postgres"
+	"github.com/glynternet/mon/server"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

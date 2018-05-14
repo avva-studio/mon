@@ -1,6 +1,6 @@
 package main
 
-import "github.com/glynternet/accounting-rest/cmd/moncli/cmd"
+import "github.com/glynternet/mon/cmd/moncli/cmd"
 
 func main() {
 	cmd.Execute()

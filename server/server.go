@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage"
 	"github.com/pkg/errors"
 )
 

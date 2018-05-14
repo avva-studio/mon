@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
-	"github.com/glynternet/accounting-rest/pkg/storage/postgres"
-	"github.com/glynternet/accounting-rest/pkg/storage/storagetest"
 	"github.com/glynternet/go-money/common"
+	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage/postgres"
+	"github.com/glynternet/mon/pkg/storage/storagetest"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

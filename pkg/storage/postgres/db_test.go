@@ -8,8 +8,8 @@ import (
 
 	"database/sql"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/go-money/common"
+	"github.com/glynternet/mon/pkg/storage"
 	"github.com/stretchr/testify/assert"
 )
 

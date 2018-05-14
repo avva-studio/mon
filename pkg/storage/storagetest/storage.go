@@ -1,9 +1,9 @@
 package storagetest
 
 import (
-	"github.com/glynternet/accounting-rest/pkg/storage"
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/mon/pkg/storage"
 )
 
 type Storage struct {

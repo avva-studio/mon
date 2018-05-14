@@ -1,4 +1,4 @@
-REPO_NAME ?= accounting-rest
+REPO_NAME ?= mon
 
 DOCKER_IMAGE ?= monserve:develop-v0.3.5-4-g8006b2e
 

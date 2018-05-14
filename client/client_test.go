@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

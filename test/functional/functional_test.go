@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/client"
-	"github.com/glynternet/accounting-rest/pkg/storage/postgres"
-	"github.com/glynternet/accounting-rest/pkg/storage/storagetest"
+	"github.com/glynternet/mon/client"
+	"github.com/glynternet/mon/pkg/storage/postgres"
+	"github.com/glynternet/mon/pkg/storage/storagetest"
 	"github.com/spf13/viper"
 )
 

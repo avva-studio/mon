@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/pkg/storage"
-	"github.com/glynternet/accounting-rest/pkg/storage/storagetest"
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/accountingtest"
+	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/pkg/storage/storagetest"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
