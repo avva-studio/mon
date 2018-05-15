@@ -21,13 +21,14 @@ import (
 )
 
 const (
-	keyDate     = "date"
-	keyAmount   = "amount"
-	keyName     = "name"
-	keyCurrency = "currency"
-	keyOpened   = "opened"
-	keyClosed   = "closed"
-	keyLimit    = "limit"
+	keyDate           = "date"
+	keyAmount         = "amount"
+	keyName           = "name"
+	keyCurrency       = "currency"
+	keyOpened         = "opened"
+	keyClosed         = "closed"
+	keyLimit          = "limit"
+	keyOpeningBalance = "opening-balance"
 )
 
 var (
@@ -104,10 +105,53 @@ var accountAddCmd = &cobra.Command{
 	},
 }
 
+var accountOpenCmd = &cobra.Command{
+	Use:   "open [NAME]",
+	Short: "open an account",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name := args[0]
+
+		cc, err := currency.NewCode(viper.GetString(keyCurrency))
+		if err != nil {
+			return errors.Wrap(err, "creating new currency code")
+		}
+
+		date := time.Now()
+		if accountOpened.Time != nil {
+			date = *accountOpened.Time
+		}
+
+		a, err := account.New(name, *cc, date)
+		if err != nil {
+			return errors.Wrap(err, "creating new account for insert")
+		}
+
+		c := client.Client(viper.GetString(keyServerHost))
+
+		i, err := c.InsertAccount(*a)
+		if err != nil {
+			return errors.Wrap(err, "inserting new account")
+		}
+
+		b, err := c.InsertBalance(*i, balance.Balance{
+			Date:   i.Account.Opened(),
+			Amount: viper.GetInt(keyOpeningBalance),
+		})
+
+		table.AccountsWithBalance(map[storage.Account]balance.Balance{
+			*i: b.Balance,
+		}, os.Stdout)
+		return nil
+	},
+}
+
 var accountUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "update an account",
-	Long:  "update an account with the given details. All of the details of an account must be provided, even if they are exactly the same as the original account",
+	Long: `update an account with the given details. 
+All of the details of an account must be provided, even if they are exactly 
+the same as the original account`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
@@ -229,15 +273,27 @@ var accountBalanceInsertCmd = &cobra.Command{
 }
 
 func init() {
+	// TODO: find out how to use same flag on different subcommands instead of
+	// TODO: making is persistent here. The issue may arise from using viper to
+	// TODO: retrieve them. The issue doesn't happen with custom flags that are
+	// TODO: retrieved using a global variable
+	accountCmd.PersistentFlags().String(keyCurrency, "EUR", "account currency")
+	err := viper.BindPFlags(accountCmd.PersistentFlags())
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
+	rootCmd.AddCommand(accountCmd)
+
 	accountAddCmd.Flags().StringP(keyName, "n", "", "account name")
 	accountAddCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountAddCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
-	accountAddCmd.Flags().String(keyCurrency, "EUR", "account currency")
+
+	accountOpenCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
+	accountOpenCmd.Flags().IntP(keyOpeningBalance, "b", 0, "account opening balance")
 
 	accountUpdateCmd.Flags().StringP(keyName, "n", "", "account name")
 	accountUpdateCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountUpdateCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
-	accountUpdateCmd.Flags().String(keyCurrency, "EUR", "account currency")
 
 	accountBalancesCmd.Flags().UintP(keyLimit, "l", 0, "limit results")
 
@@ -245,9 +301,9 @@ func init() {
 	accountBalanceInsertCmd.Flags().VarP(balanceDate, keyDate, "d", "date of balance to insert")
 	accountBalanceInsertCmd.Flags().IntP(keyAmount, "a", 0, "amount of balance to insert")
 
-	rootCmd.AddCommand(accountCmd)
 	for _, c := range []*cobra.Command{
 		accountAddCmd,
+		accountOpenCmd,
 		accountUpdateCmd,
 		accountBalancesCmd,
 		accountBalanceInsertCmd,
