@@ -10,7 +10,6 @@ import (
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
-	gtime "github.com/glynternet/go-time"
 	"github.com/glynternet/mon/client"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/storage"
@@ -58,38 +57,29 @@ var accountCmd = &cobra.Command{
 }
 
 var accountAddCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [NAME]",
 	Short: "add an account",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cc, err := currency.NewCode(viper.GetString(keyCurrency))
 		if err != nil {
 			return errors.Wrap(err, "creating new currency code")
 		}
 
-		opened := gtime.NullTime{
-			Valid: true,
-			Time:  time.Now(),
-		}
+		opened := time.Now()
 		if accountOpened.Time != nil {
-			opened.Time = *accountOpened.Time
-		}
-
-		var closed gtime.NullTime
-		if accountClosed.Time != nil {
-			closed = gtime.NullTime{
-				Valid: true,
-				Time:  *accountClosed.Time,
-			}
+			opened = *accountOpened.Time
 		}
 
 		var ops []account.Option
-		if closed.Valid {
-			ops = append(ops, account.CloseTime(closed.Time))
+		if accountClosed.Time != nil {
+			ops = append(ops, account.CloseTime(*accountClosed.Time))
 		}
+
 		a, err := account.New(
-			viper.GetString(keyName),
+			args[0],
 			*cc,
-			opened.Time,
+			opened,
 			ops...,
 		)
 		if err != nil {
@@ -107,22 +97,20 @@ var accountAddCmd = &cobra.Command{
 
 var accountOpenCmd = &cobra.Command{
 	Use:   "open [NAME]",
-	Short: "open an account",
+	Short: "open an account with a balance",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name := args[0]
-
 		cc, err := currency.NewCode(viper.GetString(keyCurrency))
 		if err != nil {
 			return errors.Wrap(err, "creating new currency code")
 		}
 
-		date := time.Now()
+		opened := time.Now()
 		if accountOpened.Time != nil {
-			date = *accountOpened.Time
+			opened = *accountOpened.Time
 		}
 
-		a, err := account.New(name, *cc, date)
+		a, err := account.New(args[0], *cc, opened)
 		if err != nil {
 			return errors.Wrap(err, "creating new account for insert")
 		}
@@ -147,15 +135,13 @@ var accountOpenCmd = &cobra.Command{
 }
 
 var accountUpdateCmd = &cobra.Command{
-	Use:   "update",
+	Use:   "update [ID]",
 	Short: "update an account",
 	Long: `update an account with the given details. 
 All of the details of an account must be provided, even if they are exactly 
 the same as the original account`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
-		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
@@ -201,7 +187,8 @@ the same as the original account`,
 }
 
 var accountBalancesCmd = &cobra.Command{
-	Use: "balances",
+	Use:  "balances [ID]",
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
@@ -238,11 +225,9 @@ var accountBalancesCmd = &cobra.Command{
 
 var balanceDate = date.Flag()
 var accountBalanceInsertCmd = &cobra.Command{
-	Use: "balance-insert",
+	Use:  "balance-insert [ID]",
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
-		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
@@ -284,7 +269,6 @@ func init() {
 	}
 	rootCmd.AddCommand(accountCmd)
 
-	accountAddCmd.Flags().StringP(keyName, "n", "", "account name")
 	accountAddCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountAddCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
 
