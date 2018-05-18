@@ -36,12 +36,11 @@ var (
 )
 
 var accountCmd = &cobra.Command{
-	Use: "account",
+	Use:   "account [ID]",
+	Short: "retrieve account info",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
-		}
-		id, err := strconv.ParseUint(args[0], 10, 64)
+		id, err := parseID(args[0])
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
@@ -142,7 +141,7 @@ All of the details of an account must be provided, even if they are exactly
 the same as the original account`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseUint(args[0], 10, 64)
+		id, err := parseID(args[0])
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
@@ -190,10 +189,7 @@ var accountBalancesCmd = &cobra.Command{
 	Use:  "balances [ID]",
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return fmt.Errorf("expected 1 argument for account ID, received %d", len(args))
-		}
-		id, err := strconv.ParseUint(args[0], 10, 64)
+		id, err := parseID(args[0])
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
@@ -228,7 +224,7 @@ var accountBalanceInsertCmd = &cobra.Command{
 	Use:  "balance-insert [ID]",
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseUint(args[0], 10, 64)
+		id, err := parseID(args[0])
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
@@ -298,4 +294,8 @@ func init() {
 		}
 		accountCmd.AddCommand(c)
 	}
+}
+
+func parseID(i string) (uint64, error) {
+	return strconv.ParseUint(i, 10, 64)
 }
