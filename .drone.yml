@@ -1,0 +1,9 @@
+workspace:
+  base: /go
+  path: src/github.com/glynternet/mon
+
+pipeline:
+  unit-tests:
+    image: golang
+    commands:
+      - go test -v -race ./...
