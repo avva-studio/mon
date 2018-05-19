@@ -19,7 +19,6 @@ type server struct {
 }
 
 func (s *server) ListenAndServe(addr string) error {
-	//logDBState()  //TODO: logDBState?
 	router, err := s.newRouter()
 	if err != nil {
 		return errors.Wrap(err, "creating new Router")

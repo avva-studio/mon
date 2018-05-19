@@ -125,6 +125,9 @@ var accountOpenCmd = &cobra.Command{
 			Date:   i.Account.Opened(),
 			Amount: viper.GetInt(keyOpeningBalance),
 		})
+		if err != nil {
+			return errors.Wrap(err, "inserting balance")
+		}
 
 		table.AccountsWithBalance(map[storage.Account]balance.Balance{
 			*i: b.Balance,
@@ -171,7 +174,7 @@ the same as the original account`,
 			return errors.Wrap(err, "creating account for update")
 		}
 
-		updated, err := c.UpdateAccount(a, us)
+		u, err := c.UpdateAccount(a, us)
 		if err != nil {
 			return errors.Wrap(err, "updating account")
 		}
@@ -180,7 +183,52 @@ the same as the original account`,
 		table.Accounts(storage.Accounts{*a}, os.Stdout)
 
 		fmt.Println("UPDATED")
-		table.Accounts(storage.Accounts{*updated}, os.Stdout)
+		table.Accounts(storage.Accounts{*u}, os.Stdout)
+		return nil
+	},
+}
+
+var accountRenameCmd = &cobra.Command{
+	Use:   "rename [ID] [NEW NAME]",
+	Short: "rename an account",
+	Args:  cobra.ExactArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		id, err := parseID(args[0])
+		if err != nil {
+			return errors.Wrap(err, "parsing account id")
+		}
+
+		c := client.Client(viper.GetString(keyServerHost))
+		a, err := c.SelectAccount(uint(id))
+		if err != nil {
+			return errors.Wrap(err, "selecting account")
+		}
+
+		var ops []account.Option
+		if a.Account.Closed().Valid {
+			ops = append(ops, account.CloseTime(a.Account.Closed().Time))
+		}
+
+		us, err := account.New(
+			args[1],
+			a.Account.CurrencyCode(),
+			a.Account.Opened(),
+			ops...,
+		)
+		if err != nil {
+			return errors.Wrap(err, "creating new account for update")
+		}
+
+		u, err := c.UpdateAccount(a, us)
+		if err != nil {
+			return errors.Wrap(err, "updating account")
+		}
+
+		fmt.Println("ORIGINAL")
+		table.Accounts(storage.Accounts{*a}, os.Stdout)
+
+		fmt.Println("UPDATED")
+		table.Accounts(storage.Accounts{*u}, os.Stdout)
 		return nil
 	},
 }
@@ -285,6 +333,7 @@ func init() {
 		accountAddCmd,
 		accountOpenCmd,
 		accountUpdateCmd,
+		accountRenameCmd,
 		accountBalancesCmd,
 		accountBalanceInsertCmd,
 	} {
