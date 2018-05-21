@@ -6,30 +6,30 @@ workspace:
 
 pipeline:
 
-  unit-tests:
+  run-unit-tests:
     image: golang
     commands:
       - go test -v -race ./...
   
-  monserve-binary:
+  build-monserve-binary:
     image: golang
     commands:
       - make monserve-binary
   
-  monserve-image:
+  build-monserve-image:
     image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - docker build --tag monserve:ci-functional-tests .
   
-  make-client-functional-tests-binary:
+  build-client-functional-tests-binary:
     image: golang
     commands:
       - cd test/functional
       - make build-tests
   
-  make-client-functional-tests-binary:
+  run-functional-tests:
     image: docker/compose:1.21.2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
