@@ -1,39 +1,43 @@
 version: '3.5'
+
 services:
-services:
-  accountingrestapi:
-    container_name: accountingrest
+  
+  monserve:
     image: "${DOCKER_IMAGE}"
-    ports:
-    - "8080:8080"
+    depends_on:
+      - postgres
+    expose:
+    - "80"
     environment:
       ENV: docker
-      PORT: 8080
       DB_HOST: postgres
       DB_USER: postgres
       DB_NAME: functionaltest_dbname
       DB_SSLMODE: disable
+  
   postgres:
     image: postgres
     build:
       context: .
       dockerfile: postgres.Dockerfile
     restart: always
-    ports:
-    - "5432:5432"
+    expose:
+    - "5432"
     environment:
       ENV: docker
       POSTGRES_PASSWORD: ""
       POSTGRES_USER: postgres
+  
   functional-tests:
-    container_name: functional-tests
     image: functional-tests
+    depends_on:
+      - monserve
     build:
       context: .
       dockerfile: tests.Dockerfile
     environment:
       ENV: docker
-      SERVER_HOST: http://accountingrest:8080
+      SERVER_HOST: http://monserve
       DB_HOST: postgres
       DB_USER: postgres
       DB_NAME: functionaltest_dbname
