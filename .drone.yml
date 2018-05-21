@@ -1,9 +1,42 @@
 workspace:
+  
   base: /go
   path: src/github.com/glynternet/mon
 
+
 pipeline:
+
   unit-tests:
     image: golang
     commands:
       - go test -v -race ./...
+  
+  monserve-binary:
+    image: golang
+    commands:
+      - make monserve-binary
+  
+  monserve-image:
+    image: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - docker build --tag monserve:ci-functional-tests .
+  
+  make-client-functional-tests-binary:
+    image: golang
+    commands:
+      - cd test/functional
+      - make build-tests
+  
+  make-client-functional-tests-binary:
+    image: docker/compose:1.21.2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_IMAGE=monserve:ci-functional-tests
+    commands:
+      - cd test/functional
+      - docker-compose --project-name monserve-client-functional-test down
+      - docker-compose --project-name monserve-client-functional-test up --build --abort-on-container-exit --force-recreate
+      - docker-compose --project-name monserve-client-functional-test down
