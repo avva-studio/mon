@@ -30,7 +30,7 @@ func main() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	cmdDBServe.Flags().String(keyPort, "8080", "server listening port")
+	cmdDBServe.Flags().String(keyPort, "80", "server listening port")
 	cmdDBServe.Flags().String(keyDBHost, "", "host address of the DB backend")
 	cmdDBServe.Flags().String(keyDBName, "", "name of the DB set to use")
 	cmdDBServe.Flags().String(keyDBUser, "", "DB user to authenticate with")
