@@ -173,6 +173,9 @@ var accountCloseCmd = &cobra.Command{
 			a.Account.Opened(),
 			account.CloseTime(closed),
 		)
+		if err != nil {
+			return errors.Wrap(err, "creating updates account")
+		}
 
 		u, err := c.UpdateAccount(a, us)
 		if err != nil {
