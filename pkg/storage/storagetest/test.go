@@ -1,6 +1,7 @@
 package storagetest
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -294,8 +295,10 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 		})
 	}
 
+	const numInserted = 5
+
 	var as []storage.Account
-	for i := 0; i < 2; i++ {
+	for i := 0; i < numInserted; i++ {
 		a := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
 		ia, err := store.InsertAccount(*a)
 		common.FatalIfError(t, err, "inserting account")
@@ -303,30 +306,29 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 	}
 
 	selectedAfter := selectAccounts(t, store)
-	assert.Len(t, *selectedAfter, len(*selectedBefore)+2)
+	assert.Len(t, *selectedAfter, len(*selectedBefore)+numInserted)
 
-	t.Run("deleting account should reduce accounts count by 1", func(t *testing.T) {
-		err := store.DeleteAccount(as[0].ID)
-		selectedAfter = selectAccounts(t, store)
-		common.FatalIfError(t, err, "deleting account")
-		assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
-	})
+	for i, a := range as {
+		t.Run("deleting account (id:"+strconv.Itoa(i)+") should reduce accounts count by 1", func(t *testing.T) {
+			err := store.DeleteAccount(a.ID)
+			selectedAfter = selectAccounts(t, store)
+			common.FatalIfError(t, err, "deleting account")
+			// Accounts count should be the number of originals, with the
+			// number that were inserted, then -1 for every delete
+			assert.Len(t, *selectedAfter, len(*selectedBefore)+numInserted-(i+1))
+		})
 
-	t.Run("deleting same account should return error", func(t *testing.T) {
-		err := store.DeleteAccount(as[0].ID)
-		if err == nil {
-			t.Fatal("expected an error but received nil when deleting same account id again")
-		}
-		selectedAfter = selectAccounts(t, store)
-		assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
-	})
-
-	t.Run("deleting different account should reduce accounts count by 1", func(t *testing.T) {
-		err := store.DeleteAccount(as[1].ID)
-		common.FatalIfError(t, err, "deleting account")
-		selectedAfter = selectAccounts(t, store)
-		assert.Len(t, *selectedAfter, len(*selectedBefore))
-	})
+		t.Run("deleting same account should return error", func(t *testing.T) {
+			err := store.DeleteAccount(a.ID)
+			if err == nil {
+				t.Fatal("expected an error but received nil when deleting same account id again")
+			}
+			selectedAfter = selectAccounts(t, store)
+			// Accounts count should be the number of originals, with the
+			// number that were inserted, then -1 for every delete
+			assert.Len(t, *selectedAfter, len(*selectedBefore)+numInserted-(i+1))
+		})
+	}
 
 	t.Run("previously existing accounts should remain the same", func(t *testing.T) {
 		for i := range *selectedAfter {
