@@ -10,10 +10,10 @@ type Storage interface {
 	Available() bool
 	Close() error
 	InsertAccount(a account.Account) (*Account, error)
-	SelectAccount(u uint) (*Account, error)
+	SelectAccount(id uint) (*Account, error)
 	UpdateAccount(a *Account, updates *account.Account) (*Account, error)
 	SelectAccounts() (*Accounts, error)
-	//DeleteAccount(a *Account) error
+	DeleteAccount(id uint) error
 	//
 	InsertBalance(a Account, b balance.Balance) (*Balance, error)
 	SelectAccountBalances(Account) (*Balances, error)

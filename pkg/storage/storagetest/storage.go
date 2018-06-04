@@ -25,7 +25,7 @@ type Storage struct {
 func (s *Storage) Available() bool { return s.IsAvailable }
 func (s *Storage) Close() error    { return s.Err }
 
-func (s *Storage) InsertAccount(a account.Account) (*storage.Account, error) {
+func (s *Storage) InsertAccount(account.Account) (*storage.Account, error) {
 	return s.Account, s.AccountErr
 }
 
@@ -33,10 +33,12 @@ func (s *Storage) UpdateAccount(a *storage.Account, updates *account.Account) (*
 	return s.Account, s.AccountErr
 }
 
-func (s *Storage) SelectAccount(u uint) (*storage.Account, error) { return s.Account, s.AccountErr }
-func (s *Storage) SelectAccounts() (*storage.Accounts, error)     { return s.Accounts, s.Err }
+func (s *Storage) SelectAccount(uint) (*storage.Account, error) { return s.Account, s.AccountErr }
+func (s *Storage) SelectAccounts() (*storage.Accounts, error)   { return s.Accounts, s.Err }
 
-func (s *Storage) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
+func (s *Storage) DeleteAccount(uint) error { return s.AccountErr }
+
+func (s *Storage) InsertBalance(storage.Account, balance.Balance) (*storage.Balance, error) {
 	return s.Balance, s.BalanceErr
 }
 func (s *Storage) SelectAccountBalances(storage.Account) (*storage.Balances, error) {
