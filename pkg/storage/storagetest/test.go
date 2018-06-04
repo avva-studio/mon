@@ -9,6 +9,7 @@ import (
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
 	"github.com/glynternet/mon/pkg/storage"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,6 +32,10 @@ func Test(t *testing.T, store storage.Storage) {
 		{
 			title: "update account",
 			run:   updateAccounts,
+		},
+		{
+			title: "insert and delete accounts",
+			run:   insertAndDeleteAccounts,
 		},
 	}
 	for _, test := range tests {
@@ -268,6 +273,64 @@ func updateAccounts(t *testing.T, store storage.Storage) {
 		assert.Error(t, err)
 		assert.Nil(t, updatedA)
 	})
+}
+
+func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
+	selectedBefore := selectAccounts(t, store)
+
+	type AccountBalances struct {
+		storage.Account
+		storage.Balances
+	}
+	var abs []AccountBalances
+	for _, a := range *selectedBefore {
+		bs, err := store.SelectAccountBalances(a)
+		if err != nil {
+			t.Fatal(errors.Wrapf(err, "selecting account balances for account %+v", a))
+		}
+		abs = append(abs, AccountBalances{
+			Account:  a,
+			Balances: *bs,
+		})
+	}
+
+	a := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
+	ia, err := store.InsertAccount(*a)
+	common.FatalIfError(t, err, "inserting account")
+
+	b := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
+	ib, err := store.InsertAccount(*b)
+	common.FatalIfError(t, err, "inserting account")
+
+	selectedAfter := selectAccounts(t, store)
+	assert.Len(t, *selectedAfter, len(*selectedBefore)+2)
+
+	err = store.DeleteAccount(ia.ID)
+	selectedAfter = selectAccounts(t, store)
+	common.FatalIfError(t, err, "deleting account")
+	assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
+
+	err = store.DeleteAccount(ia.ID)
+	if err == nil {
+		t.Fatal("expected an error but received nil when deleting same account id again")
+	}
+	selectedAfter = selectAccounts(t, store)
+	assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
+
+	err = store.DeleteAccount(ib.ID)
+	common.FatalIfError(t, err, "deleting account")
+	selectedAfter = selectAccounts(t, store)
+	assert.Len(t, *selectedAfter, len(*selectedBefore))
+
+	for i := range *selectedAfter {
+		afterAccount := (*selectedAfter)[i]
+		assert.Equal(t, afterAccount, abs[i].Account)
+		afters, err := store.SelectAccountBalances(afterAccount)
+		if err != nil {
+			t.Fatal(errors.Wrapf(err, "selecting account balances for account %+v", afterAccount))
+		}
+		assert.Equal(t, *afters, abs[i].Balances)
+	}
 }
 
 func selectAccounts(t *testing.T, store storage.Storage) *storage.Accounts {

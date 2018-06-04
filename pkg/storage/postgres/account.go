@@ -68,6 +68,13 @@ var (
 		fieldCurrency,
 		fieldID,
 		fieldsSelect)
+
+	queryDeleteAccount = fmt.Sprintf(
+		`UPDATE %s SET %s = $1 WHERE %s = $2`,
+		table,
+		fieldDeleted,
+		fieldID,
+	)
 )
 
 // SelectAccounts returns an Accounts item holding all Account entries within
@@ -113,6 +120,25 @@ func (pg postgres) UpdateAccount(a *storage.Account, updates *account.Account) (
 		a.ID,
 	)
 	return dba, errors.Wrap(err, "querying Account")
+}
+
+func (pg postgres) DeleteAccount(id uint) error {
+	_, err := pg.SelectAccount(id)
+	if err != nil {
+		return errors.Wrap(err, "selecting account to delete")
+	}
+	r, err := pg.db.Exec(queryDeleteAccount, time.Now(), id)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "getting number of rows affected ")
+	}
+	if n != 1 {
+		return fmt.Errorf("expected 1 affected row but got %d", n)
+	}
+	return nil
 }
 
 func queryAccount(db *sql.DB, queryString string, values ...interface{}) (*storage.Account, error) {
