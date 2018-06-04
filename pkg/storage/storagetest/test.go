@@ -294,26 +294,26 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 		})
 	}
 
-	a := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
-	ia, err := store.InsertAccount(*a)
-	common.FatalIfError(t, err, "inserting account")
-
-	b := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
-	ib, err := store.InsertAccount(*b)
-	common.FatalIfError(t, err, "inserting account")
+	var as []storage.Account
+	for i := 0; i < 2; i++ {
+		a := accountingtest.NewAccount(t, "TO DELETE", accountingtest.NewCurrencyCode(t, "BBC"), time.Now())
+		ia, err := store.InsertAccount(*a)
+		common.FatalIfError(t, err, "inserting account")
+		as = append(as, *ia)
+	}
 
 	selectedAfter := selectAccounts(t, store)
 	assert.Len(t, *selectedAfter, len(*selectedBefore)+2)
 
 	t.Run("deleting account should reduce accounts count by 1", func(t *testing.T) {
-		err = store.DeleteAccount(ia.ID)
+		err := store.DeleteAccount(as[0].ID)
 		selectedAfter = selectAccounts(t, store)
 		common.FatalIfError(t, err, "deleting account")
 		assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
 	})
 
 	t.Run("deleting same account should return error", func(t *testing.T) {
-		err = store.DeleteAccount(ia.ID)
+		err := store.DeleteAccount(as[0].ID)
 		if err == nil {
 			t.Fatal("expected an error but received nil when deleting same account id again")
 		}
@@ -322,7 +322,7 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 	})
 
 	t.Run("deleting different account should reduce accounts count by 1", func(t *testing.T) {
-		err = store.DeleteAccount(ib.ID)
+		err := store.DeleteAccount(as[1].ID)
 		common.FatalIfError(t, err, "deleting account")
 		selectedAfter = selectAccounts(t, store)
 		assert.Len(t, *selectedAfter, len(*selectedBefore))
