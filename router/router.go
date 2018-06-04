@@ -9,6 +9,26 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	// Accounts
+	EndpointAccounts = "/accounts"
+	patternAccounts  = EndpointAccounts
+
+	// Account
+	EndpointAccount          = "/account"
+	EndpointFmtAccount       = EndpointAccount + "/%d"
+	patternAccount           = EndpointAccount + "/{id}"
+	EndpointAccountInsert    = EndpointAccount + "/insert"
+	EndpointFmtAccountUpdate = EndpointFmtAccount + "/update"
+	patternAccountUpdate     = patternAccount + "/update"
+
+	// Account Balances
+	EndpointFmtAccountBalances      = EndpointAccount + "/%d/balances"
+	patternAccountBalances          = EndpointAccount + "/{id}/balances"
+	EndpointFmtAccountBalanceInsert = EndpointAccount + "/%d/balance/insert"
+	patternAccountBalanceInsert     = EndpointAccount + "/{id}/balance/insert"
+)
+
 // New creates a new mux.Router and initialises it with generateRoutes for the store
 func New(store storage.Storage) (*mux.Router, error) {
 	if store == nil {
