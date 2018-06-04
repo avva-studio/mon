@@ -305,32 +305,40 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 	selectedAfter := selectAccounts(t, store)
 	assert.Len(t, *selectedAfter, len(*selectedBefore)+2)
 
-	err = store.DeleteAccount(ia.ID)
-	selectedAfter = selectAccounts(t, store)
-	common.FatalIfError(t, err, "deleting account")
-	assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
+	t.Run("deleting account should reduce accounts count by 1", func(t *testing.T) {
+		err = store.DeleteAccount(ia.ID)
+		selectedAfter = selectAccounts(t, store)
+		common.FatalIfError(t, err, "deleting account")
+		assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
+	})
 
-	err = store.DeleteAccount(ia.ID)
-	if err == nil {
-		t.Fatal("expected an error but received nil when deleting same account id again")
-	}
-	selectedAfter = selectAccounts(t, store)
-	assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
-
-	err = store.DeleteAccount(ib.ID)
-	common.FatalIfError(t, err, "deleting account")
-	selectedAfter = selectAccounts(t, store)
-	assert.Len(t, *selectedAfter, len(*selectedBefore))
-
-	for i := range *selectedAfter {
-		afterAccount := (*selectedAfter)[i]
-		assert.Equal(t, afterAccount, abs[i].Account)
-		afters, err := store.SelectAccountBalances(afterAccount)
-		if err != nil {
-			t.Fatal(errors.Wrapf(err, "selecting account balances for account %+v", afterAccount))
+	t.Run("deleting same account should return error", func(t *testing.T) {
+		err = store.DeleteAccount(ia.ID)
+		if err == nil {
+			t.Fatal("expected an error but received nil when deleting same account id again")
 		}
-		assert.Equal(t, *afters, abs[i].Balances)
-	}
+		selectedAfter = selectAccounts(t, store)
+		assert.Len(t, *selectedAfter, len(*selectedBefore)+1)
+	})
+
+	t.Run("deleting different account should reduce accounts count by 1", func(t *testing.T) {
+		err = store.DeleteAccount(ib.ID)
+		common.FatalIfError(t, err, "deleting account")
+		selectedAfter = selectAccounts(t, store)
+		assert.Len(t, *selectedAfter, len(*selectedBefore))
+	})
+
+	t.Run("previously existing accounts should remain the same", func(t *testing.T) {
+		for i := range *selectedAfter {
+			afterAccount := (*selectedAfter)[i]
+			assert.Equal(t, afterAccount, abs[i].Account)
+			afters, err := store.SelectAccountBalances(afterAccount)
+			if err != nil {
+				t.Fatal(errors.Wrapf(err, "selecting account balances for account %+v", afterAccount))
+			}
+			assert.Equal(t, *afters, abs[i].Balances)
+		}
+	})
 }
 
 func selectAccounts(t *testing.T, store storage.Storage) *storage.Accounts {
