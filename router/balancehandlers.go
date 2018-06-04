@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *router) balances(accountID uint) (int, interface{}, error) {
+func (s *environment) balances(accountID uint) (int, interface{}, error) {
 	a, err := s.storage.SelectAccount(accountID)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "selecting account with id %d", accountID)
@@ -25,7 +25,7 @@ func (s *router) balances(accountID uint) (int, interface{}, error) {
 	return http.StatusOK, bs, nil
 }
 
-func (s *router) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{}, error) {
+func (s *environment) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{}, error) {
 	id, err := extractID(mux.Vars(r))
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
@@ -33,7 +33,7 @@ func (s *router) muxAccountBalancesHandlerFunc(r *http.Request) (int, interface{
 	return s.balances(id)
 }
 
-func (s *router) insertBalance(accountID uint, b balance.Balance) (int, interface{}, error) {
+func (s *environment) insertBalance(accountID uint, b balance.Balance) (int, interface{}, error) {
 	a, err := s.storage.SelectAccount(accountID)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrap(err, "selecting account")
@@ -45,7 +45,7 @@ func (s *router) insertBalance(accountID uint, b balance.Balance) (int, interfac
 	return http.StatusOK, inserted, nil
 }
 
-func (s *router) muxAccountBalanceInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
+func (s *environment) muxAccountBalanceInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
 	id, err := extractID(mux.Vars(r))
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
