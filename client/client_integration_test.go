@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/glynternet/go-money/common"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/storage/storagetest"
-	"github.com/glynternet/mon/server"
+	"github.com/glynternet/mon/router"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,13 +44,13 @@ func TestClient_SelectAccounts(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(s)
+	r, err := router.New(s)
 	assert.NoError(t, err)
-	assert.NotNil(t, srv)
+	assert.NotNil(t, r)
 
 	srvErr := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		srvErr <- http.ListenAndServe(fmt.Sprintf(":%d", testPort), r)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -80,13 +81,13 @@ func TestClient_SelectAccount(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(s)
+	r, err := router.New(s)
 	assert.NoError(t, err)
-	assert.NotNil(t, srv)
+	assert.NotNil(t, r)
 
-	srvErr := make(chan error)
+	rErr := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		rErr <- http.ListenAndServe(fmt.Sprintf(":%d", testPort), r)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -96,10 +97,10 @@ func TestClient_SelectAccount(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Account, selected)
-		close(srvErr)
+		close(rErr)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-rErr, "serving")
 }
 
 func TestClient_SelectAccountBalances(t *testing.T) {
@@ -118,13 +119,13 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 			storage.Balance{ID: 123},
 		},
 	}
-	srv, err := server.New(s)
+	r, err := router.New(s)
 	common.FatalIfError(t, err, "creating new server")
-	assert.NotNil(t, srv)
+	assert.NotNil(t, r)
 
-	srvErr := make(chan error)
+	rErr := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		rErr <- http.ListenAndServe(fmt.Sprintf(":%d", testPort), r)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -134,10 +135,10 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Balances, selected)
-		close(srvErr)
+		close(rErr)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-rErr, "serving")
 }
 
 func TestClient_InsertAccount(t *testing.T) {
@@ -156,12 +157,13 @@ func TestClient_InsertAccount(t *testing.T) {
 	s := &storagetest.Storage{
 		Account: account,
 	}
-	srv, err := server.New(s)
+	r, err := router.New(s)
+	assert.NotNil(t, r)
 	common.FatalIfError(t, err, "creating new server")
 
 	srvErr := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		srvErr <- http.ListenAndServe(fmt.Sprintf(":%d", testPort), r)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -185,12 +187,13 @@ func TestClient_InsertBalance(t *testing.T) {
 		Account: &storage.Account{ID: 51},
 		Balance: expected,
 	}
-	srv, err := server.New(s)
+	r, err := router.New(s)
 	common.FatalIfError(t, err, "creating new server")
+	assert.NotNil(t, r)
 
-	srvErr := make(chan error)
+	rErr := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		rErr <- http.ListenAndServe(fmt.Sprintf(":%d", testPort), r)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -199,10 +202,10 @@ func TestClient_InsertBalance(t *testing.T) {
 		inserted, err := newTestClient(testPort).InsertBalance(storage.Account{}, balance.Balance{})
 		assert.NoError(t, err)
 		assert.Equal(t, expected, inserted)
-		close(srvErr)
+		close(rErr)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-rErr, "serving")
 }
 
 // TODO: newTestClient as closure that increments port everytime it's called

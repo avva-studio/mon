@@ -170,8 +170,8 @@ var accountCloseCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		closed := time.Now()
-		if accountClosed.Time != nil {
-			closed = *accountClosed.Time
+		if balanceDate.Time != nil {
+			closed = *balanceDate.Time
 		}
 
 		id, err := parseID(args[0])
@@ -402,7 +402,7 @@ func init() {
 	accountOpenCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountOpenCmd.Flags().IntP(keyOpeningBalance, "b", 0, "account opening balance")
 
-	accountCloseCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
+	accountCloseCmd.Flags().VarP(balanceDate, keyDate, "d", "account closed date")
 	accountCloseCmd.Flags().IntP(keyClosingBalance, "b", 0, "account closing balance")
 
 	accountUpdateCmd.Flags().StringP(keyName, "n", "", "account name")

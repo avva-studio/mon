@@ -1,4 +1,4 @@
-package server
+package router
 
 import (
 	"net/http"
@@ -15,7 +15,7 @@ import (
 )
 
 // TODO: redesign these so that they don't need to take a request? There could be multiple handler types either take a request or don't take a request
-func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
+func (s *router) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
 	as, err := s.storage.SelectAccounts()
 	if err != nil {
 		return http.StatusServiceUnavailable, nil, errors.Wrap(err, "selecting Accounts from client")
@@ -23,7 +23,7 @@ func (s *server) handlerSelectAccounts(_ *http.Request) (int, interface{}, error
 	return http.StatusOK, as, nil
 }
 
-func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, error) {
+func (s *router) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, error) {
 	id, err := extractID(mux.Vars(r))
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
@@ -31,7 +31,7 @@ func (s *server) muxAccountIDHandlerFunc(r *http.Request) (int, interface{}, err
 	return s.handlerSelectAccount(id)
 }
 
-func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
+func (s *router) handlerSelectAccount(id uint) (int, interface{}, error) {
 	a, err := s.storage.SelectAccount(id)
 	if err != nil {
 		return http.StatusNotFound, nil, errors.Wrapf(err, "selecting Account with id:%d from storage", id)
@@ -39,7 +39,7 @@ func (s *server) handlerSelectAccount(id uint) (int, interface{}, error) {
 	return http.StatusOK, a, nil
 }
 
-func (s *server) muxAccountInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
+func (s *router) muxAccountInsertHandlerFunc(r *http.Request) (int, interface{}, error) {
 	bod, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "reading request body")
@@ -60,7 +60,7 @@ func (s *server) muxAccountInsertHandlerFunc(r *http.Request) (int, interface{},
 	return s.handlerInsertAccount(*a)
 }
 
-func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, error) {
+func (s *router) handlerInsertAccount(a account.Account) (int, interface{}, error) {
 	inserted, err := s.storage.InsertAccount(a)
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrap(err, "inserting Account into storage")
@@ -68,7 +68,7 @@ func (s *server) handlerInsertAccount(a account.Account) (int, interface{}, erro
 	return http.StatusOK, inserted, nil
 }
 
-func (s *server) muxAccountUpdateHandlerFunc(r *http.Request) (int, interface{}, error) {
+func (s *router) muxAccountUpdateHandlerFunc(r *http.Request) (int, interface{}, error) {
 	id, err := extractID(mux.Vars(r))
 	if err != nil {
 		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
@@ -100,7 +100,7 @@ func (s *server) muxAccountUpdateHandlerFunc(r *http.Request) (int, interface{},
 	return s.handlerUpdateAccount(*o, *updates)
 }
 
-func (s *server) handlerUpdateAccount(original storage.Account, updates account.Account) (int, interface{}, error) {
+func (s *router) handlerUpdateAccount(original storage.Account, updates account.Account) (int, interface{}, error) {
 	updated, err := s.storage.UpdateAccount(&original, &updates)
 	if err != nil {
 		return http.StatusBadRequest, nil, err
