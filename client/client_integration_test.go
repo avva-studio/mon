@@ -43,9 +43,9 @@ func TestClient_SelectAccounts(t *testing.T) {
 
 	router, listener, client := newTestComponents(t, s)
 
-	rErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		rErr <- http.Serve(listener, router)
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -55,10 +55,10 @@ func TestClient_SelectAccounts(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Accounts, selected)
-		close(rErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-rErr, "serving")
+	common.FatalIfError(t, <-errCh, "serving")
 }
 
 func TestClient_SelectAccount(t *testing.T) {
@@ -76,9 +76,9 @@ func TestClient_SelectAccount(t *testing.T) {
 
 	router, listener, client := newTestComponents(t, s)
 
-	rErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		rErr <- http.Serve(listener, router)
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -88,10 +88,10 @@ func TestClient_SelectAccount(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Account, selected)
-		close(rErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-rErr, "serving")
+	common.FatalIfError(t, <-errCh, "serving")
 }
 
 func TestClient_SelectAccountBalances(t *testing.T) {
@@ -112,9 +112,9 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 
 	router, listener, client := newTestComponents(t, s)
 
-	rErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		rErr <- http.Serve(listener, router)
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -124,10 +124,10 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Balances, selected)
-		close(rErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-rErr, "serving")
+	common.FatalIfError(t, <-errCh, "serving")
 }
 
 func TestClient_InsertAccount(t *testing.T) {
@@ -147,9 +147,9 @@ func TestClient_InsertAccount(t *testing.T) {
 
 	router, listener, client := newTestComponents(t, s)
 
-	srvErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		srvErr <- http.Serve(listener, router)
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -159,10 +159,10 @@ func TestClient_InsertAccount(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, account.ID, inserted.ID)
 		assert.Equal(t, account.Account, inserted.Account)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "serving")
 }
 
 func TestClient_InsertBalance(t *testing.T) {
@@ -175,9 +175,9 @@ func TestClient_InsertBalance(t *testing.T) {
 
 	router, listener, client := newTestComponents(t, s)
 
-	rErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		rErr <- http.Serve(listener, router)
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
@@ -186,10 +186,10 @@ func TestClient_InsertBalance(t *testing.T) {
 		inserted, err := client.InsertBalance(storage.Account{}, balance.Balance{})
 		assert.NoError(t, err)
 		assert.Equal(t, expected, inserted)
-		close(rErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-rErr, "serving")
+	common.FatalIfError(t, <-errCh, "serving")
 }
 
 func newTestComponents(t *testing.T, s storage.Storage) (*mux.Router, net.Listener, Client) {
