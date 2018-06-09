@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: postgres.Dockerfile
     restart: always
-    ports:
-    - "5432:5432"
+    expose:
+    - "5432"
     environment:
       ENV: docker
       POSTGRES_PASSWORD: ""

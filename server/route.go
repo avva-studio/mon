@@ -56,6 +56,12 @@ func (s *server) routes() []route {
 			method:     http.MethodPost,
 		},
 		{
+			name:       "AccountDelete",
+			pattern:    patternAccount,
+			appHandler: s.muxAccountDeleteHandlerFunc,
+			method:     http.MethodDelete,
+		},
+		{
 			name:       "Balances",
 			pattern:    patternAccountBalances,
 			appHandler: s.muxAccountBalancesHandlerFunc,

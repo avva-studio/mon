@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/mon/pkg/storage"
@@ -54,6 +55,18 @@ func (c Client) UpdateAccount(account *storage.Account, updates *account.Account
 		return nil, errors.Wrapf(err, "posting account to endpoint %s", endpoint)
 	}
 	return unmarshalJSONToAccount(bs)
+}
+
+func (c Client) DeleteAccount(id uint) error {
+	endpoint := fmt.Sprintf(server.EndpointFmtAccount, id)
+	r, err := c.deleteToEndpoint(endpoint)
+	if err != nil {
+		return errors.Wrapf(err, "deleting account to endpoint %s", endpoint)
+	}
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code %d (%s)", r.StatusCode, http.StatusText(r.StatusCode))
+	}
+	return nil
 }
 
 func (c Client) postAccountToEndpoint(e string, a account.Account) ([]byte, error) {

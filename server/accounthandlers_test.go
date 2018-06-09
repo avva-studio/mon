@@ -139,3 +139,26 @@ func Test_handlerUpdateAccount(t *testing.T) {
 		assert.Equal(t, expected, updated)
 	})
 }
+
+func Test_handlerDeleteAccount(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		expected := errors.New("delete account test error")
+		server := &server{
+			storage: &storagetest.Storage{AccountErr: expected},
+		}
+		code, body, err := server.handlerDeleteAccount(1)
+		assert.Equal(t, http.StatusBadRequest, code)
+		assert.Equal(t, expected, errors.Cause(err))
+		assert.Nil(t, body)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		server := &server{
+			storage: &storagetest.Storage{},
+		}
+		code, body, err := server.handlerDeleteAccount(1)
+		assert.Equal(t, http.StatusOK, code)
+		assert.NoError(t, err)
+		assert.Nil(t, body)
+	})
+}
