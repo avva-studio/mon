@@ -108,6 +108,22 @@ func (s *server) handlerUpdateAccount(original storage.Account, updates account.
 	return http.StatusOK, updated, nil
 }
 
+func (s *server) muxAccountDeleteHandlerFunc(r *http.Request) (int, interface{}, error) {
+	id, err := extractID(mux.Vars(r))
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "extracting account ID")
+	}
+	return s.handlerDeleteAccount(id)
+}
+
+func (s *server) handlerDeleteAccount(id uint) (int, interface{}, error) {
+	err := s.storage.DeleteAccount(id)
+	if err != nil {
+		return http.StatusBadRequest, nil, errors.Wrapf(err, "deleting Account with id:%d from storage", id)
+	}
+	return http.StatusOK, nil, nil
+}
+
 func extractID(vars map[string]string) (uint, error) {
 	if vars == nil {
 		return 0, errors.New("nil vars map")

@@ -10,7 +10,6 @@ import (
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
-	"github.com/glynternet/mon/client"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/table"
@@ -28,6 +27,7 @@ const (
 	keyClosed         = "closed"
 	keyLimit          = "limit"
 	keyOpeningBalance = "opening-balance"
+	keyClosingBalance = "closing-balance"
 )
 
 var (
@@ -44,8 +44,8 @@ var accountCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
-		c := client.Client(viper.GetString(keyServerHost))
-		a, err := c.SelectAccount(uint(id))
+
+		a, err := newClient().SelectAccount(uint(id))
 		if err != nil {
 			return errors.Wrap(err, "selecting account")
 		}
@@ -85,7 +85,7 @@ var accountAddCmd = &cobra.Command{
 			return errors.Wrap(err, "creating new account for insert")
 		}
 
-		i, err := client.Client(viper.GetString(keyServerHost)).InsertAccount(*a)
+		i, err := newClient().InsertAccount(*a)
 		if err != nil {
 			return errors.Wrap(err, "inserting new account")
 		}
@@ -114,7 +114,7 @@ var accountOpenCmd = &cobra.Command{
 			return errors.Wrap(err, "creating new account for insert")
 		}
 
-		c := client.Client(viper.GetString(keyServerHost))
+		c := newClient()
 
 		i, err := c.InsertAccount(*a)
 		if err != nil {
@@ -136,6 +136,86 @@ var accountOpenCmd = &cobra.Command{
 	},
 }
 
+var accountDeleteCmd = &cobra.Command{
+	Use:   "delete [ID]",
+	Short: "delete an account",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		id, err := parseID(args[0])
+		if err != nil {
+			return errors.Wrap(err, "parsing account id")
+		}
+
+		c := newClient()
+
+		a, err := c.SelectAccount(uint(id))
+		if err != nil {
+			return errors.Wrap(err, "selecting account")
+		}
+
+		err = c.DeleteAccount(a.ID)
+		if err != nil {
+			return errors.Wrap(err, "deleting account")
+		}
+
+		fmt.Println("Deleted:")
+		table.Accounts(storage.Accounts{*a}, os.Stdout)
+		return nil
+	},
+}
+
+var accountCloseCmd = &cobra.Command{
+	Use:   "close [ID]",
+	Short: "close an account with a balance",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		closed := time.Now()
+		if accountClosed.Time != nil {
+			closed = *accountClosed.Time
+		}
+
+		id, err := parseID(args[0])
+		if err != nil {
+			return errors.Wrap(err, "parsing account id")
+		}
+
+		c := newClient()
+
+		a, err := c.SelectAccount(uint(id))
+		if err != nil {
+			return errors.Wrap(err, "selecting account")
+		}
+
+		b, err := c.InsertBalance(*a, balance.Balance{
+			Date:   closed,
+			Amount: viper.GetInt(keyClosingBalance),
+		})
+		if err != nil {
+			return errors.Wrap(err, "inserting balance")
+		}
+
+		us, err := account.New(
+			a.Account.Name(),
+			a.Account.CurrencyCode(),
+			a.Account.Opened(),
+			account.CloseTime(b.Date),
+		)
+		if err != nil {
+			return errors.Wrap(err, "creating updates account")
+		}
+
+		u, err := c.UpdateAccount(a, us)
+		if err != nil {
+			return errors.Wrap(err, "updating account")
+		}
+
+		table.AccountsWithBalance(map[storage.Account]balance.Balance{
+			*u: b.Balance,
+		}, os.Stdout)
+		return nil
+	},
+}
+
 var accountUpdateCmd = &cobra.Command{
 	Use:   "update [ID]",
 	Short: "update an account",
@@ -148,7 +228,8 @@ the same as the original account`,
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
-		c := client.Client(viper.GetString(keyServerHost))
+
+		c := newClient()
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
 			return errors.Wrap(err, "selecting account to update")
@@ -198,7 +279,7 @@ var accountRenameCmd = &cobra.Command{
 			return errors.Wrap(err, "parsing account id")
 		}
 
-		c := client.Client(viper.GetString(keyServerHost))
+		c := newClient()
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
 			return errors.Wrap(err, "selecting account")
@@ -241,7 +322,8 @@ var accountBalancesCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
-		c := client.Client(viper.GetString(keyServerHost))
+
+		c := newClient()
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
 			return errors.Wrap(err, "selecting account")
@@ -276,7 +358,8 @@ var accountBalanceInsertCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "parsing account id")
 		}
-		c := client.Client(viper.GetString(keyServerHost))
+
+		c := newClient()
 		a, err := c.SelectAccount(uint(id))
 		if err != nil {
 			return errors.Wrap(err, "selecting account")
@@ -319,6 +402,9 @@ func init() {
 	accountOpenCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountOpenCmd.Flags().IntP(keyOpeningBalance, "b", 0, "account opening balance")
 
+	accountCloseCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
+	accountCloseCmd.Flags().IntP(keyClosingBalance, "b", 0, "account closing balance")
+
 	accountUpdateCmd.Flags().StringP(keyName, "n", "", "account name")
 	accountUpdateCmd.Flags().VarP(accountOpened, keyOpened, "o", "account opened date")
 	accountUpdateCmd.Flags().VarP(accountClosed, keyClosed, "c", "account closed date")
@@ -332,7 +418,9 @@ func init() {
 	for _, c := range []*cobra.Command{
 		accountAddCmd,
 		accountOpenCmd,
+		accountCloseCmd,
 		accountUpdateCmd,
+		accountDeleteCmd,
 		accountRenameCmd,
 		accountBalancesCmd,
 		accountBalanceInsertCmd,

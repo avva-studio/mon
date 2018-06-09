@@ -49,7 +49,7 @@ func (r Range) Contains(time time.Time) bool {
 	if r.start.Valid && time.Before(r.start.Time) {
 		return false
 	}
-	if r.end.Valid && !r.end.Time.After(time) {
+	if r.end.Valid && time.After(r.end.Time) {
 		return false
 	}
 	return true

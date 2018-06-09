@@ -1,15 +1,14 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"encoding/json"
-
-	"bytes"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -17,12 +16,24 @@ import (
 // Client is a client to retrieve accounting items over http using REST
 type Client string
 
+func defaultHTTPClient() *http.Client {
+	return &http.Client{Timeout: 5 * time.Second}
+}
+
 func (c Client) getFromEndpoint(endpoint string) (*http.Response, error) {
 	return http.Get(string(c) + endpoint)
 }
 
 func (c Client) postToEndpoint(endpoint string, contentType string, body io.Reader) (*http.Response, error) {
 	return http.Post(string(c)+endpoint, contentType, body)
+}
+
+func (c Client) deleteToEndpoint(endpoint string) (*http.Response, error) {
+	r, err := http.NewRequest(http.MethodDelete, string(c)+endpoint, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating new request")
+	}
+	return defaultHTTPClient().Do(r)
 }
 
 func (c Client) Available() bool {
