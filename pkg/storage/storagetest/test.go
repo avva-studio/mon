@@ -309,7 +309,7 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 	assert.Len(t, *selectedAfter, len(*selectedBefore)+numInserted)
 
 	for i, a := range as {
-		t.Run("deleting account (id:"+strconv.Itoa(i)+") should reduce accounts count by 1", func(t *testing.T) {
+		t.Run("deleting account (i:"+strconv.Itoa(i)+") should reduce accounts count by 1", func(t *testing.T) {
 			err := store.DeleteAccount(a.ID)
 			selectedAfter = selectAccounts(t, store)
 			common.FatalIfError(t, err, "deleting account")
