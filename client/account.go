@@ -58,7 +58,7 @@ func (c Client) UpdateAccount(account *storage.Account, updates *account.Account
 }
 
 func (c Client) DeleteAccount(id uint) error {
-	endpoint := fmt.Sprintf(server.EndpointFmtAccount, id)
+	endpoint := fmt.Sprintf(router.EndpointFmtAccount, id)
 	r, err := c.deleteToEndpoint(endpoint)
 	if err != nil {
 		return errors.Wrapf(err, "deleting account to endpoint %s", endpoint)

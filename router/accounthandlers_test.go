@@ -142,7 +142,7 @@ func Test_handlerUpdateAccount(t *testing.T) {
 func Test_handlerDeleteAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("delete account test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
 		code, body, err := server.handlerDeleteAccount(1)
@@ -152,7 +152,7 @@ func Test_handlerDeleteAccount(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{},
 		}
 		code, body, err := server.handlerDeleteAccount(1)
