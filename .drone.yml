@@ -42,13 +42,13 @@ pipeline:
     commands:
       - docker build --tag monserve:ci-functional-tests-${DRONE_COMMIT_SHA} .
   
-  build-client-functional-tests-binary:
+  build-monserve-client-functional-tests-binary:
     image: golang
     commands:
       - cd test/functional
       - make build-tests
   
-  run-functional-tests:
+  run-monserve-client-functional-tests:
     image: docker/compose:1.21.2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
