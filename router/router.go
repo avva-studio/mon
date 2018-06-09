@@ -84,6 +84,12 @@ func generateRoutes(e environment) []route {
 			method:     http.MethodPost,
 		},
 		{
+			name:       "AccountDelete",
+			pattern:    patternAccount,
+			appHandler: e.muxAccountDeleteHandlerFunc,
+			method:     http.MethodDelete,
+		},
+		{
 			name:       "Balances",
 			pattern:    patternAccountBalances,
 			appHandler: e.muxAccountBalancesHandlerFunc,
