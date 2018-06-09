@@ -331,6 +331,9 @@ func insertAndDeleteAccounts(t *testing.T, store storage.Storage) {
 	}
 
 	t.Run("previously existing accounts should remain the same", func(t *testing.T) {
+		if !assert.Len(t, *selectedAfter, len(abs)) {
+			t.FailNow()
+		}
 		for i := range *selectedAfter {
 			afterAccount := (*selectedAfter)[i]
 			assert.Equal(t, afterAccount, abs[i].Account)

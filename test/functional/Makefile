@@ -1,6 +1,6 @@
 REPO_NAME ?= mon
 
-DOCKER_IMAGE ?= monserve:develop-v0.5.1-6-g6473512
+DOCKER_IMAGE ?= monserve:develop-v0.7.0-9-g68f96cb
 
 TEST_BIN_NAME ?= functional.test
 
