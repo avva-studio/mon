@@ -58,7 +58,7 @@ func TestClient_SelectAccounts(t *testing.T) {
 		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-errCh, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_SelectAccount(t *testing.T) {
@@ -91,7 +91,7 @@ func TestClient_SelectAccount(t *testing.T) {
 		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-errCh, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_SelectAccountBalances(t *testing.T) {
@@ -127,7 +127,7 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-errCh, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_InsertAccount(t *testing.T) {
@@ -162,7 +162,7 @@ func TestClient_InsertAccount(t *testing.T) {
 		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-errCh, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_InsertBalance(t *testing.T) {
@@ -189,7 +189,7 @@ func TestClient_InsertBalance(t *testing.T) {
 		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-errCh, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func newTestComponents(t *testing.T, s storage.Storage) (*mux.Router, net.Listener, Client) {
