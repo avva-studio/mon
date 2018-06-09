@@ -64,4 +64,3 @@ func TestSuite(t *testing.T) {
 	}
 	storagetest.Test(t, store)
 }
-

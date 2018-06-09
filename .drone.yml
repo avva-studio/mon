@@ -20,15 +20,15 @@ pipeline:
   run-storage-postgres-functional-tests:
     image: docker/compose:1.21.2
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-    - FUNCTIONAL_TESTS_IMAGE_NAME=mon-pkg-storage-postgres-functional-tests
-    - FUNCTIONAL_TESTS_IMAGE_TAG=${DRONE_COMMIT_SHA}
+      - FUNCTIONAL_TESTS_IMAGE_NAME=mon-pkg-storage-postgres-functional-tests
+      - FUNCTIONAL_TESTS_IMAGE_TAG=${DRONE_COMMIT_SHA}
     commands:
-    - cd pkg/storage/postgres/test/functional
-    - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
-    - docker-compose --project-name mon-pkg-storage-postgres-functional-test up --build --abort-on-container-exit --force-recreate
-    - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
+      - cd pkg/storage/postgres/test/functional
+      - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
+      - docker-compose --project-name mon-pkg-storage-postgres-functional-test up --build --abort-on-container-exit --force-recreate
+      - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
 
   build-monserve-binary:
     image: golang
