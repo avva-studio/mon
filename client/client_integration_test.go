@@ -1,7 +1,8 @@
 package client
 
 import (
-	"fmt"
+	"net"
+	"net/http"
 	"testing"
 	"time"
 
@@ -10,15 +11,12 @@ import (
 	"github.com/glynternet/go-money/common"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/storage/storagetest"
-	"github.com/glynternet/mon/server"
+	"github.com/glynternet/mon/router"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
-const port = 23456
-
 func TestClient_SelectAccounts(t *testing.T) {
-	testPort := port + 0
-
 	s := &storagetest.Storage{
 		Accounts: &storage.Accounts{
 			{
@@ -43,31 +41,27 @@ func TestClient_SelectAccounts(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(s)
-	assert.NoError(t, err)
-	assert.NotNil(t, srv)
+	router, listener, client := newTestComponents(t, s)
 
-	srvErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		selected, err := newTestClient(testPort).SelectAccounts()
+		selected, err := client.SelectAccounts()
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Accounts, selected)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_SelectAccount(t *testing.T) {
-	testPort := port + 1
-
 	s := &storagetest.Storage{
 		Account: &storage.Account{
 			ID: 51,
@@ -80,30 +74,27 @@ func TestClient_SelectAccount(t *testing.T) {
 		},
 	}
 
-	srv, err := server.New(s)
-	assert.NoError(t, err)
-	assert.NotNil(t, srv)
+	router, listener, client := newTestComponents(t, s)
 
-	srvErr := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		selected, err := newTestClient(testPort).SelectAccount(734) // id doesn't matter when mocking
+		selected, err := client.SelectAccount(734) // id doesn't matter when mocking
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Account, selected)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_SelectAccountBalances(t *testing.T) {
-	testPort := port + 2
 	s := &storagetest.Storage{
 		Account: &storage.Account{
 			ID: 51,
@@ -118,31 +109,28 @@ func TestClient_SelectAccountBalances(t *testing.T) {
 			storage.Balance{ID: 123},
 		},
 	}
-	srv, err := server.New(s)
-	common.FatalIfError(t, err, "creating new server")
-	assert.NotNil(t, srv)
 
-	srvErr := make(chan error)
+	router, listener, client := newTestComponents(t, s)
+
+	errCh := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		selected, err := newTestClient(testPort).SelectAccountBalances(*s.Account) // id doesn't matter when mocking
+		selected, err := client.SelectAccountBalances(*s.Account) // id doesn't matter when mocking
 		assert.NoError(t, err)
 		assert.NotNil(t, selected)
 		assert.Equal(t, s.Balances, selected)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_InsertAccount(t *testing.T) {
-	testPort := port + 3
-
 	account := &storage.Account{
 		ID: 51,
 		Account: *accountingtest.NewAccount(
@@ -156,56 +144,79 @@ func TestClient_InsertAccount(t *testing.T) {
 	s := &storagetest.Storage{
 		Account: account,
 	}
-	srv, err := server.New(s)
-	common.FatalIfError(t, err, "creating new server")
 
-	srvErr := make(chan error)
+	router, listener, client := newTestComponents(t, s)
+
+	errCh := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		inserted, err := newTestClient(testPort).InsertAccount(account.Account)
+		inserted, err := client.InsertAccount(account.Account)
 		assert.NoError(t, err)
 		assert.Equal(t, account.ID, inserted.ID)
 		assert.Equal(t, account.Account, inserted.Account)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
 func TestClient_InsertBalance(t *testing.T) {
-	testPort := port + 4
 	expected := &storage.Balance{ID: 293}
 
 	s := &storagetest.Storage{
 		Account: &storage.Account{ID: 51},
 		Balance: expected,
 	}
-	srv, err := server.New(s)
-	common.FatalIfError(t, err, "creating new server")
 
-	srvErr := make(chan error)
+	router, listener, client := newTestComponents(t, s)
+
+	errCh := make(chan error)
 	go func() {
-		srvErr <- srv.ListenAndServe(fmt.Sprintf(":%d", testPort))
+		errCh <- http.Serve(listener, router)
 	}()
 
 	time.Sleep(time.Millisecond * 10)
 
 	go func() {
-		inserted, err := newTestClient(testPort).InsertBalance(storage.Account{}, balance.Balance{})
+		inserted, err := client.InsertBalance(storage.Account{}, balance.Balance{})
 		assert.NoError(t, err)
 		assert.Equal(t, expected, inserted)
-		close(srvErr)
+		close(errCh)
 	}()
 
-	common.FatalIfError(t, <-srvErr, "serving")
+	common.FatalIfError(t, <-errCh, "received error")
 }
 
-// TODO: newTestClient as closure that increments port everytime it's called
-func newTestClient(port int) Client {
-	return Client(fmt.Sprintf("http://localhost:%d", port))
+func newTestComponents(t *testing.T, s storage.Storage) (*mux.Router, net.Listener, Client) {
+	r := newTestRouter(t, s)
+	l := newTestNetListener(t)
+	c := newTestClient(l)
+	return r, l, c
+}
+
+func newTestRouter(t *testing.T, s storage.Storage) *mux.Router {
+	r, err := router.New(s)
+	common.FatalIfError(t, err, "creating new router")
+	if !assert.NotNil(t, r) {
+		t.Fatal("expected non-nil router")
+	}
+	return r
+}
+
+func newTestNetListener(t *testing.T) net.Listener {
+	l, err := net.Listen("tcp", "localhost:0")
+	common.FatalIfError(t, err, "creating new net listener")
+	if !assert.NotNil(t, l) {
+		t.Fatal("expected non-nil listener")
+	}
+	return l
+}
+
+func newTestClient(l net.Listener) Client {
+	return Client("http://" + l.Addr().String())
 }

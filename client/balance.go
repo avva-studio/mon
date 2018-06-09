@@ -7,12 +7,12 @@ import (
 
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/mon/pkg/storage"
-	"github.com/glynternet/mon/server"
+	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 )
 
 func (c Client) SelectAccountBalances(a storage.Account) (*storage.Balances, error) {
-	return c.getBalancesFromEndpoint(fmt.Sprintf(server.EndpointFmtAccountBalances, a.ID))
+	return c.getBalancesFromEndpoint(fmt.Sprintf(router.EndpointFmtAccountBalances, a.ID))
 }
 
 func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
@@ -29,7 +29,7 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 }
 
 func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
-	endpoint := fmt.Sprintf(server.EndpointFmtAccountBalanceInsert, a.ID)
+	endpoint := fmt.Sprintf(router.EndpointFmtAccountBalanceInsert, a.ID)
 	bs, err := c.postBalanceToEndpoint(
 		endpoint, b,
 	)

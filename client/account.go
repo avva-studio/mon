@@ -7,12 +7,12 @@ import (
 
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/mon/pkg/storage"
-	"github.com/glynternet/mon/server"
+	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 )
 
 func (c Client) SelectAccounts() (*storage.Accounts, error) {
-	return c.getAccountsFromEndpoint(server.EndpointAccounts)
+	return c.getAccountsFromEndpoint(router.EndpointAccounts)
 }
 
 func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
@@ -29,7 +29,7 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 }
 
 func (c Client) SelectAccount(u uint) (*storage.Account, error) {
-	return c.getAccountFromEndpoint(fmt.Sprintf(server.EndpointFmtAccount, u))
+	return c.getAccountFromEndpoint(fmt.Sprintf(router.EndpointFmtAccount, u))
 }
 
 func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
@@ -41,15 +41,15 @@ func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 }
 
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
-	bs, err := c.postAccountToEndpoint(server.EndpointAccountInsert, a)
+	bs, err := c.postAccountToEndpoint(router.EndpointAccountInsert, a)
 	if err != nil {
-		return nil, errors.Wrapf(err, "posting account to endpoint %s", server.EndpointAccountInsert)
+		return nil, errors.Wrapf(err, "posting account to endpoint %s", router.EndpointAccountInsert)
 	}
 	return unmarshalJSONToAccount(bs)
 }
 
 func (c Client) UpdateAccount(account *storage.Account, updates *account.Account) (*storage.Account, error) {
-	endpoint := fmt.Sprintf(server.EndpointFmtAccountUpdate, account.ID)
+	endpoint := fmt.Sprintf(router.EndpointFmtAccountUpdate, account.ID)
 	bs, err := c.postAccountToEndpoint(endpoint, *updates)
 	if err != nil {
 		return nil, errors.Wrapf(err, "posting account to endpoint %s", endpoint)
@@ -58,7 +58,7 @@ func (c Client) UpdateAccount(account *storage.Account, updates *account.Account
 }
 
 func (c Client) DeleteAccount(id uint) error {
-	endpoint := fmt.Sprintf(server.EndpointFmtAccount, id)
+	endpoint := fmt.Sprintf(router.EndpointFmtAccount, id)
 	r, err := c.deleteToEndpoint(endpoint)
 	if err != nil {
 		return errors.Wrapf(err, "deleting account to endpoint %s", endpoint)

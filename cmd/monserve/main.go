@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/storage/postgres"
-	"github.com/glynternet/mon/server"
+	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,10 +67,10 @@ var cmdDBServe = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "error creating storage")
 		}
-		s, err := server.New(store)
+		r, err := router.New(store)
 		if err != nil {
 			return errors.Wrap(err, "error creating new server")
 		}
-		return s.ListenAndServe(":" + viper.GetString(keyPort))
+		return http.ListenAndServe(":"+viper.GetString(keyPort), r)
 	},
 }

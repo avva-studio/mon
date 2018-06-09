@@ -59,7 +59,13 @@ func TestFlag_Set(t *testing.T) {
 					}
 					assert.NotNil(t, f)
 					diff := absDuration(f.Time.Sub(test.Time))
-					assert.Truef(t, diff < time.Millisecond*5 && diff > -time.Millisecond*5, "difference should be small but was %d", diff)
+					acceptableThreshold := time.Millisecond * 10
+					assert.Truef(t,
+						diff < acceptableThreshold,
+						"difference should be small but was %s. "+
+							"If the difference is still quite small, "+
+							"this could be because of a slow running test.",
+						diff)
 					assert.NoError(t, err)
 				})
 			}

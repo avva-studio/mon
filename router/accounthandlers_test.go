@@ -1,4 +1,4 @@
-package server
+package router
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ import (
 func Test_handlerSelectAccounts(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("select accounts test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{Err: expected},
 		}
 		code, as, err := server.handlerSelectAccounts(nil)
@@ -29,7 +29,7 @@ func Test_handlerSelectAccounts(t *testing.T) {
 		expected := &storage.Accounts{
 			storage.Account{ID: 8767},
 		}
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{
 				Accounts: expected,
 			},
@@ -45,7 +45,7 @@ func Test_handlerSelectAccounts(t *testing.T) {
 func Test_handlerSelectAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("select account test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
 		code, a, err := server.handlerSelectAccount(1)
@@ -63,7 +63,7 @@ func Test_handlerSelectAccount(t *testing.T) {
 				time.Date(1000, 0, 0, 0, 0, 0, 0, time.UTC),
 			),
 		}
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{Account: expected},
 		}
 		code, a, err := server.handlerSelectAccount(1)
@@ -77,7 +77,7 @@ func Test_handlerSelectAccount(t *testing.T) {
 func Test_handlerInsertAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("insert account test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
 		code, inserted, err := server.handlerInsertAccount(account.Account{})
@@ -94,7 +94,7 @@ func Test_handlerInsertAccount(t *testing.T) {
 				accountingtest.NewCurrencyCode(t, "GBP"),
 				time.Date(1000, 1, 0, 0, 0, 0, 0, time.UTC)),
 		}
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{Account: expected},
 		}
 		code, inserted, err := server.handlerInsertAccount(expected.Account)
@@ -108,7 +108,7 @@ func Test_handlerInsertAccount(t *testing.T) {
 func Test_handlerUpdateAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("update account test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
 		code, updated, err := server.handlerUpdateAccount(
@@ -128,7 +128,7 @@ func Test_handlerUpdateAccount(t *testing.T) {
 				accountingtest.NewCurrencyCode(t, "GBP"),
 				time.Date(1000, 1, 0, 0, 0, 0, 0, time.UTC)),
 		}
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{Account: expected},
 		}
 		code, updated, err := server.handlerUpdateAccount(storage.Account{}, expected.Account)
@@ -142,7 +142,7 @@ func Test_handlerUpdateAccount(t *testing.T) {
 func Test_handlerDeleteAccount(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expected := errors.New("delete account test error")
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{AccountErr: expected},
 		}
 		code, body, err := server.handlerDeleteAccount(1)
@@ -152,7 +152,7 @@ func Test_handlerDeleteAccount(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		server := &server{
+		server := &environment{
 			storage: &storagetest.Storage{},
 		}
 		code, body, err := server.handlerDeleteAccount(1)
