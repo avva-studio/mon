@@ -56,6 +56,6 @@ pipeline:
       - DOCKER_IMAGE=monserve:ci-functional-tests-${DRONE_COMMIT_SHA}
     commands:
       - cd test/functional
-      - docker-compose --project-name monserve-client-functional-test down
-      - docker-compose --project-name monserve-client-functional-test up --build --abort-on-container-exit --force-recreate
-      - docker-compose --project-name monserve-client-functional-test down
+      - docker-compose --project-name mon-monserve-client-functional-test down
+      - docker-compose --project-name mon-monserve-client-functional-test up --build --abort-on-container-exit --force-recreate
+      - docker-compose --project-name mon-monserve-client-functional-test down

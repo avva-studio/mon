@@ -5,7 +5,7 @@ services:
   monserve:
     image: "${DOCKER_IMAGE}"
     depends_on:
-      - postgres
+    - postgres
     expose:
     - "80"
     environment:
@@ -16,7 +16,7 @@ services:
       DB_SSLMODE: disable
   
   postgres:
-    image: postgres
+    image: mon-postgres
     build:
       context: .
       dockerfile: postgres.Dockerfile
@@ -29,9 +29,9 @@ services:
       POSTGRES_USER: postgres
   
   functional-tests:
-    image: functional-tests
+    image: mon-monserve-functional-tests
     depends_on:
-      - monserve
+    - monserve
     build:
       context: .
       dockerfile: tests.Dockerfile
