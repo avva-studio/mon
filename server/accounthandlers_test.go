@@ -118,7 +118,6 @@ func Test_handlerUpdateAccount(t *testing.T) {
 		assert.Equal(t, errors.Cause(err), expected)
 		assert.Nil(t, updated)
 		assert.Equal(t, code, http.StatusBadRequest)
-		t.Log(code, updated, err)
 	})
 
 	t.Run("success", func(t *testing.T) {

@@ -57,9 +57,10 @@ func setup() {
 }
 
 func TestSuite(t *testing.T) {
-	store := client.Client(viper.GetString(keyServerHost))
+	host := viper.GetString(keyServerHost)
+	store := client.Client(host)
 	if !store.Available() {
-		t.Fatal("store is unavailable")
+		t.Fatalf("store at %q is unavailable", host)
 	}
 	storagetest.Test(t, store)
 }

@@ -20,13 +20,13 @@ clean:
 	rm ./bin/*
 
 monserve:
-	$(MAKE) build-monserve
-	$(MAKE) build-monserve-docker
+	$(MAKE) monserve-binary
+	$(MAKE) monserve-image
 
-build-monserve:
+monserve-binary:
 	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -installsuffix cgo -o bin/$(SERVE_NAME) -a -ldflags $(LDFLAGS) ./cmd/$(SERVE_NAME)
 
-build-monserve-docker:
+monserve-image:
 	docker build --tag $(SERVE_NAME):$(VERSION) .
 
 moncli:
