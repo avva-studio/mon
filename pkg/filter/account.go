@@ -14,6 +14,17 @@ func Existed(t time.Time) AccountFilter {
 	}
 }
 
+func IDs(ids []uint) AccountFilter {
+	return func(a storage.Account) bool {
+		for _, id := range ids {
+			if a.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+}
+
 func OpenAt(t time.Time) AccountFilter {
 	return func(a storage.Account) bool {
 		return a.Account.OpenAt(t)
