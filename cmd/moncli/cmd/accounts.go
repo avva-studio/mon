@@ -21,15 +21,18 @@ import (
 
 const (
 	keyOpen     = "open"
+	keyIDs      = "ids"
 	keyQuiet    = "quiet"
 	keyBalances = "balances"
 	keyAtDate   = "at-date"
 )
 
 var atDate = date.Flag()
+var ids []uint
 
 var accountsCmd = &cobra.Command{
-	Use: "accounts",
+	Use:  "accounts",
+	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if atDate.Time == nil {
 			now := time.Now()
@@ -42,11 +45,22 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		*as = filter.Filter(*as, filter.Existed(*atDate.Time))
+		fs := []filter.AccountFilter{
+			filter.Existed(*atDate.Time),
+		}
 
 		if viper.GetBool(keyOpen) {
-			*as = filter.Filter(*as, filter.OpenAt(*atDate.Time))
+			fs = append(fs, filter.OpenAt(*atDate.Time))
 		}
+
+		if len(ids) > 0 {
+			fs = append(fs, filter.IDs(ids))
+		}
+
+		for _, f := range fs {
+			*as = filter.Filter(*as, f)
+		}
+
 		if viper.GetBool(keyQuiet) {
 			for _, a := range *as {
 				fmt.Println(a.ID)
@@ -101,6 +115,7 @@ var accountsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.Flags().BoolP(keyOpen, "", false, "show only open accounts")
+	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by id")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
 	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
