@@ -5,14 +5,15 @@ import (
 
 	"fmt"
 
-	"github.com/glynternet/accounting-rest/server"
-	"github.com/glynternet/go-accounting-storage"
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 )
 
+// SelectAccountBalances will select the Balances that are stored for a given Account
 func (c Client) SelectAccountBalances(a storage.Account) (*storage.Balances, error) {
-	return c.getBalancesFromEndpoint(fmt.Sprintf(server.EndpointFmtAccountBalances, a.ID))
+	return c.getBalancesFromEndpoint(fmt.Sprintf(router.EndpointFmtAccountBalances, a.ID))
 }
 
 func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
@@ -20,7 +21,7 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting body from endpoint")
 	}
-	bs := new(storage.Balances)
+	bs := &storage.Balances{}
 	err = errors.Wrap(json.Unmarshal(bod, bs), "unmarshalling response")
 	if err != nil {
 		bs = nil
@@ -28,8 +29,9 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 	return bs, err
 }
 
+// InsertBalance will insert a balance for a given Account
 func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
-	endpoint := fmt.Sprintf(server.EndpointFmtAccountBalanceInsert, a.ID)
+	endpoint := fmt.Sprintf(router.EndpointFmtAccountBalanceInsert, a.ID)
 	bs, err := c.postBalanceToEndpoint(
 		endpoint, b,
 	)
@@ -46,8 +48,9 @@ func (c Client) postBalanceToEndpoint(e string, b balance.Balance) ([]byte, erro
 	}
 	return processResponseForBody(res)
 }
+
 func unmarshalJSONToBalance(data []byte) (*storage.Balance, error) {
-	b := new(storage.Balance)
+	b := &storage.Balance{}
 	err := errors.Wrapf(json.Unmarshal(data, b), "json unmarshalling into balance. bytes as string: %s", data)
 	if err != nil {
 		b = nil

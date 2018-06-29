@@ -1,0 +1,26 @@
+version: '3.5'
+services:
+  postgres:
+    image: mon-postgres
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    restart: always
+    expose:
+      - "5432"
+    environment:
+      ENV: docker
+      POSTGRES_PASSWORD: ""
+      POSTGRES_USER: postgres
+  functional-tests:
+    container_name: ${FUNCTIONAL_TESTS_IMAGE_NAME}
+    image: ${FUNCTIONAL_TESTS_IMAGE_NAME}:${FUNCTIONAL_TESTS_IMAGE_TAG}
+    build:
+      context: .
+      dockerfile: tests.Dockerfile
+    environment:
+      ENV: docker
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_NAME: functionaltest_dbname
+      DB_SSLMODE: disable

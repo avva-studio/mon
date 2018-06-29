@@ -1,3 +1,5 @@
+// +build functional
+
 package functional
 
 import (
@@ -7,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/accounting-rest/client"
-	"github.com/glynternet/go-accounting-storage/postgres2"
-	"github.com/glynternet/go-accounting-storage/test"
+	"github.com/glynternet/mon/client"
+	"github.com/glynternet/mon/pkg/storage/postgres"
+	"github.com/glynternet/mon/pkg/storage/storagetest"
 	"github.com/spf13/viper"
 )
 
@@ -33,7 +35,7 @@ func setup() {
 	errs := make([]error, retries)
 	var i int
 	for i = 0; i < retries; i++ {
-		err := postgres2.CreateStorage(
+		err := postgres.CreateStorage(
 			viper.GetString(keyDBHost),
 			viper.GetString(keyDBUser),
 			viper.GetString(keyDBName),
@@ -55,9 +57,10 @@ func setup() {
 }
 
 func TestSuite(t *testing.T) {
-	store := client.Client(viper.GetString(keyServerHost))
+	host := viper.GetString(keyServerHost)
+	store := client.Client(host)
 	if !store.Available() {
-		t.Fatal("store is unavailable")
+		t.Fatalf("store at %q is unavailable", host)
 	}
-	test.Test(t, store)
+	storagetest.Test(t, store)
 }

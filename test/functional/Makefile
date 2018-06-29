@@ -1,6 +1,7 @@
-REPO_NAME ?= accounting-rest
+REPO_NAME ?= mon
 
-DOCKER_IMAGE ?= accounting-rest-serve:develop-v0.3.0-2-gc66e16c
+DOCKER_IMAGE_TAG ?=
+DOCKER_IMAGE ?= monserve:$(DOCKER_IMAGE_TAG)
 
 TEST_BIN_NAME ?= functional.test
 
@@ -21,7 +22,7 @@ clean:
 	$(MAKE) docker-compose-down
 
 build-tests:
-	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go test -c -o ./bin/$(TEST_BIN_NAME) -installsuffix cgo -a -ldflags $(LDFLAGS)
+	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go test -tags functional -c -o ./bin/$(TEST_BIN_NAME) -installsuffix cgo -a -ldflags $(LDFLAGS)
 
 test:
 	$(MAKE) docker-compose-up; $(MAKE) docker-compose-down

@@ -18,25 +18,10 @@
   name = "github.com/glynternet/go-accounting"
   packages = [
     "account",
+    "accountingtest",
     "balance"
   ]
-  revision = "087a30567a6bf8bbeeff3e1c5ed7620f9f640417"
-
-[[projects]]
-  branch = "develop-1"
-  name = "github.com/glynternet/go-accounting-storage"
-  packages = [
-    ".",
-    "postgres2",
-    "test"
-  ]
-  revision = "f9323da05f5f74f2a837c8086aee9382bb4db8f3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/glynternet/go-accounting-storagetest"
-  packages = ["."]
-  revision = "055c2d528a2f168476b769a3d8ae754042a46cb5"
+  revision = "f7cd0cb863a1c2334d0dc782aa554d4f685f6280"
 
 [[projects]]
   branch = "master"
@@ -45,25 +30,25 @@
     "common",
     "currency"
   ]
-  revision = "b3d3641039f8f22785977d809e717e56d362303f"
+  revision = "95ce07f4b89426d1df4b44f6493e366dd9322e07"
 
 [[projects]]
   branch = "master"
   name = "github.com/glynternet/go-time"
   packages = ["."]
-  revision = "bbfa6a95a62895cec756e049d1edeb0ca2538161"
+  revision = "3c3aabc51d0a545e5572c6d0e9953d2d25e31770"
 
 [[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
-  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
-  version = "v1.1"
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/gorilla/mux"
   packages = ["."]
-  revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
-  version = "v1.6.1"
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
 
 [[projects]]
   branch = "master"
@@ -80,7 +65,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "f40e974e75af4e271d97ce0fc917af5898ae7bda"
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -100,14 +85,26 @@
 [[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
-  revision = "c3beff4c2358b44d0493c7dda585e7db7ff28ae6"
-  version = "v1.7.6"
+  revision = "c2353362d570a7bfa228149c62842019201cfb71"
+  version = "v1.8.0"
+
+[[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
 
 [[projects]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+  revision = "bb74f1db0675b241733089d5a1faa5dd8b0ef57b"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
+  packages = ["."]
+  revision = "d4647c9c7a84d847478d890b816b7d8b62b0b279"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -145,8 +142,8 @@
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "a1f051bc3eba734da4772d60e2d677f47cf93ef4"
-  version = "v0.0.2"
+  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
+  version = "v0.0.3"
 
 [[projects]]
   branch = "master"
@@ -157,8 +154,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/spf13/viper"
@@ -176,7 +173,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
+  revision = "7f59abf37be6a6007f075af1bc7f16f137bc176b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -200,6 +197,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "80da1962067df498ac4c0706a378392a4790026f6b9e6cdd327ef2840add7b17"
+  inputs-digest = "8b20c2da39aa2b47f643cd5bc134babba66f1d7007661230e4f54079d71ced80"
   solver-name = "gps-cdcl"
   solver-version = 1

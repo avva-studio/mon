@@ -1,4 +1,4 @@
 /bin
 .idea
 coverage.out
-accounting-rest
+.DS_Store
