@@ -16,7 +16,9 @@ import (
 // Client is a client to retrieve accounting items over http using REST
 type Client string
 
-func defaultHTTPClient() *http.Client {
+// newClient provides the client that should be used to make any calls against
+// the mon server
+func newClient() *http.Client {
 	return &http.Client{Timeout: 5 * time.Second}
 }
 
@@ -33,15 +35,17 @@ func (c Client) deleteToEndpoint(endpoint string) (*http.Response, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "creating new request")
 	}
-	return defaultHTTPClient().Do(r)
+	return newClient().Do(r)
 }
 
+// Available reports whether the mon server is available using the Client
 func (c Client) Available() bool {
 	// TODO: Deprecate Available in favour of something that returns more information
 	_, err := c.SelectAccounts()
 	return err == nil
 }
 
+// Close is a noop closer as there is not behaviour required to close this client
 func (c Client) Close() error {
 	return nil
 }

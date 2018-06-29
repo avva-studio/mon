@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SelectAccounts is used to retrieve accounts from the mon server
 func (c Client) SelectAccounts() (*storage.Accounts, error) {
 	return c.getAccountsFromEndpoint(router.EndpointAccounts)
 }
@@ -28,8 +29,9 @@ func (c Client) getAccountsFromEndpoint(e string) (*storage.Accounts, error) {
 	return as, err
 }
 
-func (c Client) SelectAccount(u uint) (*storage.Account, error) {
-	return c.getAccountFromEndpoint(fmt.Sprintf(router.EndpointFmtAccount, u))
+// SelectAccount retrieves an account from the mon server by a given ID
+func (c Client) SelectAccount(ID uint) (*storage.Account, error) {
+	return c.getAccountFromEndpoint(fmt.Sprintf(router.EndpointFmtAccount, ID))
 }
 
 func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
@@ -40,6 +42,7 @@ func (c Client) getAccountFromEndpoint(e string) (*storage.Account, error) {
 	return unmarshalJSONToAccount(bod)
 }
 
+// InsertAccount will attempt to insert an account by calling the mon server and return the stored Account
 func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
 	bs, err := c.postAccountToEndpoint(router.EndpointAccountInsert, a)
 	if err != nil {
@@ -48,6 +51,7 @@ func (c Client) InsertAccount(a account.Account) (*storage.Account, error) {
 	return unmarshalJSONToAccount(bs)
 }
 
+// UpdateAccount will updated a currently stored account with updates provided by another account
 func (c Client) UpdateAccount(account *storage.Account, updates *account.Account) (*storage.Account, error) {
 	endpoint := fmt.Sprintf(router.EndpointFmtAccountUpdate, account.ID)
 	bs, err := c.postAccountToEndpoint(endpoint, *updates)
@@ -57,6 +61,7 @@ func (c Client) UpdateAccount(account *storage.Account, updates *account.Account
 	return unmarshalJSONToAccount(bs)
 }
 
+// DeleteAccount will attempt to delete an account through the mon server by the given id
 func (c Client) DeleteAccount(id uint) error {
 	endpoint := fmt.Sprintf(router.EndpointFmtAccount, id)
 	r, err := c.deleteToEndpoint(endpoint)

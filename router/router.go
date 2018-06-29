@@ -10,21 +10,36 @@ import (
 )
 
 const (
-	// Accounts
+	// EndpointAccounts is the endpoint for Accounts
 	EndpointAccounts = "/accounts"
 	patternAccounts  = EndpointAccounts
 
-	// Account
-	EndpointAccount          = "/account"
-	EndpointFmtAccount       = EndpointAccount + "/%d"
-	patternAccount           = EndpointAccount + "/{id}"
-	EndpointAccountInsert    = EndpointAccount + "/insert"
+	// EndpointAccount is the endpoint for Account
+	EndpointAccount = "/account"
+
+	// EndpointFmtAccount is the format string for use when generating a
+	// specific Account endpoint
+	// TODO: this is a code smell and should probably be provided as a return
+	// TODO: value from a method on another Account type, something like
+	// TODO: router.Account.Endpoint(), but probably actually something better
+	// than that ahahahah
+	EndpointFmtAccount = EndpointAccount + "/%d"
+	patternAccount     = EndpointAccount + "/{id}"
+
+	// EndpointAccountInsert is the endpoint for inserting an Account
+	EndpointAccountInsert = EndpointAccount + "/insert"
+	// EndpointFmtAccountUpdate is the format string for generating the
+	// endpoint to use when updating a specific Account
 	EndpointFmtAccountUpdate = EndpointFmtAccount + "/update"
 	patternAccountUpdate     = patternAccount + "/update"
 
-	// Account Balances
-	EndpointFmtAccountBalances      = EndpointAccount + "/%d/balances"
-	patternAccountBalances          = EndpointAccount + "/{id}/balances"
+	// EndpointFmtAccountBalances is the format string for use when generating
+	// the endpoint to get the balances for a specific Account
+	EndpointFmtAccountBalances = EndpointAccount + "/%d/balances"
+	patternAccountBalances     = EndpointAccount + "/{id}/balances"
+
+	// EndpointFmtAccountBalanceInsert is the format string for use when generating
+	// the endpoint insert a Balance for a specific Account
 	EndpointFmtAccountBalanceInsert = EndpointAccount + "/%d/balance/insert"
 	patternAccountBalanceInsert     = EndpointAccount + "/{id}/balance/insert"
 )

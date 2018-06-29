@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SelectAccountBalances will select the Balances that are stored for a given Account
 func (c Client) SelectAccountBalances(a storage.Account) (*storage.Balances, error) {
 	return c.getBalancesFromEndpoint(fmt.Sprintf(router.EndpointFmtAccountBalances, a.ID))
 }
@@ -28,6 +29,7 @@ func (c Client) getBalancesFromEndpoint(e string) (*storage.Balances, error) {
 	return bs, err
 }
 
+// InsertBalance will insert a balance for a given Account
 func (c Client) InsertBalance(a storage.Account, b balance.Balance) (*storage.Balance, error) {
 	endpoint := fmt.Sprintf(router.EndpointFmtAccountBalanceInsert, a.ID)
 	bs, err := c.postBalanceToEndpoint(
