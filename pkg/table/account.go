@@ -8,6 +8,7 @@ import (
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-time"
 	"github.com/glynternet/mon/pkg/storage"
+	"github.com/glynternet/mon/pkg/stringgrid"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -76,6 +77,27 @@ func closedString(t time.NullTime) string {
 func Balances(bs storage.Balances, w io.Writer) {
 	t := newDefaultTable(w)
 	t.SetHeader([]string{"ID", "Amount", "Date"})
+
+	g := stringgrid.Columns{
+		stringgrid.SimpleColumn(func(i uint) string {
+			return strconv.FormatUint(uint64(bs[i].ID), 10)
+		}),
+		stringgrid.SimpleColumn(func(i uint) string {
+			return strconv.Itoa(bs[i].Amount)
+		}),
+		stringgrid.SimpleColumn(func(i uint) string {
+			return bs[i].Date.Format(dateFormat)
+		}),
+	}
+
+	data, err := g.Generate(uint(len(bs)))
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, row := range  {
+
+	}
 
 	for _, b := range bs {
 		t.Append([]string{
