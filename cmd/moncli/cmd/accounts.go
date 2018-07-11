@@ -120,7 +120,11 @@ func prepareFilters() ([]filter.AccountFilter, error) {
 	}
 
 	if len(ids) > 0 {
-		fs = append(fs, filter.IDs(ids))
+		var idf filter.AccountFilters
+		for _, id := range ids {
+			idf = append(idf, filter.ID(id))
+		}
+		fs = append(fs, idf.Or)
 	}
 
 	if len(currencies) > 0 {
@@ -128,7 +132,11 @@ func prepareFilters() ([]filter.AccountFilter, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "converting currency string to currency codes")
 		}
-		fs = append(fs, filter.Currencies(cs...))
+		var cf filter.AccountFilters
+		for _, c := range cs {
+			cf = append(cf, filter.Currency(c))
+		}
+		fs = append(fs, cf.Or)
 	}
 
 	return fs, nil

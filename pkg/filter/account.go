@@ -19,29 +19,19 @@ func Existed(t time.Time) AccountFilter {
 	}
 }
 
-// Currencies produces an AccountFilter that will identify a storage.Account if
-// it is within a given set of currency codes
-func Currencies(cs ...currency.Code) AccountFilter {
+// Currency produces an AccountFilter that will identify a storage.Account if
+// it has a given currency.Code
+func Currency(c currency.Code) AccountFilter {
 	return func(a storage.Account) bool {
-		for _, c := range cs {
-			if a.Account.CurrencyCode() == c {
-				return true
-			}
-		}
-		return false
+		return a.Account.CurrencyCode() == c
 	}
 }
 
-// IDs produces an AccountFilter that will identify a storage.Account if it
-// matches on of a given set of IDs
-func IDs(ids []uint) AccountFilter {
+// ID produces an AccountFilter that will identify a storage.Account if it
+// matches an ID
+func ID(id uint) AccountFilter {
 	return func(a storage.Account) bool {
-		for _, id := range ids {
-			if a.ID == id {
-				return true
-			}
-		}
-		return false
+		return a.ID == id
 	}
 }
 
