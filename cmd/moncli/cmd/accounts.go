@@ -147,6 +147,7 @@ func init() {
 	}
 }
 
+// TODO: this should be handled as a flags type perhaps?
 func currencyStringsToCodes(css ...string) ([]currency.Code, error) {
 	var codes []currency.Code
 	for _, cs := range css {
