@@ -19,6 +19,8 @@ func Existed(t time.Time) AccountFilter {
 	}
 }
 
+// Currencies produces an AccountFilter that will identify a storage.Account if
+// it is within a given set of currency codes
 func Currencies(cs ...currency.Code) AccountFilter {
 	return func(a storage.Account) bool {
 		for _, c := range cs {
