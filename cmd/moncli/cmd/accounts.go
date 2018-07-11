@@ -49,24 +49,9 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		fs := []filter.AccountFilter{
-			filter.Existed(*atDate.Time),
-		}
-
-		if viper.GetBool(keyOpen) {
-			fs = append(fs, filter.OpenAt(*atDate.Time))
-		}
-
-		if len(ids) > 0 {
-			fs = append(fs, filter.IDs(ids))
-		}
-
-		if len(currencies) > 0 {
-			cs, err := currencyStringsToCodes(currencies...)
-			if err != nil {
-				return errors.Wrap(err, "converting currency string to currency codes")
-			}
-			fs = append(fs, filter.Currencies(cs...))
+		fs, err := prepareFilters()
+		if err != nil {
+			return errors.Wrap(err, "preparing filters")
 		}
 
 		for _, f := range fs {
@@ -123,6 +108,30 @@ var accountsCmd = &cobra.Command{
 		table.Accounts(*as, os.Stdout)
 		return nil
 	},
+}
+
+func prepareFilters() ([]filter.AccountFilter, error) {
+	fs := []filter.AccountFilter{
+		filter.Existed(*atDate.Time),
+	}
+
+	if viper.GetBool(keyOpen) {
+		fs = append(fs, filter.OpenAt(*atDate.Time))
+	}
+
+	if len(ids) > 0 {
+		fs = append(fs, filter.IDs(ids))
+	}
+
+	if len(currencies) > 0 {
+		cs, err := currencyStringsToCodes(currencies...)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting currency string to currency codes")
+		}
+		fs = append(fs, filter.Currencies(cs...))
+	}
+
+	return fs, nil
 }
 
 func init() {
