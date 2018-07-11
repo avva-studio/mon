@@ -20,15 +20,19 @@ import (
 )
 
 const (
-	keyOpen     = "open"
-	keyIDs      = "ids"
-	keyQuiet    = "quiet"
-	keyBalances = "balances"
-	keyAtDate   = "at-date"
+	keyOpen       = "open"
+	keyIDs        = "ids"
+	keyCurrencies = "currencies"
+	keyQuiet      = "quiet"
+	keyBalances   = "balances"
+	keyAtDate     = "at-date"
 )
 
-var atDate = date.Flag()
-var ids []uint
+var (
+	atDate     = date.Flag()
+	ids        []uint
+	currencies []string
+)
 
 var accountsCmd = &cobra.Command{
 	Use:  "accounts",
@@ -57,6 +61,14 @@ var accountsCmd = &cobra.Command{
 			fs = append(fs, filter.IDs(ids))
 		}
 
+		if len(currencies) > 0 {
+			cs, err := currencyStringsToCodes(currencies...)
+			if err != nil {
+				return errors.Wrap(err, "converting currency string to currency codes")
+			}
+			fs = append(fs, filter.Currencies(cs...))
+		}
+
 		for _, f := range fs {
 			*as = filter.Filter(*as, f)
 		}
@@ -67,6 +79,7 @@ var accountsCmd = &cobra.Command{
 			}
 			return nil
 		}
+
 		if viper.GetBool(keyBalances) {
 			// TODO: Should these be kept in order of ID here?
 			abs := make(map[storage.Account]balance.Balance)
@@ -115,11 +128,24 @@ var accountsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.Flags().BoolP(keyOpen, "", false, "show only open accounts")
-	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by id")
+	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
+	accountsCmd.Flags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
 	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
+}
+
+func currencyStringsToCodes(css ...string) ([]currency.Code, error) {
+	var codes []currency.Code
+	for _, cs := range css {
+		c, err := currency.NewCode(cs)
+		if err != nil {
+			return nil, errors.Wrap(err, "creating new code")
+		}
+		codes = append(codes, *c)
+	}
+	return codes, nil
 }

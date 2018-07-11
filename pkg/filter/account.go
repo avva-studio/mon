@@ -3,6 +3,7 @@ package filter
 import (
 	"time"
 
+	"github.com/glynternet/go-money/currency"
 	"github.com/glynternet/mon/pkg/storage"
 )
 
@@ -15,6 +16,17 @@ type AccountFilter func(storage.Account) bool
 func Existed(t time.Time) AccountFilter {
 	return func(a storage.Account) bool {
 		return !a.Account.Opened().After(t)
+	}
+}
+
+func Currencies(cs ...currency.Code) AccountFilter {
+	return func(a storage.Account) bool {
+		for _, c := range cs {
+			if a.Account.CurrencyCode() == c {
+				return true
+			}
+		}
+		return false
 	}
 }
 
