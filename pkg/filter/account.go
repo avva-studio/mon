@@ -53,6 +53,20 @@ func OpenAt(t time.Time) AccountFilter {
 	}
 }
 
+// AccountFilters is a set of AccountFilter
+type AccountFilters []AccountFilter
+
+// Or identifies when an account satisfies one of more constaints of an
+// AccountFilters
+func (afs AccountFilters) Or(a storage.Account) bool {
+	for _, af := range afs {
+		if af(a) {
+			return true
+		}
+	}
+	return false
+}
+
 // Filter returns a set of storage.Accounts that match the given AccountFilter
 func Filter(as storage.Accounts, f AccountFilter) storage.Accounts {
 	var filtered []storage.Account
