@@ -88,6 +88,44 @@ func TestCurrency(t *testing.T) {
 	}
 }
 
+func TestExisted(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		storage.Account
+		time.Time
+		match bool
+	}{
+		{
+			name:  "zero-values",
+			match: true,
+		},
+		{
+			name:    "time before open",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
+			Time:    time.Date(1999, 0, 0, 0, 0, 0, 0, time.UTC),
+			match:   false,
+		},
+		{
+			name:    "time equal open",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
+			Time:    time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC),
+			match:   true,
+		},
+		{
+			name:    "time after open",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
+			Time:    time.Date(2001, 0, 0, 0, 0, 0, 0, time.UTC),
+			match:   true,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := filter.Existed(test.Time)
+			match := f(test.Account)
+			assert.Equal(t, test.match, match)
+		})
+	}
+}
+
 func TestAccountFilters_Or(t *testing.T) {
 	for _, test := range []struct {
 		name string

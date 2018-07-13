@@ -13,6 +13,8 @@ type AccountFilter func(storage.Account) bool
 
 // Existed produces an AccountFilter that can be used to identify if an
 // Account existed/exists/will-exist at a given time
+// Existed will identify that an Account existed if its open date matches or
+// was before the given time.
 func Existed(t time.Time) AccountFilter {
 	return func(a storage.Account) bool {
 		return !a.Account.Opened().After(t)
