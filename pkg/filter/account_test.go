@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/accountingtest"
 	"github.com/glynternet/go-money/currency"
 	"github.com/glynternet/mon/pkg/filter"
@@ -120,6 +121,38 @@ func TestExisted(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := filter.Existed(test.Time)
+			match := f(test.Account)
+			assert.Equal(t, test.match, match)
+		})
+	}
+}
+
+func TestOpenAt(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		storage.Account
+		time.Time
+		match bool
+	}{
+		{
+			name:  "zero-values",
+			match: true,
+		},
+		{
+			name:    "open account",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(1999, 0, 0, 0, 0, 0, 0, time.UTC))},
+			Time:    time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC),
+			match:   true,
+		},
+		{
+			name:    "closed account",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC), account.CloseTime(time.Date(2001, 0, 0, 0, 0, 0, 0, time.UTC)))},
+			Time:    time.Date(2002, 0, 0, 0, 0, 0, 0, time.UTC),
+			match:   false,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := filter.OpenAt(test.Time)
 			match := f(test.Account)
 			assert.Equal(t, test.match, match)
 		})
