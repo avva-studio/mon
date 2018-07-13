@@ -2,7 +2,10 @@ package filter_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/glynternet/go-accounting/accountingtest"
+	"github.com/glynternet/go-money/currency"
 	"github.com/glynternet/mon/pkg/filter"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/stretchr/testify/assert"
@@ -39,6 +42,46 @@ func TestID(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := filter.ID(test.id)
+			match := f(test.Account)
+			assert.Equal(t, test.match, match)
+		})
+	}
+}
+
+func TestCurrency(t *testing.T) {
+
+	for _, test := range []struct {
+		name string
+		storage.Account
+		code  currency.Code
+		match bool
+	}{
+		{
+			name:  "zero-values",
+			match: true,
+		},
+		{
+			name:    "nil code with valid account",
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "AUP"), time.Time{})},
+		},
+		{
+			name: "nil account with valid code",
+			code: accountingtest.NewCurrencyCode(t, "AUP"),
+		},
+		{
+			name:    "valid code and account with non-matching code",
+			code:    accountingtest.NewCurrencyCode(t, "BUP"),
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "AUP"), time.Time{})},
+		},
+		{
+			name:    "valid code and account with matching code",
+			code:    accountingtest.NewCurrencyCode(t, "BUP"),
+			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Time{})},
+			match:   true,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := filter.Currency(test.code)
 			match := f(test.Account)
 			assert.Equal(t, test.match, match)
 		})
