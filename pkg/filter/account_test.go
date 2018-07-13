@@ -1,13 +1,14 @@
-package filter
+package filter_test
 
 import (
 	"testing"
 
+	"github.com/glynternet/mon/pkg/filter"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/stretchr/testify/assert"
 )
 
-func stubFilter(result bool) AccountFilter {
+func stubFilter(result bool) filter.AccountFilter {
 	return func(_ storage.Account) bool {
 		return result
 	}
@@ -16,7 +17,7 @@ func stubFilter(result bool) AccountFilter {
 func TestAccountFilters_Or(t *testing.T) {
 	for _, test := range []struct {
 		name string
-		AccountFilters
+		filter.AccountFilters
 		storage.Account
 		expected bool
 	}{
@@ -26,27 +27,27 @@ func TestAccountFilters_Or(t *testing.T) {
 		{
 			name:     "single filter passing",
 			expected: true,
-			AccountFilters: AccountFilters{
+			AccountFilters: filter.AccountFilters{
 				stubFilter(true),
 			},
 		},
 		{
 			name: "single filter failing",
-			AccountFilters: AccountFilters{
+			AccountFilters: filter.AccountFilters{
 				stubFilter(false),
 			},
 		},
 		{
 			name:     "multiple filters passing",
 			expected: true,
-			AccountFilters: AccountFilters{
+			AccountFilters: filter.AccountFilters{
 				stubFilter(true),
 				stubFilter(true),
 			},
 		},
 		{
 			name: "multiple filters failing",
-			AccountFilters: AccountFilters{
+			AccountFilters: filter.AccountFilters{
 				stubFilter(false),
 				stubFilter(false),
 			},
@@ -54,7 +55,7 @@ func TestAccountFilters_Or(t *testing.T) {
 		{
 			name:     "multiple filters mixed",
 			expected: true,
-			AccountFilters: AccountFilters{
+			AccountFilters: filter.AccountFilters{
 				stubFilter(false),
 				stubFilter(false),
 				stubFilter(true),
