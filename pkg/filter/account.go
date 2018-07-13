@@ -12,10 +12,18 @@ import (
 type AccountFilter func(storage.Account) bool
 
 // Existed produces an AccountFilter that can be used to identify if an
-// Account existed at a given time
+// Account existed/exists/will-exist at a given time
 func Existed(t time.Time) AccountFilter {
 	return func(a storage.Account) bool {
 		return !a.Account.Opened().After(t)
+	}
+}
+
+// OpenAt produces an AccountFilter that will identify if a storage.Account
+// was/is/will-be open at a given time
+func OpenAt(t time.Time) AccountFilter {
+	return func(a storage.Account) bool {
+		return a.Account.OpenAt(t)
 	}
 }
 
@@ -32,14 +40,6 @@ func Currency(c currency.Code) AccountFilter {
 func ID(id uint) AccountFilter {
 	return func(a storage.Account) bool {
 		return a.ID == id
-	}
-}
-
-// OpenAt produces an AccountFilter that will identify if a storage.Account
-// was/is/will-be open at a given time
-func OpenAt(t time.Time) AccountFilter {
-	return func(a storage.Account) bool {
-		return a.Account.OpenAt(t)
 	}
 }
 
