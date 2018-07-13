@@ -49,14 +49,12 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		fs, err := prepareConditions()
+		cs, err := prepareConditions()
 		if err != nil {
 			return errors.Wrap(err, "preparing conditions")
 		}
 
-		for _, f := range fs {
-			*as = filter.Filter(*as, f)
-		}
+		*as = filter.AccountCondition(cs.And).Filter(*as)
 
 		if viper.GetBool(keyQuiet) {
 			for _, a := range *as {

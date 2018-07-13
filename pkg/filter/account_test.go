@@ -164,14 +164,14 @@ func TestAccountConditions_Or(t *testing.T) {
 		name string
 		filter.AccountConditions
 		storage.Account
-		expected bool
+		match bool
 	}{
 		{
 			name: "zero-values",
 		},
 		{
-			name:     "single condition matching",
-			expected: true,
+			name:  "single condition matching",
+			match: true,
 			AccountConditions: filter.AccountConditions{
 				stubAccountCondition(true),
 			},
@@ -183,8 +183,8 @@ func TestAccountConditions_Or(t *testing.T) {
 			},
 		},
 		{
-			name:     "multiple conditions matching",
-			expected: true,
+			name:  "multiple conditions matching",
+			match: true,
 			AccountConditions: filter.AccountConditions{
 				stubAccountCondition(true),
 				stubAccountCondition(true),
@@ -198,8 +198,8 @@ func TestAccountConditions_Or(t *testing.T) {
 			},
 		},
 		{
-			name:     "multiple conditions mixed-results",
-			expected: true,
+			name:  "multiple conditions mixed-results",
+			match: true,
 			AccountConditions: filter.AccountConditions{
 				stubAccountCondition(false),
 				stubAccountCondition(false),
@@ -209,8 +209,121 @@ func TestAccountConditions_Or(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			actual := test.AccountConditions.Or(test.Account)
-			assert.Equal(t, test.expected, actual)
+			match := test.AccountConditions.Or(test.Account)
+			assert.Equal(t, test.match, match)
+		})
+	}
+}
+
+func TestAccountConditions_And(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		filter.AccountConditions
+		storage.Account
+		match bool
+	}{
+		{
+			name:  "zero-values",
+			match: true,
+		},
+		{
+			name: "single match",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(true),
+			},
+			match: true,
+		},
+		{
+			name: "multiple match",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(true),
+				stubAccountCondition(true),
+			},
+			match: true,
+		},
+		{
+			name: "single non-match",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
+			},
+		},
+		{
+			name: "multiple non-match",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
+				stubAccountCondition(false),
+			},
+		},
+		{
+			name: "starting with non-match and mixed others",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
+				stubAccountCondition(true),
+				stubAccountCondition(false),
+			},
+		},
+		{
+			name: "starting with match and mixed others",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(true),
+				stubAccountCondition(false),
+				stubAccountCondition(true),
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			match := test.AccountConditions.And(test.Account)
+			assert.Equal(t, test.match, match)
+		})
+	}
+}
+func TestAccountCondition_Filter(t *testing.T) {
+	matchingID := uint(1)
+	nonmatchingID := uint(2)
+	c := filter.ID(matchingID)
+	for _, test := range []struct {
+		name string
+		in   storage.Accounts
+		out  storage.Accounts
+	}{
+		{
+			name: "zero-values",
+		},
+		{
+			name: "single matching account",
+			in:   storage.Accounts{{ID: matchingID}},
+			out:  storage.Accounts{{ID: matchingID}},
+		},
+		{
+			name: "single non-matching account",
+			in:   storage.Accounts{{ID: nonmatchingID}},
+		},
+		{
+			name: "single matching and single non-matching account",
+			in:   storage.Accounts{{ID: nonmatchingID}, {ID: matchingID}},
+			out:  storage.Accounts{{ID: matchingID}},
+		},
+		{
+			name: "multiple mixed matching and non-matching accounts",
+			in: storage.Accounts{
+				{ID: nonmatchingID},
+				{ID: nonmatchingID},
+				{ID: matchingID},
+				{ID: matchingID},
+				{ID: nonmatchingID},
+				{ID: matchingID},
+				{ID: nonmatchingID},
+			},
+			out: storage.Accounts{
+				{ID: matchingID},
+				{ID: matchingID},
+				{ID: matchingID},
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			out := c.Filter(test.in)
+			assert.Equal(t, test.out, out)
 		})
 	}
 }

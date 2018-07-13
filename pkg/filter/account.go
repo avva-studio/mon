@@ -11,6 +11,18 @@ import (
 // satisfies some certain condition.
 type AccountCondition func(storage.Account) bool
 
+// Filter returns a set of storage.Accounts that have been filtered down to the
+// ones that match the AccountCondition
+func (ac AccountCondition) Filter(as storage.Accounts) storage.Accounts {
+	var filtered []storage.Account
+	for _, a := range as {
+		if ac(a) {
+			filtered = append(filtered, a)
+		}
+	}
+	return storage.Accounts(filtered)
+}
+
 // Existed produces an AccountCondition that can be used to identify if an
 // Account existed/exists/will-exist at a given time.
 // Existed will identify that an Account existed if its open date matches or
@@ -57,4 +69,16 @@ func (acs AccountConditions) Or(a storage.Account) bool {
 		}
 	}
 	return false
+}
+
+// And identifies when an account satisfies every AccountCondition of an
+// AccountConditions.
+// When no AccountConditions are present, the storage.Account will always match
+func (acs AccountConditions) And(a storage.Account) bool {
+	for _, ac := range acs {
+		if !ac(a) {
+			return false
+		}
+	}
+	return true
 }
