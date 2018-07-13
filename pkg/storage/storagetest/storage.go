@@ -28,7 +28,7 @@ type Storage struct {
 func (s *Storage) Available() bool { return s.IsAvailable }
 
 // Close stubs the storage.Close method
-func (s *Storage) Close() error    { return s.Err }
+func (s *Storage) Close() error { return s.Err }
 
 // InsertAccount stubs the storage.InsertAccount method
 func (s *Storage) InsertAccount(account.Account) (*storage.Account, error) {
@@ -42,8 +42,9 @@ func (s *Storage) UpdateAccount(a *storage.Account, updates *account.Account) (*
 
 // SelectAccount stubs the storage.SelectAccount method
 func (s *Storage) SelectAccount(uint) (*storage.Account, error) { return s.Account, s.AccountErr }
+
 // SelectAccounts stubs the storage.SelectAccounts method
-func (s *Storage) SelectAccounts() (*storage.Accounts, error)   { return s.Accounts, s.Err }
+func (s *Storage) SelectAccounts() (*storage.Accounts, error) { return s.Accounts, s.Err }
 
 // DeleteAccount stubs the storage.DeleteAccount method
 func (s *Storage) DeleteAccount(uint) error { return s.AccountErr }

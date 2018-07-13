@@ -12,7 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO: redesign these so that they don't need to take a request? There could be multiple handler types either take a request or don't take a request
+// TODO: redesign these so that they don't need to take a request? There could
+// TODO: be multiple handler types either take a request or don't take a request
 func (env *environment) handlerSelectAccounts(_ *http.Request) (int, interface{}, error) {
 	as, err := env.storage.SelectAccounts()
 	if err != nil {
@@ -44,7 +45,8 @@ func (env *environment) muxAccountInsertHandlerFunc(r *http.Request) (int, inter
 	}
 
 	defer func() {
-		// TODO: this handler only needs to take a []byte which would mean we can handle closing the body elsewhere
+		// TODO: this handler only needs to take a []byte which would mean we
+		// TODO: can handle closing the body elsewhere
 		cErr := r.Body.Close()
 		if cErr != nil {
 			log.Print(errors.Wrap(err, "closing request body"))
@@ -98,8 +100,8 @@ func (env *environment) muxAccountUpdateHandlerFunc(r *http.Request) (int, inter
 	return env.handlerUpdateAccount(*o, *updates)
 }
 
-func (env *environment) handlerUpdateAccount(original storage.Account, updates account.Account) (int, interface{}, error) {
-	updated, err := env.storage.UpdateAccount(&original, &updates)
+func (env *environment) handlerUpdateAccount(a storage.Account, updates account.Account) (int, interface{}, error) {
+	updated, err := env.storage.UpdateAccount(&a, &updates)
 	if err != nil {
 		return http.StatusBadRequest, nil, err
 	}

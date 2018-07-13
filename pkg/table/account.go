@@ -13,6 +13,7 @@ import (
 
 const dateFormat = `02-01-2006`
 
+// Accounts writes a table for a set of Accounts to a given io.Writer
 func Accounts(as storage.Accounts, w io.Writer) {
 	t := newDefaultTable(w)
 	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency"})
@@ -29,6 +30,7 @@ func Accounts(as storage.Accounts, w io.Writer) {
 	t.Render() // Send output
 }
 
+// AccountsWithBalance writes a table for a set of Accounts with corresponding Balances to a given io.Writer
 func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
 	t := newDefaultTable(w)
 	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency", "Balance Date", "Balance Amount"})
@@ -47,6 +49,23 @@ func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
 	t.Render() // Send output
 }
 
+// Balances writes a table for a given set of storage.Balances to a given io.Writer
+func Balances(bs storage.Balances, w io.Writer) {
+	t := newDefaultTable(w)
+	t.SetHeader([]string{"ID", "Amount", "Date"})
+
+	for _, b := range bs {
+		t.Append([]string{
+			strconv.FormatUint(uint64(b.ID), 10),
+			strconv.Itoa(b.Amount),
+			b.Date.Format(dateFormat),
+		})
+	}
+
+	t.Render()
+}
+
+// Basic writes grid of string data to a given io.Writer
 func Basic(data [][]string, w io.Writer) error {
 	if len(data) < 2 {
 		return fmt.Errorf("requires at least 2 rows of data")
@@ -71,19 +90,4 @@ func closedString(t time.NullTime) string {
 		return ""
 	}
 	return t.Time.Format(dateFormat)
-}
-
-func Balances(bs storage.Balances, w io.Writer) {
-	t := newDefaultTable(w)
-	t.SetHeader([]string{"ID", "Amount", "Date"})
-
-	for _, b := range bs {
-		t.Append([]string{
-			strconv.FormatUint(uint64(b.ID), 10),
-			strconv.Itoa(b.Amount),
-			b.Date.Format(dateFormat),
-		})
-	}
-
-	t.Render()
 }
