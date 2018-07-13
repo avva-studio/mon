@@ -49,9 +49,9 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		fs, err := prepareFilters()
+		fs, err := prepareConditions()
 		if err != nil {
-			return errors.Wrap(err, "preparing filters")
+			return errors.Wrap(err, "preparing conditions")
 		}
 
 		for _, f := range fs {
@@ -110,8 +110,8 @@ var accountsCmd = &cobra.Command{
 	},
 }
 
-func prepareFilters() ([]filter.AccountFilter, error) {
-	fs := []filter.AccountFilter{
+func prepareConditions() ([]filter.AccountCondition, error) {
+	fs := []filter.AccountCondition{
 		filter.Existed(*atDate.Time),
 	}
 
@@ -120,7 +120,7 @@ func prepareFilters() ([]filter.AccountFilter, error) {
 	}
 
 	if len(ids) > 0 {
-		var idf filter.AccountFilters
+		var idf filter.AccountConditions
 		for _, id := range ids {
 			idf = append(idf, filter.ID(id))
 		}
@@ -132,7 +132,7 @@ func prepareFilters() ([]filter.AccountFilter, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "converting currency string to currency codes")
 		}
-		var cf filter.AccountFilters
+		var cf filter.AccountConditions
 		for _, c := range cs {
 			cf = append(cf, filter.Currency(c))
 		}

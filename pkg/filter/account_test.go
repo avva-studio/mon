@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func stubFilter(result bool) filter.AccountFilter {
+func stubAccountCondition(match bool) filter.AccountCondition {
 	return func(_ storage.Account) bool {
-		return result
+		return match
 	}
 }
 
@@ -159,10 +159,10 @@ func TestOpenAt(t *testing.T) {
 	}
 }
 
-func TestAccountFilters_Or(t *testing.T) {
+func TestAccountConditions_Or(t *testing.T) {
 	for _, test := range []struct {
 		name string
-		filter.AccountFilters
+		filter.AccountConditions
 		storage.Account
 		expected bool
 	}{
@@ -170,46 +170,46 @@ func TestAccountFilters_Or(t *testing.T) {
 			name: "zero-values",
 		},
 		{
-			name:     "single filter passing",
+			name:     "single condition matching",
 			expected: true,
-			AccountFilters: filter.AccountFilters{
-				stubFilter(true),
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(true),
 			},
 		},
 		{
-			name: "single filter failing",
-			AccountFilters: filter.AccountFilters{
-				stubFilter(false),
+			name: "single condition non-matching",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
 			},
 		},
 		{
-			name:     "multiple filters passing",
+			name:     "multiple conditions matching",
 			expected: true,
-			AccountFilters: filter.AccountFilters{
-				stubFilter(true),
-				stubFilter(true),
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(true),
+				stubAccountCondition(true),
 			},
 		},
 		{
-			name: "multiple filters failing",
-			AccountFilters: filter.AccountFilters{
-				stubFilter(false),
-				stubFilter(false),
+			name: "multiple conditions non-matching",
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
+				stubAccountCondition(false),
 			},
 		},
 		{
-			name:     "multiple filters mixed",
+			name:     "multiple conditions mixed-results",
 			expected: true,
-			AccountFilters: filter.AccountFilters{
-				stubFilter(false),
-				stubFilter(false),
-				stubFilter(true),
-				stubFilter(false),
+			AccountConditions: filter.AccountConditions{
+				stubAccountCondition(false),
+				stubAccountCondition(false),
+				stubAccountCondition(true),
+				stubAccountCondition(false),
 			},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			actual := test.AccountFilters.Or(test.Account)
+			actual := test.AccountConditions.Or(test.Account)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
