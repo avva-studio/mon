@@ -110,7 +110,7 @@ var accountsCmd = &cobra.Command{
 	},
 }
 
-func prepareConditions() ([]filter.AccountCondition, error) {
+func prepareConditions() (filter.AccountConditions, error) {
 	fs := []filter.AccountCondition{
 		filter.Existed(*atDate.Time),
 	}

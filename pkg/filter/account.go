@@ -50,22 +50,11 @@ type AccountConditions []AccountCondition
 
 // Or identifies when an account satisfies one of more constraints of an
 // AccountConditions
-func (afs AccountConditions) Or(a storage.Account) bool {
-	for _, af := range afs {
-		if af(a) {
+func (acs AccountConditions) Or(a storage.Account) bool {
+	for _, ac := range acs {
+		if ac(a) {
 			return true
 		}
 	}
 	return false
-}
-
-// Filter returns a set of storage.Accounts that match the given AccountCondition
-func Filter(as storage.Accounts, f AccountCondition) storage.Accounts {
-	var filtered []storage.Account
-	for _, a := range as {
-		if f(a) {
-			filtered = append(filtered, a)
-		}
-	}
-	return storage.Accounts(filtered)
 }
