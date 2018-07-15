@@ -49,12 +49,12 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		cs, err := prepareConditions()
+		ac, err := prepareCondition()
 		if err != nil {
 			return errors.Wrap(err, "preparing conditions")
 		}
 
-		*as = filter.AccountCondition(cs.And).Filter(*as)
+		*as = ac.Filter(*as)
 
 		if viper.GetBool(keyQuiet) {
 			for _, a := range *as {
@@ -108,49 +108,49 @@ var accountsCmd = &cobra.Command{
 	},
 }
 
-func prepareConditions() (filter.AccountConditions, error) {
-	fs := []filter.AccountCondition{
+func prepareCondition() (filter.AccountCondition, error) {
+	cs := filter.AccountConditions{
 		filter.Existed(*atDate.Time),
 	}
 
 	if viper.GetBool(keyOpen) {
-		fs = append(fs, filter.OpenAt(*atDate.Time))
+		cs = append(cs, filter.OpenAt(*atDate.Time))
 	}
 
 	if len(ids) > 0 {
-		var idf filter.AccountConditions
-		for _, id := range ids {
-			idf = append(idf, filter.ID(id))
-		}
-		fs = append(fs, idf.Or)
+		cs = append(cs, idsCondition(ids))
 	}
 
 	if len(currencies) > 0 {
-		cs, err := currencyStringsToCodes(currencies...)
+		ccs, err := currenciesCondition(currencies)
 		if err != nil {
-			return nil, errors.Wrap(err, "converting currency string to currency codes")
+			return nil, errors.Wrap(err, "creating currencies condition")
 		}
-		var cf filter.AccountConditions
-		for _, c := range cs {
-			cf = append(cf, filter.Currency(c))
-		}
-		fs = append(fs, cf.Or)
+		cs = append(cs, ccs)
 	}
 
-	return fs, nil
+	// Account must meet all AccountConditions
+	return cs.And, nil
 }
 
-func init() {
-	rootCmd.AddCommand(accountsCmd)
-	accountsCmd.Flags().BoolP(keyOpen, "", false, "show only open accounts")
-	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
-	accountsCmd.Flags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
-	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
-	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
-	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
-	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
+func idsCondition(ids []uint) filter.AccountCondition {
+	var cs filter.AccountConditions
+	for _, id := range ids {
+		cs = append(cs, filter.ID(id))
 	}
+	return cs.Or
+}
+
+func currenciesCondition(cs []string) (filter.AccountCondition, error) {
+	ccs, err := currencyStringsToCodes(cs...)
+	if err != nil {
+		return nil, errors.Wrap(err, "converting currency string to currency codes")
+	}
+	var acs filter.AccountConditions
+	for _, c := range ccs {
+		acs = append(acs, filter.Currency(c))
+	}
+	return acs.Or, nil
 }
 
 // TODO: this should be handled as a flags type perhaps?
@@ -164,4 +164,17 @@ func currencyStringsToCodes(css ...string) ([]currency.Code, error) {
 		codes = append(codes, *c)
 	}
 	return codes, nil
+}
+
+func init() {
+	rootCmd.AddCommand(accountsCmd)
+	accountsCmd.Flags().Bool(keyOpen, false, "show only open accounts")
+	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
+	accountsCmd.Flags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
+	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
+	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
+	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
+	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
 }
