@@ -14,7 +14,7 @@ type AccountCondition func(storage.Account) bool
 // Filter returns a set of storage.Accounts that have been filtered down to the
 // ones that match the AccountCondition
 func (ac AccountCondition) Filter(as storage.Accounts) storage.Accounts {
-	var filtered []storage.Account
+	var filtered storage.Accounts
 	for _, a := range as {
 		if ac(a) {
 			filtered = append(filtered, a)

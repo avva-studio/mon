@@ -50,7 +50,6 @@ func TestID(t *testing.T) {
 }
 
 func TestCurrency(t *testing.T) {
-
 	for _, test := range []struct {
 		name string
 		storage.Account
@@ -63,7 +62,7 @@ func TestCurrency(t *testing.T) {
 		},
 		{
 			name:    "nil code with valid account",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "AUP"), time.Time{})},
+			Account: newOpenAccount(t, "test", "AUP", 0),
 		},
 		{
 			name: "nil account with valid code",
@@ -72,12 +71,12 @@ func TestCurrency(t *testing.T) {
 		{
 			name:    "valid code and account with non-matching code",
 			code:    accountingtest.NewCurrencyCode(t, "BUP"),
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "AUP"), time.Time{})},
+			Account: newOpenAccount(t, "test", "AUP", 0),
 		},
 		{
 			name:    "valid code and account with matching code",
 			code:    accountingtest.NewCurrencyCode(t, "BUP"),
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Time{})},
+			Account: newOpenAccount(t, "test", "BUP", 0),
 			match:   true,
 		},
 	} {
@@ -102,20 +101,20 @@ func TestExisted(t *testing.T) {
 		},
 		{
 			name:    "time before open",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
-			Time:    time.Date(1999, 0, 0, 0, 0, 0, 0, time.UTC),
+			Account: newOpenAccount(t, "test", "BUP", 2000),
+			Time:    newYearDate(1999),
 			match:   false,
 		},
 		{
 			name:    "time equal open",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
-			Time:    time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC),
+			Account: newOpenAccount(t, "test", "BUP", 2000),
+			Time:    newYearDate(2000),
 			match:   true,
 		},
 		{
 			name:    "time after open",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC))},
-			Time:    time.Date(2001, 0, 0, 0, 0, 0, 0, time.UTC),
+			Account: newOpenAccount(t, "test", "BUP", 2000),
+			Time:    newYearDate(2001),
 			match:   true,
 		},
 	} {
@@ -140,15 +139,21 @@ func TestOpenAt(t *testing.T) {
 		},
 		{
 			name:    "open account",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(1999, 0, 0, 0, 0, 0, 0, time.UTC))},
-			Time:    time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC),
+			Account: newOpenAccount(t, "test", "BUP", 1999),
+			Time:    newYearDate(2000),
 			match:   true,
 		},
 		{
-			name:    "closed account",
-			Account: storage.Account{Account: *accountingtest.NewAccount(t, "test", accountingtest.NewCurrencyCode(t, "BUP"), time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC), account.CloseTime(time.Date(2001, 0, 0, 0, 0, 0, 0, time.UTC)))},
-			Time:    time.Date(2002, 0, 0, 0, 0, 0, 0, time.UTC),
-			match:   false,
+			name: "closed account",
+			Account: storage.Account{Account: *accountingtest.NewAccount(
+				t,
+				"test",
+				accountingtest.NewCurrencyCode(t, "BUP"),
+				newYearDate(2000),
+				account.CloseTime(newYearDate(2001)),
+			)},
+			Time:  newYearDate(2002),
+			match: false,
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -325,5 +330,23 @@ func TestAccountCondition_Filter(t *testing.T) {
 			out := c.Filter(test.in)
 			assert.Equal(t, test.out, out)
 		})
+	}
+}
+
+// newYearDate creates a UTC time with all values set to 0 except for the given year
+func newYearDate(year int) time.Time {
+	return time.Date(year, 0, 0, 0, 0, 0, 0, time.UTC)
+}
+
+// newOpenAccount creates a storage.Account with:
+// - the open date set to the given year
+// - the currency generated from the given currency string
+// - the name set to the given name
+func newOpenAccount(t *testing.T, name string, currency string, year int) storage.Account {
+	return storage.Account{Account: *accountingtest.NewAccount(
+		t,
+		name,
+		accountingtest.NewCurrencyCode(t, currency),
+		newYearDate(year)),
 	}
 }
