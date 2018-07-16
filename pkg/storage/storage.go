@@ -20,5 +20,3 @@ type Storage interface {
 	//UpdateBalance(a Account, b *Balance, us balance.Balance) error
 	//DeleteBalance(a Account, b *Balance) error
 }
-
-//type AccountQuery func (Storage, ...AccountFilter) (*Account, error)

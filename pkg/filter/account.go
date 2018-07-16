@@ -7,59 +7,78 @@ import (
 	"github.com/glynternet/mon/pkg/storage"
 )
 
-// AccountFilter is a function that will return true if a given storage.Account
-// satisfies some certain criteria.
-type AccountFilter func(storage.Account) bool
+// AccountCondition is a function that will return true if a given storage.Account
+// satisfies some certain condition.
+type AccountCondition func(storage.Account) bool
 
-// Existed produces an AccountFilter that can be used to identify if an
-// Account existed at a given time
-func Existed(t time.Time) AccountFilter {
+// Filter returns a set of storage.Accounts that have been filtered down to the
+// ones that match the AccountCondition
+func (ac AccountCondition) Filter(as storage.Accounts) storage.Accounts {
+	var filtered storage.Accounts
+	for _, a := range as {
+		if ac(a) {
+			filtered = append(filtered, a)
+		}
+	}
+	return storage.Accounts(filtered)
+}
+
+// Existed produces an AccountCondition that can be used to identify if an
+// Account existed/exists/will-exist at a given time.
+// Existed will identify that an Account existed if its open date matches or
+// was before the given time
+func Existed(t time.Time) AccountCondition {
 	return func(a storage.Account) bool {
 		return !a.Account.Opened().After(t)
 	}
 }
 
-// Currencies produces an AccountFilter that will identify a storage.Account if
-// it is within a given set of currency codes
-func Currencies(cs ...currency.Code) AccountFilter {
-	return func(a storage.Account) bool {
-		for _, c := range cs {
-			if a.Account.CurrencyCode() == c {
-				return true
-			}
-		}
-		return false
-	}
-}
-
-// IDs produces an AccountFilter that will identify a storage.Account if it
-// matches on of a given set of IDs
-func IDs(ids []uint) AccountFilter {
-	return func(a storage.Account) bool {
-		for _, id := range ids {
-			if a.ID == id {
-				return true
-			}
-		}
-		return false
-	}
-}
-
-// OpenAt produces an AccountFilter that will identify if a storage.Account
+// OpenAt produces an AccountCondition that will identify if a storage.Account
 // was/is/will-be open at a given time
-func OpenAt(t time.Time) AccountFilter {
+func OpenAt(t time.Time) AccountCondition {
 	return func(a storage.Account) bool {
 		return a.Account.OpenAt(t)
 	}
 }
 
-// Filter returns a set of storage.Accounts that match the given AccountFilter
-func Filter(as storage.Accounts, f AccountFilter) storage.Accounts {
-	var filtered []storage.Account
-	for _, a := range as {
-		if f(a) {
-			filtered = append(filtered, a)
+// Currency produces an AccountCondition that will identify a storage.Account if
+// it has a given currency.Code
+func Currency(c currency.Code) AccountCondition {
+	return func(a storage.Account) bool {
+		return a.Account.CurrencyCode() == c
+	}
+}
+
+// ID produces an AccountCondition that will identify a storage.Account if it
+// matches an ID
+func ID(id uint) AccountCondition {
+	return func(a storage.Account) bool {
+		return a.ID == id
+	}
+}
+
+// AccountConditions is a set of AccountCondition
+type AccountConditions []AccountCondition
+
+// Or identifies when an account satisfies one of more constraints of an
+// AccountConditions
+func (acs AccountConditions) Or(a storage.Account) bool {
+	for _, ac := range acs {
+		if ac(a) {
+			return true
 		}
 	}
-	return storage.Accounts(filtered)
+	return false
+}
+
+// And identifies when an account satisfies every AccountCondition of an
+// AccountConditions.
+// When no AccountConditions are present, the storage.Account will always match
+func (acs AccountConditions) And(a storage.Account) bool {
+	for _, ac := range acs {
+		if !ac(a) {
+			return false
+		}
+	}
+	return true
 }
