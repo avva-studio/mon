@@ -12,7 +12,6 @@ import (
 	"github.com/glynternet/mon/client"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/filter"
-	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/table"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -64,8 +63,7 @@ var accountsCmd = &cobra.Command{
 		}
 
 		if viper.GetBool(keyBalances) {
-			// TODO: Should these be kept in order of ID here?
-			abs := make(map[storage.Account]balance.Balance)
+			var abs []table.AccountBalance
 			cbs := make(map[currency.Code]balance.Balances)
 			for _, a := range *as {
 				bs, err := c.SelectAccountBalances(a)
@@ -85,7 +83,10 @@ var accountsCmd = &cobra.Command{
 					log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", *atDate.Time, a))
 					continue
 				}
-				abs[a] = current
+				abs = append(abs, table.AccountBalance{
+					Account: a,
+					Balance: current,
+				})
 
 				crncy := a.Account.CurrencyCode()
 				if _, ok := cbs[crncy]; !ok {
@@ -93,6 +94,7 @@ var accountsCmd = &cobra.Command{
 				}
 				cbs[crncy] = append(cbs[crncy], current)
 			}
+
 			table.AccountsWithBalance(abs, os.Stdout)
 			if len(cbs) == 0 {
 				return nil

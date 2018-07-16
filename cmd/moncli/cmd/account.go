@@ -129,9 +129,10 @@ var accountOpenCmd = &cobra.Command{
 			return errors.Wrap(err, "inserting balance")
 		}
 
-		table.AccountsWithBalance(map[storage.Account]balance.Balance{
-			*i: b.Balance,
-		}, os.Stdout)
+		table.AccountsWithBalance([]table.AccountBalance{{
+			Account: *i,
+			Balance: b.Balance,
+		}}, os.Stdout)
 		return nil
 	},
 }
@@ -209,9 +210,10 @@ var accountCloseCmd = &cobra.Command{
 			return errors.Wrap(err, "updating account")
 		}
 
-		table.AccountsWithBalance(map[storage.Account]balance.Balance{
-			*u: b.Balance,
-		}, os.Stdout)
+		table.AccountsWithBalance([]table.AccountBalance{{
+			Account: *u,
+			Balance: b.Balance,
+		}}, os.Stdout)
 		return nil
 	},
 }

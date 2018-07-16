@@ -30,20 +30,30 @@ func Accounts(as storage.Accounts, w io.Writer) {
 	t.Render() // Send output
 }
 
-// AccountsWithBalance writes a table for a set of Accounts with corresponding Balances to a given io.Writer
-func AccountsWithBalance(abs map[storage.Account]balance.Balance, w io.Writer) {
-	t := newDefaultTable(w)
-	t.SetHeader([]string{"ID", "Name", "Opened", "Closed", "Currency", "Balance Date", "Balance Amount"})
+// AccountBalance represents the state of a storage.Account at a given moment,
+// the moment in time being determined by the time of the balance.Balance.
+type AccountBalance struct {
+	storage.Account
+	balance.Balance
+}
 
-	for a, b := range abs {
+// AccountsWithBalance writes a table for a set of Accounts with corresponding
+// Balances to a given io.Writer
+func AccountsWithBalance(abs []AccountBalance, w io.Writer) {
+	t := newDefaultTable(w)
+	t.SetHeader([]string{
+		"ID", "Name", "Opened", "Closed", "Currency", "Balance Date", "Balance Amount",
+	})
+
+	for _, ab := range abs {
 		t.Append([]string{
-			strconv.FormatUint(uint64(a.ID), 10),
-			a.Account.Name(),
-			a.Account.Opened().Format(dateFormat),
-			closedString(a.Account.Closed()),
-			a.Account.CurrencyCode().String(),
-			b.Date.Format(dateFormat),
-			strconv.Itoa(b.Amount),
+			strconv.FormatUint(uint64(ab.Account.ID), 10),
+			ab.Account.Account.Name(),
+			ab.Account.Account.Opened().Format(dateFormat),
+			closedString(ab.Account.Account.Closed()),
+			ab.Account.Account.CurrencyCode().String(),
+			ab.Date.Format(dateFormat),
+			strconv.Itoa(ab.Amount),
 		})
 	}
 	t.Render() // Send output
