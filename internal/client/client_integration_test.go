@@ -9,9 +9,9 @@ import (
 	"github.com/glynternet/go-accounting/accountingtest"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/common"
+	"github.com/glynternet/mon/internal/router"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/storage/storagetest"
-	"github.com/glynternet/mon/router"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )

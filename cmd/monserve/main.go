@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/glynternet/mon/internal/router"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/storage/postgres"
-	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

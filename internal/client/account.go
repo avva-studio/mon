@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/glynternet/go-accounting/account"
+	"github.com/glynternet/mon/internal/router"
 	"github.com/glynternet/mon/pkg/storage"
-	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 )
 

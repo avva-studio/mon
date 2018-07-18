@@ -9,7 +9,7 @@ import (
 
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
-	"github.com/glynternet/mon/client"
+	"github.com/glynternet/mon/internal/client"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/filter"
 	"github.com/glynternet/mon/pkg/storage"

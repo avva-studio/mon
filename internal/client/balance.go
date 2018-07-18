@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/glynternet/go-accounting/balance"
+	"github.com/glynternet/mon/internal/router"
 	"github.com/glynternet/mon/pkg/storage"
-	"github.com/glynternet/mon/router"
 	"github.com/pkg/errors"
 )
 

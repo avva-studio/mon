@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/glynternet/mon/client"
+	"github.com/glynternet/mon/internal/client"
 	"github.com/glynternet/mon/pkg/storage/postgres"
 	"github.com/glynternet/mon/pkg/storage/storagetest"
 	"github.com/spf13/viper"
