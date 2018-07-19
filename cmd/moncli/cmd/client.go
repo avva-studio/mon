@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/glynternet/mon/client"
+	"github.com/glynternet/mon/internal/client"
 	"github.com/spf13/viper"
 )
 
