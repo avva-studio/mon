@@ -14,7 +14,7 @@ all: build install clean
 build: monserve moncli
 
 install:
-	cp ./bin/* $(GOPATH)/bin/
+	cp -v ./bin/* $(GOPATH)/bin/
 
 clean:
 	rm ./bin/*
