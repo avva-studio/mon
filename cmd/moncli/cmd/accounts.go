@@ -71,52 +71,56 @@ var accountsCmd = &cobra.Command{
 			return nil
 		}
 
-		if viper.GetBool(keyBalances) {
-			var abs []accountbalance.AccountBalance
-			cbs := make(map[currency.Code]balance.Balances)
-			for _, a := range *as {
-				bs, err := c.SelectAccountBalances(a)
-				if err != nil {
-					return errors.Wrapf(err, "selecting balances for account: %+v", a)
-				}
-				bbs := bs.InnerBalances()
-				if len(*bs) == 0 {
-					log.Printf("no balances for account:%+v", a)
-					continue
-				}
-				current, err := bbs.AtTime(*atDate.Time)
-				if err != nil {
-					log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", *atDate.Time, a))
-					continue
-				}
-				abs = append(abs, accountbalance.AccountBalance{
-					Account: a,
-					Balance: current,
-				})
-
-				crncy := a.Account.CurrencyCode()
-				if _, ok := cbs[crncy]; !ok {
-					cbs[crncy] = balance.Balances{}
-				}
-				cbs[crncy] = append(cbs[crncy], current)
-			}
-
-			if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
-				s(abs)
-			}
-
-			table.AccountsWithBalance(abs, os.Stdout)
-			if len(cbs) == 0 {
-				return nil
-			}
-			totals := [][]string{{"Currency", "Amount"}}
-			for crncy, bs := range cbs {
-				totals = append(totals, []string{crncy.String(), strconv.Itoa(bs.Sum())})
-			}
-			return errors.Wrap(table.Basic(totals, os.Stdout), "printing basic table for totals")
+		if !viper.GetBool(keyBalances) {
+			table.Accounts(*as, os.Stdout)
+			return nil
 		}
-		table.Accounts(*as, os.Stdout)
-		return nil
+
+		var abs []accountbalance.AccountBalance
+		for _, a := range *as {
+			bs, err := c.SelectAccountBalances(a)
+			if err != nil {
+				return errors.Wrapf(err, "selecting balances for account: %+v", a)
+			}
+			bbs := bs.InnerBalances()
+			if len(*bs) == 0 {
+				log.Printf("no balances for account:%+v", a)
+				continue
+			}
+			current, err := bbs.AtTime(*atDate.Time)
+			if err != nil {
+				log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", *atDate.Time, a))
+				continue
+			}
+			abs = append(abs, accountbalance.AccountBalance{
+				Account: a,
+				Balance: current,
+			})
+		}
+
+		if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
+			s(abs)
+		}
+
+		cbs := make(map[currency.Code]balance.Balances)
+		for _, ab := range abs {
+			crncy := ab.Account.Account.CurrencyCode()
+			if _, ok := cbs[crncy]; !ok {
+				cbs[crncy] = balance.Balances{}
+			}
+			cbs[crncy] = append(cbs[crncy], ab.Balance)
+		}
+
+		table.AccountsWithBalance(abs, os.Stdout)
+		if len(cbs) == 0 {
+			return nil
+		}
+
+		totals := [][]string{{"Currency", "Amount"}}
+		for crncy, bs := range cbs {
+			totals = append(totals, []string{crncy.String(), strconv.Itoa(bs.Sum())})
+		}
+		return errors.Wrap(table.Basic(totals, os.Stdout), "printing basic table for totals")
 	},
 }
 
