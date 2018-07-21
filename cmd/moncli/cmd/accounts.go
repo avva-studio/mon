@@ -48,30 +48,19 @@ var accountsCmd = &cobra.Command{
 		}
 
 		c := client.Client(viper.GetString(keyServerHost))
-		as, err := c.SelectAccounts()
+		as, err := accounts(c)
 		if err != nil {
-			return errors.Wrap(err, "selecting accounts")
-		}
-
-		ac, err := prepareAccountCondition()
-		if err != nil {
-			return errors.Wrap(err, "preparing conditions")
-		}
-
-		*as = ac.Filter(*as)
-
-		if s, ok := sort.AccountSorts()[sortBy.String()]; ok {
-			s(*as)
+			return errors.Wrap(err, "getting accounts")
 		}
 
 		if viper.GetBool(keyQuiet) {
-			for _, a := range *as {
+			for _, a := range as {
 				fmt.Println(a.ID)
 			}
 			return nil
 		}
 
-		table.Accounts(*as, os.Stdout)
+		table.Accounts(as, os.Stdout)
 		return nil
 	},
 }
@@ -86,23 +75,12 @@ var accountsBalancesCmd = &cobra.Command{
 		}
 
 		c := client.Client(viper.GetString(keyServerHost))
-		as, err := c.SelectAccounts()
+		as, err := accounts(c)
 		if err != nil {
-			return errors.Wrap(err, "selecting accounts")
+			return errors.Wrap(err, "getting accounts")
 		}
 
-		ac, err := prepareAccountCondition()
-		if err != nil {
-			return errors.Wrap(err, "preparing conditions")
-		}
-
-		*as = ac.Filter(*as)
-
-		if s, ok := sort.AccountSorts()[sortBy.String()]; ok {
-			s(*as)
-		}
-
-		abs, err := accountsBalances(c, *as, *atDate.Time)
+		abs, err := accountsBalances(c, as, *atDate.Time)
 		if err != nil {
 			return errors.Wrap(err, "getting balances for all accounts")
 		}
@@ -131,6 +109,26 @@ var accountsBalancesCmd = &cobra.Command{
 		}
 		return errors.Wrap(table.Basic(totals, os.Stdout), "printing basic table for totals")
 	},
+}
+
+func accounts(store storage.Storage) (storage.Accounts, error) {
+	as, err := store.SelectAccounts()
+	if err != nil {
+		return nil, errors.Wrap(err, "selecting accounts")
+	}
+
+	ac, err := prepareAccountCondition()
+	if err != nil {
+		return nil, errors.Wrap(err, "preparing conditions")
+	}
+
+	*as = ac.Filter(*as)
+
+	if s, ok := sort.AccountSorts()[sortBy.String()]; ok {
+		s(*as)
+	}
+
+	return *as, nil
 }
 
 func accountsBalances(store storage.Storage, as storage.Accounts, at time.Time) ([]accountbalance.AccountBalance, error) {
