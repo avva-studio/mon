@@ -228,18 +228,25 @@ func init() {
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.PersistentFlags().Var(atDate, keyAtDate, "show balances at a certain date")
 	accountsCmd.PersistentFlags().Var(sortBy, keySortBy, fmt.Sprintf("sort by one of %s", strings.Join(sort.AllKeys(), ",")))
-	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
-	}
-	if err := viper.BindPFlags(accountsCmd.PersistentFlags()); err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
-	}
 
 	accountsCmd.AddCommand(accountsBalancesCmd)
-	if err := viper.BindPFlags(accountsBalancesCmd.Flags()); err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
+
+	for _, cc := range []*cobra.Command{
+		accountsCmd, accountsBalancesCmd,
+	} {
+		err := bindAllFlags(cc)
+		if err != nil {
+			log.Fatal(errors.Wrapf(err, "binding command:[%s] flags", cc.Use))
+		}
 	}
-	if err := viper.BindPFlags(accountsBalancesCmd.PersistentFlags()); err != nil {
-		log.Fatal(errors.Wrap(err, "binding pflags"))
+}
+
+func bindAllFlags(c *cobra.Command) error {
+	if err := viper.BindPFlags(c.Flags()); err != nil {
+		return errors.Wrapf(err, "binding local pflags")
 	}
+	if err := viper.BindPFlags(c.PersistentFlags()); err != nil {
+		return errors.Wrapf(err, "binding persistent pflags")
+	}
+	return nil
 }
