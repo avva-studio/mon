@@ -5,12 +5,14 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
 	"github.com/glynternet/mon/internal/accountbalance"
 	"github.com/glynternet/mon/internal/client"
+	"github.com/glynternet/mon/internal/sort"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/filter"
 	"github.com/glynternet/mon/pkg/table"
@@ -26,6 +28,7 @@ const (
 	keyQuiet      = "quiet"
 	keyBalances   = "balances"
 	keyAtDate     = "at-date"
+	keySortBy     = "sort-by"
 )
 
 var (
@@ -43,6 +46,12 @@ var accountsCmd = &cobra.Command{
 			atDate.Time = &now
 		}
 
+		sortBy := viper.GetString(keySortBy)
+		err := verifySort(sortBy)
+		if err != nil {
+			return errors.Wrap(err, "verifying sort key")
+		}
+
 		c := client.Client(viper.GetString(keyServerHost))
 		as, err := c.SelectAccounts()
 		if err != nil {
@@ -55,6 +64,10 @@ var accountsCmd = &cobra.Command{
 		}
 
 		*as = ac.Filter(*as)
+
+		if s, ok := sort.AccountSorts()[sortBy]; ok {
+			s(*as)
+		}
 
 		if viper.GetBool(keyQuiet) {
 			for _, a := range *as {
@@ -94,6 +107,10 @@ var accountsCmd = &cobra.Command{
 					cbs[crncy] = balance.Balances{}
 				}
 				cbs[crncy] = append(cbs[crncy], current)
+			}
+
+			if s, ok := sort.AccountbalanceSorts()[sortBy]; ok {
+				s(abs)
 			}
 
 			table.AccountsWithBalance(abs, os.Stdout)
@@ -177,7 +194,15 @@ func init() {
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
 	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
+	accountsCmd.Flags().String(keySortBy, "", fmt.Sprintf("sort by one of %s", strings.Join(sort.AllSortKeys(), ",")))
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
+}
+
+func verifySort(key string) error {
+	if sort.AllSortKeys().Contains(key) {
+		return nil
+	}
+	return fmt.Errorf("sort key %s is not supported", key)
 }

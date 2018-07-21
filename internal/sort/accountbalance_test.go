@@ -1,4 +1,4 @@
-package sort_test
+package sort
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-accounting/common"
 	"github.com/glynternet/mon/internal/accountbalance"
-	"github.com/glynternet/mon/pkg/sort"
+	"github.com/glynternet/mon/internal/sort/sort"
 	"github.com/stretchr/testify/assert"
 )
 
