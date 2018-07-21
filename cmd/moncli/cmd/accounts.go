@@ -79,13 +79,10 @@ var accountsCmd = &cobra.Command{
 				if err != nil {
 					return errors.Wrapf(err, "selecting balances for account: %+v", a)
 				}
+				bbs := bs.InnerBalances()
 				if len(*bs) == 0 {
 					log.Printf("no balances for account:%+v", a)
 					continue
-				}
-				var bbs balance.Balances
-				for _, b := range *bs {
-					bbs = append(bbs, b.Balance)
 				}
 				current, err := bbs.AtTime(*atDate.Time)
 				if err != nil {
