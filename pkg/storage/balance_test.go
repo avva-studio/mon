@@ -58,3 +58,46 @@ func TestBalance_JSONLoop(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, b, actual)
 }
+
+func TestBalances_InnerBalances(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		in   Balances
+		out  balance.Balances
+	}{
+		{
+			name: "zero-values",
+		},
+		{
+			name: "single balance",
+			in:   Balances{{}},
+			out:  balance.Balances{{}},
+		},
+		{
+			name: "multiple balance",
+			in: Balances{
+				{
+					Balance: balance.Balance{
+						Date: time.Date(2, 2, 2, 2, 2, 2, 2, time.UTC)},
+				},
+				{
+					Balance: balance.Balance{
+						Date: time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC)},
+				},
+			},
+			out: balance.Balances{
+				balance.Balance{
+					Date: time.Date(2, 2, 2, 2, 2, 2, 2, time.UTC),
+				},
+				balance.Balance{
+					Date: time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC),
+				},
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			out := test.in.InnerBalances()
+			assert.Equal(t, test.out, out)
+		})
+	}
+}

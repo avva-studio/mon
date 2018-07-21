@@ -20,3 +20,12 @@ func (b Balance) Equal(ob Balance) bool {
 
 // Balances holds multiple Balance items
 type Balances []Balance
+
+// InnerBalances returns the balance.Balances contained within a set of Balances
+func (bs Balances) InnerBalances() balance.Balances {
+	var bbs balance.Balances
+	for _, b := range bs {
+		bbs = append(bbs, b.Balance)
+	}
+	return bbs
+}

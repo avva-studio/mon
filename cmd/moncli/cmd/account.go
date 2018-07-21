@@ -10,6 +10,7 @@ import (
 	"github.com/glynternet/go-accounting/account"
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
+	"github.com/glynternet/mon/internal/accountbalance"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/table"
@@ -129,7 +130,7 @@ var accountOpenCmd = &cobra.Command{
 			return errors.Wrap(err, "inserting balance")
 		}
 
-		table.AccountsWithBalance([]table.AccountBalance{{
+		table.AccountsWithBalance([]accountbalance.AccountBalance{{
 			Account: *i,
 			Balance: b.Balance,
 		}}, os.Stdout)
@@ -210,7 +211,7 @@ var accountCloseCmd = &cobra.Command{
 			return errors.Wrap(err, "updating account")
 		}
 
-		table.AccountsWithBalance([]table.AccountBalance{{
+		table.AccountsWithBalance([]accountbalance.AccountBalance{{
 			Account: *u,
 			Balance: b.Balance,
 		}}, os.Stdout)
