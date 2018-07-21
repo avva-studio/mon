@@ -85,16 +85,9 @@ var accountsBalancesCmd = &cobra.Command{
 			return errors.Wrap(err, "getting balances for all accounts")
 		}
 
-		cbs := make(map[currency.Code]balance.Balances)
-		for _, ab := range abs {
-			crncy := ab.Account.Account.CurrencyCode()
-			if _, ok := cbs[crncy]; !ok {
-				cbs[crncy] = balance.Balances{}
-			}
-			cbs[crncy] = append(cbs[crncy], ab.Balance)
-		}
-
 		table.AccountsWithBalance(abs, os.Stdout)
+
+		cbs := currencyBalances(abs)
 		if len(cbs) == 0 {
 			return nil
 		}
@@ -155,6 +148,18 @@ func accountsBalances(store storage.Storage, as storage.Accounts, at time.Time) 
 	}
 
 	return abs, nil
+}
+
+func currencyBalances(abs []accountbalance.AccountBalance) map[currency.Code]balance.Balances {
+	cbs := make(map[currency.Code]balance.Balances)
+	for _, ab := range abs {
+		crncy := ab.Account.Account.CurrencyCode()
+		if _, ok := cbs[crncy]; !ok {
+			cbs[crncy] = balance.Balances{}
+		}
+		cbs[crncy] = append(cbs[crncy], ab.Balance)
+	}
+	return cbs
 }
 
 func prepareAccountCondition() (filter.AccountCondition, error) {
