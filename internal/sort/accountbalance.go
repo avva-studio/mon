@@ -7,7 +7,7 @@ import (
 )
 
 // BalanceAmount sorts a slice of accountbalance.AccountBalance by the amount
-// of the Balance in ascending order.
+// of the Balance, in ascending order.
 // BalanceAmount cannot guarantee any specific order within a subsection of
 // the slice when multiple AccountBalance have the same amount.
 func BalanceAmount(abs []accountbalance.AccountBalance) {
@@ -16,6 +16,11 @@ func BalanceAmount(abs []accountbalance.AccountBalance) {
 	})
 }
 
+// BalanceAmountMagnitude sorts a slice of accountbalance.AccountBalance by the
+// absolute magnitude of the amount of the Balance, in ascending order.
+// BalanceAmountMagnitude cannot guarantee any specific order within a
+// subsection of the slice when multiple AccountBalance have the same absolute
+// amount.
 func BalanceAmountMagnitude(abs []accountbalance.AccountBalance) {
 	sort.Slice(abs, func(i, j int) bool {
 		absI := absolute((abs)[i].Balance.Amount)
