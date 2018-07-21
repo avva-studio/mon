@@ -5,8 +5,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-time"
+	"github.com/glynternet/mon/internal/accountbalance"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/olekukonko/tablewriter"
 )
@@ -30,16 +30,9 @@ func Accounts(as storage.Accounts, w io.Writer) {
 	t.Render() // Send output
 }
 
-// AccountBalance represents the state of a storage.Account at a given moment,
-// the moment in time being determined by the time of the balance.Balance.
-type AccountBalance struct {
-	storage.Account
-	balance.Balance
-}
-
 // AccountsWithBalance writes a table for a set of Accounts with corresponding
 // Balances to a given io.Writer
-func AccountsWithBalance(abs []AccountBalance, w io.Writer) {
+func AccountsWithBalance(abs []accountbalance.AccountBalance, w io.Writer) {
 	t := newDefaultTable(w)
 	t.SetHeader([]string{
 		"ID", "Name", "Opened", "Closed", "Currency", "Balance Date", "Balance Amount",

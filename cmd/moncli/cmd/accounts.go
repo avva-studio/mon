@@ -9,6 +9,7 @@ import (
 
 	"github.com/glynternet/go-accounting/balance"
 	"github.com/glynternet/go-money/currency"
+	"github.com/glynternet/mon/internal/accountbalance"
 	"github.com/glynternet/mon/internal/client"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/filter"
@@ -63,7 +64,7 @@ var accountsCmd = &cobra.Command{
 		}
 
 		if viper.GetBool(keyBalances) {
-			var abs []table.AccountBalance
+			var abs []accountbalance.AccountBalance
 			cbs := make(map[currency.Code]balance.Balances)
 			for _, a := range *as {
 				bs, err := c.SelectAccountBalances(a)
@@ -83,7 +84,7 @@ var accountsCmd = &cobra.Command{
 					log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", *atDate.Time, a))
 					continue
 				}
-				abs = append(abs, table.AccountBalance{
+				abs = append(abs, accountbalance.AccountBalance{
 					Account: a,
 					Balance: current,
 				})
