@@ -15,6 +15,7 @@ import (
 	"github.com/glynternet/mon/internal/sort"
 	"github.com/glynternet/mon/pkg/date"
 	"github.com/glynternet/mon/pkg/filter"
+	"github.com/glynternet/mon/pkg/storage"
 	"github.com/glynternet/mon/pkg/table"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -26,7 +27,6 @@ const (
 	keyIDs        = "ids"
 	keyCurrencies = "currencies"
 	keyQuiet      = "quiet"
-	keyBalances   = "balances"
 	keyAtDate     = "at-date"
 	keySortBy     = "sort-by"
 )
@@ -53,7 +53,7 @@ var accountsCmd = &cobra.Command{
 			return errors.Wrap(err, "selecting accounts")
 		}
 
-		ac, err := prepareCondition()
+		ac, err := prepareAccountCondition()
 		if err != nil {
 			return errors.Wrap(err, "preparing conditions")
 		}
@@ -71,31 +71,40 @@ var accountsCmd = &cobra.Command{
 			return nil
 		}
 
-		if !viper.GetBool(keyBalances) {
-			table.Accounts(*as, os.Stdout)
-			return nil
+		table.Accounts(*as, os.Stdout)
+		return nil
+	},
+}
+
+var accountsBalancesCmd = &cobra.Command{
+	Use:  "balances",
+	Args: cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if atDate.Time == nil {
+			now := time.Now()
+			atDate.Time = &now
 		}
 
-		var abs []accountbalance.AccountBalance
-		for _, a := range *as {
-			bs, err := c.SelectAccountBalances(a)
-			if err != nil {
-				return errors.Wrapf(err, "selecting balances for account: %+v", a)
-			}
-			bbs := bs.InnerBalances()
-			if len(*bs) == 0 {
-				log.Printf("no balances for account:%+v", a)
-				continue
-			}
-			current, err := bbs.AtTime(*atDate.Time)
-			if err != nil {
-				log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", *atDate.Time, a))
-				continue
-			}
-			abs = append(abs, accountbalance.AccountBalance{
-				Account: a,
-				Balance: current,
-			})
+		c := client.Client(viper.GetString(keyServerHost))
+		as, err := c.SelectAccounts()
+		if err != nil {
+			return errors.Wrap(err, "selecting accounts")
+		}
+
+		ac, err := prepareAccountCondition()
+		if err != nil {
+			return errors.Wrap(err, "preparing conditions")
+		}
+
+		*as = ac.Filter(*as)
+
+		if s, ok := sort.AccountSorts()[sortBy.String()]; ok {
+			s(*as)
+		}
+
+		abs, err := accountsBalances(c, *as, *atDate.Time)
+		if err != nil {
+			return errors.Wrap(err, "getting balances for all accounts")
 		}
 
 		if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
@@ -124,7 +133,32 @@ var accountsCmd = &cobra.Command{
 	},
 }
 
-func prepareCondition() (filter.AccountCondition, error) {
+func accountsBalances(store storage.Storage, as storage.Accounts, at time.Time) ([]accountbalance.AccountBalance, error) {
+	var abs []accountbalance.AccountBalance
+	for _, a := range as {
+		bs, err := store.SelectAccountBalances(a)
+		if err != nil {
+			return nil, errors.Wrapf(err, "selecting balances for account: %+v", a)
+		}
+		bbs := bs.InnerBalances()
+		if len(*bs) == 0 {
+			log.Printf("no balances for account:%+v", a)
+			continue
+		}
+		b, err := bbs.AtTime(at)
+		if err != nil {
+			log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", at, a))
+			continue
+		}
+		abs = append(abs, accountbalance.AccountBalance{
+			Account: a,
+			Balance: b,
+		})
+	}
+	return abs, nil
+}
+
+func prepareAccountCondition() (filter.AccountCondition, error) {
 	cs := filter.AccountConditions{
 		filter.Existed(*atDate.Time),
 	}
@@ -184,14 +218,24 @@ func currencyStringsToCodes(css ...string) ([]currency.Code, error) {
 
 func init() {
 	rootCmd.AddCommand(accountsCmd)
-	accountsCmd.Flags().Bool(keyOpen, false, "show only open accounts")
-	accountsCmd.Flags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
-	accountsCmd.Flags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
+	accountsCmd.PersistentFlags().Bool(keyOpen, false, "show only open accounts")
+	accountsCmd.PersistentFlags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
+	accountsCmd.PersistentFlags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
-	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
-	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
-	accountsCmd.Flags().Var(sortBy, keySortBy, fmt.Sprintf("sort by one of %s", strings.Join(sort.AllKeys(), ",")))
+	accountsCmd.PersistentFlags().Var(atDate, keyAtDate, "show balances at a certain date")
+	accountsCmd.PersistentFlags().Var(sortBy, keySortBy, fmt.Sprintf("sort by one of %s", strings.Join(sort.AllKeys(), ",")))
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
+	if err := viper.BindPFlags(accountsCmd.PersistentFlags()); err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
+
+	accountsCmd.AddCommand(accountsBalancesCmd)
+	if err := viper.BindPFlags(accountsBalancesCmd.Flags()); err != nil {
+		log.Fatal(errors.Wrap(err, "binding pflags"))
+	}
+	if err := viper.BindPFlags(accountsBalancesCmd.PersistentFlags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
 }
