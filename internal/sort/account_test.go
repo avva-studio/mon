@@ -1,12 +1,12 @@
-package sort
+package sort_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/glynternet/go-accounting/account"
-	"github.com/glynternet/go-accounting/common"
-	"github.com/glynternet/mon/internal/sort/sort"
+	"github.com/glynternet/go-money/common"
+	"github.com/glynternet/mon/internal/sort"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/stretchr/testify/assert"
 )

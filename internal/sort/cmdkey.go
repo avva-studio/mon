@@ -14,10 +14,10 @@ const (
 // AllKeys provides all possible sort keys, agnostic of sort type
 func AllKeys() []string {
 	ks := []string{""}
-	for sortKey, _ := range AccountSorts() {
+	for sortKey := range AccountSorts() {
 		ks = append(ks, sortKey)
 	}
-	for sortKey, _ := range AccountbalanceSorts() {
+	for sortKey := range AccountbalanceSorts() {
 		ks = append(ks, sortKey)
 	}
 
