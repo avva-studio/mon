@@ -85,10 +85,6 @@ var accountsBalancesCmd = &cobra.Command{
 			return errors.Wrap(err, "getting balances for all accounts")
 		}
 
-		if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
-			s(abs)
-		}
-
 		cbs := make(map[currency.Code]balance.Balances)
 		for _, ab := range abs {
 			crncy := ab.Account.Account.CurrencyCode()
@@ -153,6 +149,11 @@ func accountsBalances(store storage.Storage, as storage.Accounts, at time.Time) 
 			Balance: b,
 		})
 	}
+
+	if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
+		s(abs)
+	}
+
 	return abs, nil
 }
 
