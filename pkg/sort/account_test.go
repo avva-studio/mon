@@ -2,7 +2,10 @@ package sort_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/glynternet/go-accounting/account"
+	"github.com/glynternet/go-accounting/common"
 	"github.com/glynternet/mon/pkg/sort"
 	"github.com/glynternet/mon/pkg/storage"
 	"github.com/stretchr/testify/assert"
@@ -60,6 +63,71 @@ func TestID(t *testing.T) {
 			var out []uint
 			for _, a := range as {
 				out = append(out, a.ID)
+			}
+
+			assert.Equal(t, test.out, out)
+		})
+	}
+}
+
+func TestName(t *testing.T) {
+	t.Run("nil input remains nil", func(t *testing.T) {
+		var as storage.Accounts
+		sort.Name(as)
+		assert.Nil(t, as)
+	})
+
+	namedAccount := func(name string) storage.Account {
+		a, err := account.New(name, nil, time.Time{})
+		common.FatalIfError(t, err, "creating new account")
+		return storage.Account{Account: *a}
+	}
+
+	for _, test := range []struct {
+		name    string
+		in, out []string
+	}{
+		{
+			name: "empty storage.Accounts",
+			in:   []string{},
+		},
+		{
+			name: "single account yields same account",
+			in:   []string{"A"},
+			out:  []string{"A"},
+		},
+		{
+			name: "in-order input yields same order output",
+			in:   []string{"A", "B", "C", "D"},
+			out:  []string{"A", "B", "C", "D"},
+		},
+		{
+			name: "in reverse order",
+			in:   []string{"D", "C", "B", "A"},
+			out:  []string{"A", "B", "C", "D"},
+		},
+		{
+			name: "mixed order",
+			in:   []string{"D", "C", "A", "B", "a"},
+			out:  []string{"A", "B", "C", "D", "a"},
+		},
+		{
+			name: "mixed order with repeating",
+			in:   []string{"D", "C", "A", "B", "a", "D"},
+			out:  []string{"A", "B", "C", "D", "D", "a"},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var as storage.Accounts
+			for _, name := range test.in {
+				as = append(as, namedAccount(name))
+			}
+
+			sort.Name(as)
+
+			var out []string
+			for _, a := range as {
+				out = append(out, a.Account.Name())
 			}
 
 			assert.Equal(t, test.out, out)
