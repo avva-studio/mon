@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	sortKeyID      = "id"
-	sortKeyName    = "name"
-	sortKeyBalance = "balance"
+	sortKeyID               = "id"
+	sortKeyName             = "name"
+	sortKeyBalance          = "balance"
+	sortKeyBalanceMagnitude = "balance-magnitude"
 )
 
 // AllKeys provides all possible sort keys, agnostic of sort type
@@ -37,6 +38,7 @@ func AccountSorts() map[string]func(storage.Accounts) {
 // accountbalance.AccountBalance sorting functions, keyed by the supported keys
 func AccountbalanceSorts() map[string]func([]accountbalance.AccountBalance) {
 	return map[string]func([]accountbalance.AccountBalance){
-		sortKeyBalance: BalanceAmount,
+		sortKeyBalance:          BalanceAmount,
+		sortKeyBalanceMagnitude: BalanceAmountMagnitude,
 	}
 }
