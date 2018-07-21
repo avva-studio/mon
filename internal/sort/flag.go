@@ -35,6 +35,7 @@ func (f *key) Set(value string) error {
 	if !keyExists(AllKeys(), val) {
 		return fmt.Errorf("unsupported sort key: %+v", value)
 	}
+	*f = key{string: &val}
 	return nil
 }
 
