@@ -13,7 +13,7 @@ type flag struct {
 	*time.Time
 }
 
-// Flag will create a Flag for use with Viper/Cobra
+// Flag will create a Flag for use as a pflag.Value
 func Flag() *flag {
 	return &flag{}
 }

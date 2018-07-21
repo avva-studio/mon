@@ -33,6 +33,7 @@ const (
 
 var (
 	atDate     = date.Flag()
+	sortBy     = sort.NewKey()
 	ids        []uint
 	currencies []string
 )
@@ -44,12 +45,6 @@ var accountsCmd = &cobra.Command{
 		if atDate.Time == nil {
 			now := time.Now()
 			atDate.Time = &now
-		}
-
-		sortBy := viper.GetString(keySortBy)
-		err := verifySort(sortBy)
-		if err != nil {
-			return errors.Wrap(err, "verifying sort key")
 		}
 
 		c := client.Client(viper.GetString(keyServerHost))
@@ -65,7 +60,7 @@ var accountsCmd = &cobra.Command{
 
 		*as = ac.Filter(*as)
 
-		if s, ok := sort.AccountSorts()[sortBy]; ok {
+		if s, ok := sort.AccountSorts()[sortBy.String()]; ok {
 			s(*as)
 		}
 
@@ -109,7 +104,7 @@ var accountsCmd = &cobra.Command{
 				cbs[crncy] = append(cbs[crncy], current)
 			}
 
-			if s, ok := sort.AccountbalanceSorts()[sortBy]; ok {
+			if s, ok := sort.AccountbalanceSorts()[sortBy.String()]; ok {
 				s(abs)
 			}
 
@@ -194,15 +189,8 @@ func init() {
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.Flags().BoolP(keyBalances, "b", false, "show balances for each account")
 	accountsCmd.Flags().Var(atDate, keyAtDate, "show balances at a certain date")
-	accountsCmd.Flags().String(keySortBy, "", fmt.Sprintf("sort by one of %s", strings.Join(sort.AllSortKeys(), ",")))
+	accountsCmd.Flags().Var(sortBy, keySortBy, fmt.Sprintf("sort by one of %s", strings.Join(sort.AllKeys(), ",")))
 	if err := viper.BindPFlags(accountsCmd.Flags()); err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
 	}
-}
-
-func verifySort(key string) error {
-	if sort.AllSortKeys().Contains(key) {
-		return nil
-	}
-	return fmt.Errorf("sort key %s is not supported", key)
 }

@@ -11,9 +11,9 @@ const (
 	sortKeyBalance = "balance"
 )
 
-// AllSortKeys provides all possible sort keys, agnostic of sort type
-func AllSortKeys() Keys {
-	var ks []string
+// AllKeys provides all possible sort keys, agnostic of sort type
+func AllKeys() []string {
+	ks := []string{""}
 	for sortKey, _ := range AccountSorts() {
 		ks = append(ks, sortKey)
 	}
@@ -39,17 +39,4 @@ func AccountbalanceSorts() map[string]func([]accountbalance.AccountBalance) {
 	return map[string]func([]accountbalance.AccountBalance){
 		sortKeyBalance: BalanceAmount,
 	}
-}
-
-// Keys is a set of string that can be used as keys for sorting
-type Keys []string
-
-// Contains identifies if a given key/string is in a set of Keys
-func (ks Keys) Contains(key string) bool {
-	for _, valid := range ks {
-		if valid == key {
-			return true
-		}
-	}
-	return false
 }
