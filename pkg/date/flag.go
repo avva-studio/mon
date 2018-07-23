@@ -1,6 +1,7 @@
 package date
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -34,29 +35,57 @@ func (flag) Type() string {
 }
 
 // Set parses the given string, attempting to create a logical date from its
-// content. Set will match any supported date format or case insensitively
-// match 'y' or 'yesterday'.
+// content. Set will match:
+// - any supported date format;
+// - 'y' or 'yesterday', case-insensitively;
+// - any value that can be parse into an integer, as a relative date.
 func (f *flag) Set(value string) error {
 	val := strings.TrimSpace(value)
 	if val == "" {
 		return errors.New("no value given")
 	}
 	val = strings.ToLower(value)
-	switch val {
-	case "yesterday", "y":
-		y := time.Now().Add(-time.Hour * 24)
+
+	y, err := parseYesterday(val)
+	if err == nil {
 		*f = flag{Time: &y}
 		return nil
 	}
+
+	y, err = parseRelative(val)
+	if err == nil {
+		*f = flag{Time: &y}
+		return nil
+	}
+
+	y, err = parseExplicitDate(val)
+	if err == nil {
+		*f = flag{Time: &y}
+		return nil
+	}
+
+	// TODO: use multi error here? We don't want to only provide last error
+	return fmt.Errorf("unsupported date value: %+v", value)
+}
+
+type dateParser func(date string) (time.Time, error)
+
+func parseYesterday(val string) (time.Time, error) {
+	for _, valid := range []string{"yesterday", "y"} {
+		if val == valid {
+			return time.Now().Add(-time.Hour * 24), nil
+		}
+	}
+	return time.Time{}, errors.New("unsupported value")
+}
+
+func parseRelative(val string) (time.Time, error) {
 	i, err := strconv.Atoi(val)
-	if err == nil {
-		y := time.Now().Add(time.Hour * (24 * time.Duration(i)))
-		*f = flag{Time: &y}
-		return nil
-	}
+	d := time.Now().Add(time.Hour * (24 * time.Duration(i)))
+	return d, errors.Wrap(err, "converting ascii to integer")
+}
+
+func parseExplicitDate(val string) (time.Time, error) {
 	d, err := time.Parse(dateFormat, val)
-	if err == nil {
-		*f = flag{&d}
-	}
-	return errors.Wrapf(err, "unsupported date value: %+v", value)
+	return d, errors.Wrapf(err, "parsing into format:%s", dateFormat)
 }

@@ -1,7 +1,7 @@
 package date
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 	"time"
 
@@ -59,7 +59,7 @@ func TestFlag_Set(t *testing.T) {
 			for key, val := range test.vals {
 				k := key
 				v := val
-				t.Run(strconv.Itoa(k), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%d-%s", k, val), func(t *testing.T) {
 					f := &flag{}
 					err := f.Set(v)
 					if test.err {
