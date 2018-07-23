@@ -49,7 +49,7 @@ func (f *flag) Set(value string) error {
 	for _, parse := range []func(string) (time.Time, error){
 		parseYesterday,
 		parseRelative,
-		parseExplicitDate,
+		format(dateFormat).parse,
 	} {
 		d, err := parse(val)
 		if err == nil {
@@ -77,7 +77,9 @@ func parseRelative(val string) (time.Time, error) {
 	return d, errors.Wrap(err, "converting ascii to integer")
 }
 
-func parseExplicitDate(val string) (time.Time, error) {
-	d, err := time.Parse(dateFormat, val)
-	return d, errors.Wrapf(err, "parsing into format:%s", dateFormat)
+type format string
+
+func (fmt format) parse(val string) (time.Time, error) {
+	d, err := time.Parse(string(fmt), val)
+	return d, errors.Wrapf(err, "parsing into format:%s", fmt)
 }
