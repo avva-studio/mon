@@ -1,6 +1,7 @@
 package date
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -44,6 +45,12 @@ func (f *flag) Set(value string) error {
 	switch val {
 	case "yesterday", "y":
 		y := time.Now().Add(-time.Hour * 24)
+		*f = flag{Time: &y}
+		return nil
+	}
+	i, err := strconv.Atoi(val)
+	if err == nil {
+		y := time.Now().Add(time.Hour * (24 * time.Duration(i)))
 		*f = flag{Time: &y}
 		return nil
 	}

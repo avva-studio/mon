@@ -30,6 +30,16 @@ func TestFlag_Set(t *testing.T) {
 			Time: time.Now().Add(time.Hour * -24),
 		},
 		{
+			name: "relative date negative",
+			vals: []string{"-2"},
+			Time: time.Now().Add(time.Hour * (24 * -2)),
+		},
+		{
+			name: "relative date positive",
+			vals: []string{"378", "+378"},
+			Time: time.Now().Add(time.Hour * (24 * 378)),
+		},
+		{
 			name: "nonsense",
 			vals: []string{"bloopy bleep", "!!!!!"},
 			err:  true,
