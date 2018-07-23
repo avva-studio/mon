@@ -51,7 +51,7 @@ func TestFlag_Set(t *testing.T) {
 		},
 		{
 			name: "valid",
-			vals: []string{"2018-03-02"},
+			vals: []string{"2018-03-02", "2018-3-2"},
 			Time: time.Date(2018, 03, 02, 0, 0, 0, 0, time.UTC),
 		},
 	} {

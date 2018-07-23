@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const dateFormat = "2006-01-02"
+const dateFormat = "2006-1-2"
 
 type flag struct {
 	*time.Time
