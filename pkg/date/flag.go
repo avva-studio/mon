@@ -46,29 +46,21 @@ func (f *flag) Set(value string) error {
 	}
 	val = strings.ToLower(value)
 
-	y, err := parseYesterday(val)
-	if err == nil {
-		*f = flag{Time: &y}
-		return nil
-	}
-
-	y, err = parseRelative(val)
-	if err == nil {
-		*f = flag{Time: &y}
-		return nil
-	}
-
-	y, err = parseExplicitDate(val)
-	if err == nil {
-		*f = flag{Time: &y}
-		return nil
+	for _, parse := range []func(string) (time.Time, error){
+		parseYesterday,
+		parseRelative,
+		parseExplicitDate,
+	} {
+		d, err := parse(val)
+		if err == nil {
+			*f = flag{Time: &d}
+			return nil
+		}
 	}
 
 	// TODO: use multi error here? We don't want to only provide last error
 	return fmt.Errorf("unsupported date value: %+v", value)
 }
-
-type dateParser func(date string) (time.Time, error)
 
 func parseYesterday(val string) (time.Time, error) {
 	for _, valid := range []string{"yesterday", "y"} {
