@@ -392,7 +392,7 @@ func init() {
 	// TODO: making is persistent here. The issue may arise from using viper to
 	// TODO: retrieve them. The issue doesn't happen with custom flags that are
 	// TODO: retrieved using a global variable
-	accountCmd.PersistentFlags().String(keyCurrency, "EUR", "account currency")
+	accountCmd.PersistentFlags().String(keyCurrency, "", "account currency")
 	err := viper.BindPFlags(accountCmd.PersistentFlags())
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "binding pflags"))
