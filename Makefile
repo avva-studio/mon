@@ -1,4 +1,4 @@
-VERSION ?= $(shell git describe --tags --always)
+VERSION ?= $(shell git describe --tags --dirty --always)
 LDFLAGS = "-w -X main.Version=$(VERSION)"
 
 GOBUILDFLAGS ?= -installsuffix cgo -a -ldflags $(LDFLAGS)
