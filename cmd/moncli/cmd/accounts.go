@@ -25,6 +25,7 @@ import (
 const (
 	keyOpen       = "open"
 	keyIDs        = "ids"
+	keyNotIDs     = "not-ids"
 	keyCurrencies = "currencies"
 	keyQuiet      = "quiet"
 	keyAtDate     = "at-date"
@@ -32,10 +33,10 @@ const (
 )
 
 var (
-	atDate     = date.Flag()
-	sortBy     = sort.NewKey()
-	ids        []uint
-	currencies []string
+	atDate      = date.Flag()
+	sortBy      = sort.NewKey()
+	ids, notIDs []uint
+	currencies  []string
 )
 
 var accountsCmd = &cobra.Command{
@@ -175,6 +176,10 @@ func prepareAccountCondition() (filter.AccountCondition, error) {
 		cs = append(cs, idsCondition(ids))
 	}
 
+	if len(notIDs) > 0 {
+		cs = append(cs, filter.Not(idsCondition(notIDs)))
+	}
+
 	if len(currencies) > 0 {
 		ccs, err := currenciesCondition(currencies)
 		if err != nil {
@@ -223,7 +228,8 @@ func currencyStringsToCodes(css ...string) ([]currency.Code, error) {
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.PersistentFlags().Bool(keyOpen, false, "show only open accounts")
-	accountsCmd.PersistentFlags().UintSliceVar(&ids, keyIDs, []uint{}, "filter by ids")
+	accountsCmd.PersistentFlags().UintSliceVar(&ids, keyIDs, []uint{}, "include only these ids")
+	accountsCmd.PersistentFlags().UintSliceVar(&notIDs, keyNotIDs, []uint{}, "include only ids other than these")
 	accountsCmd.PersistentFlags().StringSliceVar(&currencies, keyCurrencies, []string{}, "filter by currencies")
 	accountsCmd.Flags().BoolP(keyQuiet, "q", false, "show only account ids")
 	accountsCmd.PersistentFlags().Var(atDate, keyAtDate, "show balances at a certain date")

@@ -164,6 +164,32 @@ func TestOpenAt(t *testing.T) {
 	}
 }
 
+func TestNot(t *testing.T) {
+	var dummy storage.Account
+	for _, test := range []struct {
+		name string
+		in   bool
+	}{
+		{
+			name: "zero-values",
+		},
+		{
+			name: "inner filter match",
+			in:   true,
+		},
+		{
+			name: "inner filter non-match",
+			in:   false,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := filter.Not(stubAccountCondition(test.in))
+			match := f(dummy)
+			assert.Equal(t, !test.in, match)
+		})
+	}
+}
+
 func TestAccountConditions_Or(t *testing.T) {
 	for _, test := range []struct {
 		name string
@@ -282,6 +308,7 @@ func TestAccountConditions_And(t *testing.T) {
 		})
 	}
 }
+
 func TestAccountCondition_Filter(t *testing.T) {
 	matchingID := uint(1)
 	nonmatchingID := uint(2)

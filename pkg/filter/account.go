@@ -20,7 +20,15 @@ func (ac AccountCondition) Filter(as storage.Accounts) storage.Accounts {
 			filtered = append(filtered, a)
 		}
 	}
-	return storage.Accounts(filtered)
+	return filtered
+}
+
+// Not produces an AccountCondition that inverts the outcome of the given
+// AccountCondition
+func Not(c AccountCondition) AccountCondition {
+	return func(a storage.Account) bool {
+		return !c(a)
+	}
 }
 
 // Existed produces an AccountCondition that can be used to identify if an
