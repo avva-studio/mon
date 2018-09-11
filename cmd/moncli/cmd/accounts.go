@@ -124,18 +124,9 @@ func accounts(store storage.Storage) (storage.Accounts, error) {
 func accountsBalances(store storage.Storage, as storage.Accounts, at time.Time) ([]accountbalance.AccountBalance, error) {
 	var abs []accountbalance.AccountBalance
 	for _, a := range as {
-		bs, err := store.SelectAccountBalances(a)
+		b, err := accountBalanceAtTime(store, a, at)
 		if err != nil {
-			return nil, errors.Wrapf(err, "selecting balances for account: %+v", a)
-		}
-		bbs := bs.InnerBalances()
-		if len(*bs) == 0 {
-			log.Printf("no balances for account:%+v", a)
-			continue
-		}
-		b, err := bbs.AtTime(at)
-		if err != nil {
-			log.Println(errors.Wrapf(err, "getting balances at time:%+v for account:%+v", at, a))
+			log.Println(errors.Wrapf(err, "getting balance at time:%+v for account:%+v", at, a))
 			continue
 		}
 		abs = append(abs, accountbalance.AccountBalance{
