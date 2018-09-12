@@ -422,6 +422,48 @@ var accountBalanceInsertCmd = &cobra.Command{
 	},
 }
 
+var accountBalanceCmd = &cobra.Command{
+	Use:  "balance [ID]",
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		id, err := parseID(args[0])
+		if err != nil {
+			return errors.Wrap(err, "parsing account id")
+		}
+
+		c := newClient()
+		a, err := c.SelectAccount(uint(id))
+		if err != nil {
+			return errors.Wrap(err, "selecting account")
+		}
+
+		t := time.Now()
+		if balanceDate.Time != nil {
+			t = *balanceDate.Time
+		}
+
+		b, err := accountBalanceAtTime(c, *a, t)
+		if err != nil {
+			errors.Wrapf(err, "getting balance at time:%+v for account:%+v", t, a)
+		}
+		fmt.Println(b.Amount)
+		return nil
+	},
+}
+
+func accountBalanceAtTime(store storage.Storage, a storage.Account, at time.Time) (balance.Balance, error) {
+	bs, err := store.SelectAccountBalances(a)
+	if err != nil {
+		return balance.Balance{}, errors.Wrapf(err, "selecting balances for account: %+v", a)
+	}
+	bbs := bs.InnerBalances()
+	if len(*bs) == 0 {
+		return balance.Balance{}, errors.Wrapf(err, "no balances for account:%+v", a)
+	}
+	b, err := bbs.AtTime(at)
+	return b, errors.Wrapf(err, "getting balance at time from returned balances", at, a)
+}
+
 func init() {
 	// TODO: find out how to use same flag on different subcommands instead of
 	// TODO: making is persistent here. The issue may arise from using viper to
@@ -453,6 +495,8 @@ func init() {
 	accountBalanceInsertCmd.Flags().VarP(balanceDate, keyDate, "d", "date of balance to insert")
 	accountBalanceInsertCmd.Flags().IntP(keyAmount, "a", 0, "amount of balance to insert")
 
+	accountBalanceCmd.Flags().VarP(balanceDate, keyDate, "d", "date at which to retrieve balance")
+
 	for _, c := range []*cobra.Command{
 		accountAddCmd,
 		accountOpenCmd,
@@ -463,6 +507,7 @@ func init() {
 		accountRenameCmd,
 		accountBalancesCmd,
 		accountBalanceInsertCmd,
+		accountBalanceCmd,
 	} {
 		err := viper.BindPFlags(c.Flags())
 		if err != nil {
