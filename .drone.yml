@@ -7,12 +7,12 @@ workspace:
 pipeline:
 
   run-unit-tests:
-    image: golang
+    image: golang:1.10.4
     commands:
       - go test -v -race ./...
 
   build-storage-postgres-functional-tests-binary:
-    image: golang
+    image: golang:1.10.4
     commands:
       - cd pkg/storage/postgres/test/functional
       - make build-tests
@@ -31,7 +31,7 @@ pipeline:
       - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
 
   build-monserve-binary:
-    image: golang
+    image: golang:1.10.4
     commands:
       - make monserve-binary
   
@@ -43,7 +43,7 @@ pipeline:
       - docker build --tag monserve:ci-functional-tests-${DRONE_COMMIT_SHA} .
   
   build-monserve-client-functional-tests-binary:
-    image: golang
+    image: golang:1.10.4
     commands:
       - cd test/functional
       - make build-tests
