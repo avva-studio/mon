@@ -12,3 +12,5 @@ pipeline:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     commands:
       - goreleaser release --rm-dist
+    when:
+      event: tag
