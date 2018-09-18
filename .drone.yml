@@ -6,3 +6,7 @@ workspace:
 
 pipeline:
 
+  release:
+    image: goreleaser/goreleaser:v0.86
+    commands:
+      - goreleaser release --rm-dist
