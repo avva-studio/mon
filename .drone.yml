@@ -11,10 +11,9 @@ pipeline:
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     commands:
-      - pwd
-      - ls -la
-      - git status
-      - git tag --list
+      - echo git fetch origin ${DRONE_COMMIT_REF}
+      - echo git fetch origin ${DRONE_REMOTE_URL}
+      - echo git fetch origin ${DRONE_COMMIT_LINK}
       - goreleaser release --rm-dist
     when:
       event: tag
