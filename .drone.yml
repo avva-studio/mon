@@ -14,8 +14,7 @@ pipeline:
   build-storage-postgres-functional-tests-binary:
     image: golang:1.10.4
     commands:
-      - cd pkg/storage/postgres/test/functional
-      - make build-tests
+      - make -C pkg/storage/postgres/test/functional build-tests
 
   run-storage-postgres-functional-tests:
     image: docker/compose:1.21.2
@@ -23,7 +22,7 @@ pipeline:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - FUNCTIONAL_TESTS_IMAGE_NAME=mon-pkg-storage-postgres-functional-tests
-      - FUNCTIONAL_TESTS_IMAGE_TAG=${DRONE_COMMIT_SHA}
+      - FUNCTIONAL_TESTS_IMAGE_TAG=${DRONE_COMMIT_SHA:-NO_SHA}
     commands:
       - cd pkg/storage/postgres/test/functional
       - docker-compose --project-name mon-pkg-storage-postgres-functional-test down
@@ -40,20 +39,19 @@ pipeline:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - docker build --tag monserve:ci-functional-tests-${DRONE_COMMIT_SHA} .
+      - docker build --tag monserve:ci-functional-tests-${DRONE_COMMIT_SHA:-NO_SHA} .
   
   build-monserve-client-functional-tests-binary:
     image: golang:1.10.4
     commands:
-      - cd test/functional
-      - make build-tests
+      - make -C test/functional build-tests
   
   run-monserve-client-functional-tests:
     image: docker/compose:1.21.2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DOCKER_IMAGE=monserve:ci-functional-tests-${DRONE_COMMIT_SHA}
+      - DOCKER_IMAGE=monserve:ci-functional-tests-${DRONE_COMMIT_SHA:-NO_SHA}
     commands:
       - cd test/functional
       - docker-compose --project-name mon-monserve-client-functional-test down
