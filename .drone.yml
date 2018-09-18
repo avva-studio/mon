@@ -8,5 +8,7 @@ pipeline:
 
   release:
     image: goreleaser/goreleaser:v0.86
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     commands:
       - goreleaser release --rm-dist
