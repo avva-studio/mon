@@ -11,8 +11,7 @@ pipeline:
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     commands:
-      - git fetch --tags origin ${DRONE_TAG}
-      - git tag list
+      - git fetch origin +refs/tags/${DRONE_TAG}:refs/tags/${DRONE_TAG}
       - goreleaser release --rm-dist
     when:
       event: tag
