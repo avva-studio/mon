@@ -11,6 +11,10 @@ pipeline:
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     commands:
+      - pwd
+      - ls -la
+      - git status
+      - git tag --list
       - goreleaser release --rm-dist
     when:
       event: tag
